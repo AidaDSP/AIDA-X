@@ -68,7 +68,7 @@ protected:
         fill();
 
         strokeColor(Color(1.f, 1.f, 1.f));
-        fontSize(13.f);
+        fontSize(13.f * scaleFactor);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(width/2, height, label, nullptr);
 
@@ -209,8 +209,13 @@ public:
         subwidgetsLayout.widgets.push_back({ knobs.master, Fixed });
         repositionWidgets();
 
-        // min size
-        setGeometryConstraints(kPedalWidth + kPedalMargin/2, kPedalHeight + kPedalMargin/2);
+        // adjust size
+        const double scaleFactor = getScaleFactor();
+        setGeometryConstraints((kPedalWidth + kPedalMargin/2) * scaleFactor,
+                               (kPedalHeight + kPedalMargin/2) * scaleFactor);
+
+        if (scaleFactor != 1.0)
+            setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
     }
 
 protected:

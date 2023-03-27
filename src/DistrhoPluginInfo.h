@@ -29,7 +29,7 @@
 // known and defined in advance
 static const constexpr uint kPedalWidth = 900;
 static const constexpr uint kPedalHeight = 328;
-static const constexpr uint kPedalMargin = 80;
+static const constexpr uint kPedalMargin = 40;
 
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin * 2)
