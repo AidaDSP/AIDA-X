@@ -16,6 +16,7 @@ jobs:
       - uses: distrho/dpf-cmake-action@v1
         with:
           lto: true
+          pawpaw: true
           target: ${{ matrix.target }}
 
   macos:
@@ -32,6 +33,7 @@ jobs:
       - uses: distrho/dpf-cmake-action@v1
         with:
           lto: true
+          pawpaw: true
           target: ${{ matrix.target }}
 
   windows:
@@ -46,6 +48,7 @@ jobs:
       - uses: distrho/dpf-cmake-action@v1
         with:
           lto: true
+          pawpaw: true
           target: ${{ matrix.target }}
 
   pluginval:
