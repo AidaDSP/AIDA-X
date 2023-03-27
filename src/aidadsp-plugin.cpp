@@ -422,7 +422,7 @@ protected:
         }
     }
 
-    void setState(const char* const key, const char* const value)
+    void setState(const char* const key, const char* const value) override
     {
         if (std::strcmp(key, "json") == 0)
             return loadModelFromFile(value);

@@ -418,6 +418,8 @@ protected:
 
         switch (fileLoaderMode)
         {
+        case kFileLoaderNull:
+            break;
         case kFileLoaderModel:
             setState("json", filename);
             break;
