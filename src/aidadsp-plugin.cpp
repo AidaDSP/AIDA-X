@@ -1,5 +1,5 @@
 /*
- * aidadsp-loader
+ * Aida-X DPF plugin
  * Copyright (C) 2022-2023 Massimo Pennazio <maxipenna@libero.it>
  * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -9,10 +9,17 @@
 
 #include "Biquad.cpp"
 #include "ExpSmoother.hpp"
+
 #include "model_variant.hpp"
 #include "extra/Sleep.hpp"
 
 #include <atomic>
+
+#include "dr_flac.h"
+#include "dr_wav.h"
+// -Wunused-variable
+#include "r8brain/CDSPResampler.h"
+#include "TwoStageThreadedConvolver.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -173,20 +180,36 @@ class AidaDSPLoaderPlugin : public Plugin
 {
     AidaToneControl aida;
     DynamicModel* model = nullptr;
-    std::atomic<bool> running { false };
+    TwoStageThreadedConvolver* convolver = nullptr;
+    std::atomic<bool> activeModel { false };
+    std::atomic<bool> activeConvolver { false };
+    float* convolverInplaceBuffer = nullptr;
+    ExpSmoother convolverGain;
+    String convolverFilename;
     float parameters[kNumParameters];
     bool bypassed = false;
 
 public:
     AidaDSPLoaderPlugin()
-        : Plugin(kNumParameters, 0, 1) // parameters, programs, states
+        : Plugin(kNumParameters, 0, kStateCount) // parameters, programs, states
     {
         // Initialize parameters to their defaults
         for (uint i=0; i<kNumParameters; ++i)
             parameters[i] = kParameters[i].ranges.def;
 
+        convolverGain.setTimeConstant(1);
+        convolverGain.setTarget(1.f);
+
         // initialize
+        bufferSizeChanged(getBufferSize());
         sampleRateChanged(getSampleRate());
+    }
+
+    ~AidaDSPLoaderPlugin()
+    {
+        delete model;
+        delete convolver;
+        delete[] convolverInplaceBuffer;
     }
 
 protected:
@@ -199,7 +222,7 @@ protected:
     */
     const char* getLabel() const override
     {
-        return "Aida DSP Loader";
+        return "AIDA_X";
     }
 
    /**
@@ -259,7 +282,7 @@ protected:
       Initialize the audio port @a index.@n
       This function will be called once, shortly after the plugin is created.
     */
-    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    void initAudioPort(const bool input, const uint32_t index, AudioPort& port) override
     {
         // treat meter audio ports as mono
         port.groupId = kPortGroupMono;
@@ -272,28 +295,45 @@ protected:
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
-    void initParameter(uint32_t index, Parameter& parameter) override
+    void initParameter(const uint32_t index, Parameter& parameter) override
     {
         parameter = kParameters[index];
+
+        if (index == kParameterGLOBALBYPASS)
+            parameter.designation = kParameterDesignationBypass;
     }
 
    /**
       Initialize the state @a index.@n
       This function will be called once, shortly after the plugin is created.@n
     */
-    void initState(uint32_t index, State& state) override
+    void initState(const uint32_t index, State& state) override
     {
-        if (index != 0)
-            return;
-
-        state.hints = kStateIsFilenamePath;
-        state.key = "json";
-        state.defaultValue = "";
-        state.label = "Neural Model";
-        state.description = "";
-       #ifdef __MOD_DEVICES__
-        state.fileTypes = "aidadspmodel";
-       #endif
+        switch (static_cast<States>(index))
+        {
+        case kStateModelFile:
+            state.hints = kStateIsFilenamePath;
+            state.key = "json";
+            state.defaultValue = "";
+            state.label = "Neural Model";
+            state.description = "";
+           #ifdef __MOD_DEVICES__
+            state.fileTypes = "aidadspmodel";
+           #endif
+            break;
+        case kStateImpulseFile:
+            state.hints = kStateIsFilenamePath;
+            state.key = "ir";
+            state.defaultValue = "";
+            state.label = "Impulse Response";
+            state.description = "";
+           #ifdef __MOD_DEVICES__
+            state.fileTypes = "cabsim";
+           #endif
+            break;
+        case kStateCount:
+            break;
+        }
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -367,12 +407,15 @@ protected:
             if (!bypassed)
                 aida.mastergain.setTarget(DB_CO(value));
             break;
-        case kParameterBYPASS:
+        case kParameterCONVOLVERENABLE:
+            convolverGain.setTarget(value > 0.5f ? 1.f : 0.f);
+            break;
+        case kParameterGLOBALBYPASS:
             bypassed = value > 0.5f;
             if (bypassed)
                 aida.mastergain.setTarget(0.f);
             else
-                aida.mastergain.setTarget(parameters[kParameterMASTER]);
+                aida.mastergain.setTarget(DB_CO(parameters[kParameterMASTER]));
             break;
         case kParameterCount:
             break;
@@ -381,15 +424,20 @@ protected:
 
     void setState(const char* const key, const char* const value)
     {
-        if (std::strcmp(key, "json") != 0)
-            return;
+        if (std::strcmp(key, "json") == 0)
+            return loadModelFromFile(value);
+        if (std::strcmp(key, "ir") == 0)
+            return loadImpulseFromFile(value);
+    }
 
+    void loadModelFromFile(const char* const filename)
+    {
         int input_skip;
         float output_gain;
         nlohmann::json model_json;
 
         try {
-            std::ifstream jsonStream(value, std::ifstream::binary);
+            std::ifstream jsonStream(filename, std::ifstream::binary);
             jsonStream >> model_json;
 
             /* Understand which model type to load */
@@ -413,10 +461,10 @@ protected:
                 output_gain = 1.0f;
             }
 
-            d_stdout("Successfully loaded json file: %s", value);
+            d_stdout("Successfully loaded json file: %s", filename);
         }
         catch (const std::exception& e) {
-            d_stderr2("Unable to load json file: %s\nError: %s", value, e.what());
+            d_stderr2("Unable to load json file: %s\nError: %s", filename, e.what());
             return;
         }
 
@@ -451,12 +499,78 @@ protected:
         float out[2048] = {};
         applyModel(newmodel.get(), out, 2048);
 
+        // swap active model
         DynamicModel* const oldmodel = model;
         model = newmodel.release();
 
         // if processing, wait for process cycle to complete
-        while (oldmodel != nullptr && running.load())
-            d_msleep(5);
+        while (oldmodel != nullptr && activeModel.load())
+            d_msleep(1);
+
+        delete oldmodel;
+    }
+
+    void loadImpulseFromFile(const char* const filename)
+    {
+        uint channels;
+        uint sampleRate;
+        drwav_uint64 numFrames;
+        const size_t valuelen = std::strlen(filename);
+
+        float* ir;
+        if (::strncasecmp(filename + std::max(0, static_cast<int>(valuelen) - 5), ".flac", 5) == 0)
+            ir = drflac_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
+        else
+            ir = drwav_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(ir != nullptr,);
+
+        float* irBuf;
+        if (channels == 1)
+        {
+            irBuf = ir;
+        }
+        else
+        {
+            irBuf = new float[numFrames];
+
+            for (drwav_uint64 i = 0, j = 0; i < numFrames; ++i, j += channels)
+                irBuf[i] = ir[j];
+        }
+
+        if (sampleRate != getSampleRate())
+        {
+            r8b::CDSPResampler16IR resampler(sampleRate, getSampleRate(), numFrames);
+            const int numResampledFrames = resampler.getMaxOutLen(0);
+            DISTRHO_SAFE_ASSERT_RETURN(numResampledFrames > 0,);
+
+            float* const irBufResampled = new float[numResampledFrames];
+            resampler.oneshot(irBuf, numFrames, irBufResampled, numResampledFrames);
+            delete[] irBuf;
+            irBuf = irBufResampled;
+
+            numFrames = numResampledFrames;
+        }
+
+        convolverFilename = filename;
+
+        TwoStageThreadedConvolver* const newConvolver = new TwoStageThreadedConvolver();
+        newConvolver->init(headBlockSize, tailBlockSize, irBuf, numFrames);
+        newConvolver->start();
+
+        if (irBuf != ir)
+            delete[] irBuf;
+
+        drwav_free(ir, nullptr);
+
+        // swap active convolver
+        TwoStageThreadedConvolver* const oldconvolver = convolver;
+        convolver = newConvolver;
+
+        // if processing, wait for process cycle to complete
+        while (oldconvolver != nullptr && activeConvolver.load())
+            d_msleep(1);
+
+        delete oldconvolver;
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -469,10 +583,11 @@ protected:
     {
         aida.pregain.clearToTarget();
         aida.mastergain.clearToTarget();
+        convolverGain.clearToTarget();
 
         if (model != nullptr)
         {
-            running.store(true);
+            activeModel.store(true);
 
             std::visit (
                 [] (auto&& custom_model)
@@ -485,7 +600,7 @@ protected:
                 },
                 model->variant);
 
-            running.store(false);
+            activeModel.store(false);
         }
     }
 
@@ -496,6 +611,15 @@ protected:
     {
         const float* const in  = inputs[0];
         /* */ float* const out = outputs[0];
+
+        // optimize for non-denormal usage
+        for (uint32_t i = 0; i < numSamples; ++i)
+        {
+            if (!std::isfinite(in[i]))
+                __builtin_unreachable();
+            if (!std::isfinite(out[i]))
+                __builtin_unreachable();
+        }
 
         // High frequencies roll-off (lowpass)
         applyBiquadFilter(aida.in_lpf, out, in, numSamples);
@@ -509,13 +633,27 @@ protected:
 
         if (!aida.net_bypass && model != nullptr)
         {
-            running.store(true);
+            activeModel.store(true);
             applyModel(model, out, numSamples);
-            running.store(false);
+            activeModel.store(false);
         }
 
         // DC blocker filter (highpass)
         applyBiquadFilter(aida.dc_blocker, out, numSamples);
+
+        // Cabinet convolution
+        if (convolver != nullptr)
+        {
+            std::memcpy(convolverInplaceBuffer, out, sizeof(float)*numSamples);
+
+            activeConvolver.store(true);
+            convolver->process(convolverInplaceBuffer, out, numSamples);
+            activeConvolver.store(false);
+
+            // convolver smooth bypass and -12dB compensation
+            for (uint32_t i = 0; i < numSamples; ++i)
+                out[i] *= convolverGain.next() * DB_CO(-12);
+        }
 
         // Equalizer section
         if (!aida.eq_bypass && aida.eq_pos == kEqPost)
@@ -525,6 +663,12 @@ protected:
         applyGainRamp(aida.mastergain, out, numSamples);
     }
 
+    void bufferSizeChanged(const uint newBufferSize) override
+    {
+        delete[] convolverInplaceBuffer;
+        convolverInplaceBuffer = new float[newBufferSize];
+    }
+
    /**
       Optional callback to inform the plugin about a sample rate change.@n
       This function will only be called when the plugin is deactivated.
@@ -532,6 +676,16 @@ protected:
     void sampleRateChanged(const double newSampleRate) override
     {
         aida.setSampleRate(parameters, newSampleRate);
+
+        convolverGain.setSampleRate(newSampleRate);
+        // convolverGain.setTarget(parameters[kParameterCONVOLVERENABLE] > 0.5f ? 1.f : 0.f);
+
+        // reload convolver file
+        if (char* const filename = convolverFilename.getAndReleaseBuffer())
+        {
+            setState("ir", filename);
+            std::free(filename);
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------

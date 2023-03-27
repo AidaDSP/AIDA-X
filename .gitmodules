@@ -4,3 +4,9 @@
 [submodule "rtneural"]
 	path = rtneural
 	url = https://github.com/jatinchowdhury18/RTNeural.git
+[submodule "modules/FFTConvolver"]
+	path = modules/FFTConvolver
+	url = https://github.com/falkTX/FFTConvolver.git
+[submodule "modules/r8brain"]
+	path = modules/r8brain
+	url = https://github.com/avaneev/r8brain-free-src.git

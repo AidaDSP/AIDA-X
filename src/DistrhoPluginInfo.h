@@ -9,7 +9,7 @@
 
 #include "DistrhoDetails.hpp"
 
-#define DISTRHO_PLUGIN_BRAND   "Aida DSP"
+#define DISTRHO_PLUGIN_BRAND   "AIDA-X"
 #define DISTRHO_PLUGIN_NAME    "RT Neural Loader"
 #define DISTRHO_PLUGIN_URI     "http://aidadsp.cc/plugins/aidadsp-bundle/rt-neural-loader"
 #define DISTRHO_PLUGIN_CLAP_ID "cc.aidadsp.rt-neural-loader"
@@ -51,8 +51,15 @@ enum Parameters {
     kParameterDEPTH,
     kParameterPRESENCE,
     kParameterMASTER,
-    kParameterBYPASS,
+    kParameterCONVOLVERENABLE,
+    kParameterGLOBALBYPASS,
     kParameterCount
+};
+
+enum States {
+    kStateModelFile,
+    kStateImpulseFile,
+    kStateCount
 };
 
 enum EqPos {
@@ -83,8 +90,8 @@ static const ParameterEnumerationValue kBYPASS[2] = {
 static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 100.f, },
     { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", -6.f, -12.f, 0.f, },
-    { kParameterIsAutomatable|kParameterIsBoolean, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
-    { kParameterIsAutomatable|kParameterIsBoolean, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsInteger, "EQPOS", "EQPOS", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kEQPOS), kEQPOS },
     { kParameterIsAutomatable, "BASS", "BASS", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "BFREQ", "BFREQ", "Hz", 305.f, 75.f, 600.f, },
@@ -97,7 +104,8 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "DEPTH", "DEPTH", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "PRESENCE", "PRESENCE", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
-    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "dB", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CONVOLVERENABLE", "CONVOLVERENABLE", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);

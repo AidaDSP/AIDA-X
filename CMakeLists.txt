@@ -13,13 +13,18 @@ dpf_add_plugin(aidadsp-loader
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
+      modules/FFTConvolver/AudioFFT.cpp
+      modules/FFTConvolver/FFTConvolver.cpp
+      modules/FFTConvolver/TwoStageFFTConvolver.cpp
+      modules/FFTConvolver/Utilities.cpp
       src/aidadsp-plugin.cpp
+      src/3rd-party.cpp
   FILES_UI
       Artwork.cpp
       src/aidadsp-ui.cpp)
 
 target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
-target_include_directories(aidadsp-loader PUBLIC src rtneural ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(aidadsp-loader PUBLIC src modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 
 # convert images into code
 add_custom_command(

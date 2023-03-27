@@ -110,7 +110,7 @@ class AidaSwitch : public NanoSubWidget,
                    public ButtonEventHandler
 {
     NanoTopLevelWidget* const parent;
-    const ParameterEnumerationDetails& enumDetails;
+    const ParameterEnumerationValues& enumValues;
 
 public:
     static constexpr const uint kSwitchWidth = 25;
@@ -123,7 +123,7 @@ public:
         : NanoSubWidget(p),
           ButtonEventHandler(this),
           parent(p),
-          enumDetails(kParameters[paramId].enumValues)
+          enumValues(kParameters[paramId].enumValues)
     {
         const double scaleFactor = p->getScaleFactor();
         setSize(kFullWidth * scaleFactor, kSubWidgetsFullHeight * scaleFactor);
@@ -153,10 +153,10 @@ protected:
         fillColor(Color(1.f, 1.f, 1.f));
 
         textAlign(ALIGN_CENTER | ALIGN_TOP);
-        text(width/2, 0, enumDetails.values[0].label, nullptr);
+        text(width/2, 0, enumValues.values[0].label, nullptr);
 
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
-        text(width/2, height, enumDetails.values[1].label, nullptr);
+        text(width/2, height, enumValues.values[1].label, nullptr);
 
         beginPath();
         roundedRect(switchPadding, height/2 - switchHeight/2, switchWidth, switchHeight, switchRadius);
@@ -217,6 +217,64 @@ protected:
         strokeColor(Color(97, 97, 97, 0.484f));
         strokeWidth(width);
         stroke();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+class AidaFileButton : public NanoSubWidget,
+                       public ButtonEventHandler
+{
+    NanoTopLevelWidget* const parent;
+    const String label;
+
+public:
+    static constexpr const uint kButtonWidth = 110;
+    static constexpr const uint kButtonHeight = 30;
+    static constexpr const uint kButtonRadius = 4;
+
+    AidaFileButton(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, 
+                   const Parameters paramId, const char* const lbl)
+        : NanoSubWidget(p),
+          ButtonEventHandler(this),
+          parent(p),
+          label(lbl)
+    {
+        const double scaleFactor = p->getScaleFactor();
+        setSize(kButtonWidth * scaleFactor, kButtonHeight * scaleFactor);
+
+        setId(paramId);
+        setCallback(cb);
+    }
+
+protected:
+    void onNanoDisplay() override
+    {
+        const uint width = getWidth();
+        const uint height = getHeight();
+
+        const double scaleFactor = parent->getScaleFactor();
+        const double buttonRadius = kButtonRadius * scaleFactor;
+
+        beginPath();
+        roundedRect(0, 0, width, height, buttonRadius);
+        fillColor(Color(0, 0, 0));
+        fill();
+
+        fillColor(Color(1.f, 1.f, 1.f));
+        fontSize(16 * scaleFactor);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        text(width/2, height/2, label, nullptr);
+    }
+
+    bool onMouse(const MouseEvent& event) override
+    {
+        return ButtonEventHandler::mouseEvent(event);
+    }
+
+    bool onMotion(const MotionEvent& event) override
+    {
+        return ButtonEventHandler::motionEvent(event);
     }
 };
 

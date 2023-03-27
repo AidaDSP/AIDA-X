@@ -1,6 +1,5 @@
 /*
- * aidadsp-loader
- * Copyright (C) 2022-2023 Massimo Pennazio <maxipenna@libero.it>
+ * Aida-X DPF plugin
  * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -47,8 +46,19 @@ class AidaDSPLoaderUI : public UI,
     struct {
         ScopedPointer<AidaSplitter> s1, s2, s3;
     } splitters;
+    
+    struct {
+        ScopedPointer<AidaFileButton> model;
+        ScopedPointer<AidaFileButton> ir;
+    } filebuttons;
 
     HorizontalLayout subwidgetsLayout;
+
+    enum {
+        kFileLoaderNull,
+        kFileLoaderModel,
+        kFileLoaderImpulse,
+    } fileLoaderMode = kFileLoaderNull;
 
 public:
     /* constructor */
@@ -78,13 +88,16 @@ public:
         knobs.presence = new AidaKnob(this, this, images.knob, images.scale, kParameterPRESENCE);
         knobs.master = new AidaKnob(this, this, images.knob, images.scale, kParameterMASTER);
 
-        switches.bypass = new AidaSwitch(this, this, kParameterBYPASS);
+        switches.bypass = new AidaSwitch(this, this, kParameterGLOBALBYPASS);
         switches.eqpos = new AidaSwitch(this, this, kParameterEQPOS);
         switches.midtype = new AidaSwitch(this, this, kParameterMTYPE);
 
         splitters.s1 = new AidaSplitter(this);
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
+
+        filebuttons.model = new AidaFileButton(this, this, kParameterNETBYPASS, "Load model...");
+        filebuttons.ir = new AidaFileButton(this, this, kParameterCONVOLVERENABLE, "Load IR...");
 
         // Setup subwidgets layout
         subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
@@ -138,7 +151,7 @@ protected:
             // TODO
             break;
         case kParameterEQPOS:
-            // TODO
+            switches.eqpos->setChecked(value > 0.5f, false);
             break;
         case kParameterBASSGAIN:
             knobs.bass->setValue(value, false);
@@ -147,7 +160,7 @@ protected:
             knobs.middle->setValue(value, false);
             break;
         case kParameterMTYPE:
-            // TODO
+            switches.midtype->setChecked(value > 0.5f, false);
             break;
         case kParameterTREBLEGAIN:
             knobs.treble->setValue(value, false);
@@ -160,6 +173,12 @@ protected:
             break;
         case kParameterMASTER:
             knobs.master->setValue(value, false);
+            break;
+        case kParameterCONVOLVERENABLE:
+            // TODO
+            break;
+        case kParameterGLOBALBYPASS:
+            switches.bypass->setChecked(value > 0.5f, false);
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:
@@ -177,10 +196,6 @@ protected:
    /* -----------------------------------------------------------------------------------------------------------------
     * Widget Callbacks */
 
-   /**
-      The OpenGL drawing function.
-      This UI will draw a 3x3 grid, with on/off states according to plugin parameters.
-    */
     void onNanoDisplay() override
     {
         const GraphicsContext& ctx(getGraphicsContext());
@@ -299,43 +314,6 @@ protected:
         text(width/2, marginVertical + heightHead - marginHead, "neural profile player", nullptr);
     }
 
-    bool onMouse(const MouseEvent& event) override
-    {
-        if (UI::onMouse(event))
-            return true;
-
-        const uint width = getWidth();
-        const uint height = getHeight();
-
-        if (!event.press)
-            return false;
-
-        using namespace Artwork;
-
-        const Rectangle<uint> area(kPedalMargin, kPedalMargin, kPedalWidth, kPedalHeight);
-
-        if (area.contains(event.pos))
-        {
-            d_stdout("click!");
-
-            if (!requestStateFile("json"))
-            {
-                d_stdout("File through host failed, doing it manually");
-
-                DISTRHO_NAMESPACE::FileBrowserOptions opts;
-                opts.title = "Open AidaDSP model json";
-                if (!openFileBrowser(opts))
-                {
-                    d_stdout("Failed to open a file dialog!");
-                }
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
     void onResize(const ResizeEvent& event) override
     {
         UI::onResize(event);
@@ -363,15 +341,52 @@ protected:
                                                                height - marginVertical - margin - 110 * scaleFactor,
                                                                padding);
         subwidgetsLayout.setSize(maxHeight, 0);
+
+        filebuttons.model->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 20 * scaleFactor);
+        filebuttons.ir->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 80 * scaleFactor);
     }
 
     void buttonClicked(SubWidget* const widget, int button) override
     {
-        const float value = static_cast<AidaSwitch*>(widget)->isChecked() ? 1.f : 0.f;
+        const uint id = widget->getId();
 
-        editParameter(widget->getId(), true);
-        setParameterValue(widget->getId(), value);
-        editParameter(widget->getId(), false);
+        switch (id)
+        {
+        case kParameterEQPOS:
+        case kParameterMTYPE:
+            editParameter(id, true);
+            setParameterValue(id, static_cast<AidaSwitch*>(widget)->isChecked() ? 1.f : 0.f);
+            editParameter(id, false);
+            break;
+        case kParameterGLOBALBYPASS:
+            editParameter(id, true);
+            setParameterValue(id, static_cast<AidaSwitch*>(widget)->isChecked() ? 0.f : 1.f);
+            editParameter(id, false);
+            break;
+        case kParameterNETBYPASS:
+            fileLoaderMode = kFileLoaderModel;
+            requestStateFile("json", "Open AidaDSP model json");
+            break;
+        case kParameterCONVOLVERENABLE:
+            fileLoaderMode = kFileLoaderImpulse;
+            requestStateFile("ir", "Open Cabinet Simulator IR");
+            break;
+        }
+    }
+
+    void requestStateFile(const char* const stateKey, const char* const fallbackTitle)
+    {
+        if (UI::requestStateFile(stateKey))
+            return;
+
+        d_stdout("File through host failed, doing it manually");
+
+        DISTRHO_NAMESPACE::FileBrowserOptions opts;
+        opts.title = fallbackTitle;
+        if (!openFileBrowser(opts))
+        {
+            d_stdout("Failed to open a file dialog!");
+        }
     }
 
     void knobDragStarted(SubWidget* const widget) override
@@ -387,6 +402,31 @@ protected:
     void knobValueChanged(SubWidget* const widget, float value) override
     {
         setParameterValue(widget->getId(), value);
+    }
+
+   /**
+      Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().
+      This function is for plugin UIs to be able to override Window::onFileSelected(const char*).
+
+      This action happens after the user confirms the action, so the file browser dialog will be closed at this point.
+      The default implementation does nothing.
+    */
+    void uiFileBrowserSelected(const char* const filename) override
+    {
+        if (filename == nullptr)
+            return;
+
+        switch (fileLoaderMode)
+        {
+        case kFileLoaderModel:
+            setState("json", filename);
+            break;
+        case kFileLoaderImpulse:
+            setState("ir", filename);
+            break;
+        }
+
+        fileLoaderMode = kFileLoaderNull;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
