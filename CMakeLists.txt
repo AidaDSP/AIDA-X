@@ -16,7 +16,7 @@ add_subdirectory(dpf)
 add_subdirectory(rtneural)
 
 dpf_add_plugin(aidadsp-loader
-  TARGETS clap lv2 vst2 vst3 jack
+  TARGETS clap lv2 vst2 vst3
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
