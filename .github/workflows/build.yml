@@ -18,6 +18,8 @@ jobs:
           target: ${{ matrix.target }}
 
   macos:
+    env:
+      WELCOME_TXT: ${{ github.workspace }}/utils/macos-installer-welcome.txt
     strategy:
       matrix:
         target: [macos-universal-10.15]

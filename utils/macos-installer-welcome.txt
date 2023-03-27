@@ -1,0 +1,2 @@
+Aida-X is an audio plugin for loading neural models, using RTNeural inference engine.
+It is free and open-source, compatible with CLAP, LV2, VST2 and VST3 hosts.
