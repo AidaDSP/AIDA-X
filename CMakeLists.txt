@@ -2,7 +2,14 @@ cmake_minimum_required(VERSION 3.15)
 project(aidadsp-loader VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
-set(RTNEURAL_XSIMD ON CACHE BOOL "Use RTNeural with this backend")
+
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "armv7l" or CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+  set(PREFER_RTNEURAL_XSIMD FALSE)
+else()
+  set(PREFER_RTNEURAL_XSIMD TRUE)
+endif()
+
+set(RTNEURAL_XSIMD ${PREFER_RTNEURAL_XSIMD} CACHE BOOL "Use RTNeural with this backend")
 message("RTNEURAL_XSIMD in ${CMAKE_PROJECT_NAME} = ${RTNEURAL_XSIMD}")
 
 add_subdirectory(dpf)
@@ -13,24 +20,28 @@ dpf_add_plugin(aidadsp-loader
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
-      modules/FFTConvolver/AudioFFT.cpp
-      modules/FFTConvolver/FFTConvolver.cpp
-      modules/FFTConvolver/TwoStageFFTConvolver.cpp
-      modules/FFTConvolver/Utilities.cpp
-      src/aidadsp-plugin.cpp
-      src/3rd-party.cpp
+    modules/FFTConvolver/AudioFFT.cpp
+    modules/FFTConvolver/FFTConvolver.cpp
+    modules/FFTConvolver/TwoStageFFTConvolver.cpp
+    modules/FFTConvolver/Utilities.cpp
+    src/aidadsp-plugin.cpp
+    src/3rd-party.cpp
   FILES_UI
-      Artwork.cpp
-      src/aidadsp-ui.cpp)
+    Artwork.cpp
+    src/aidadsp-ui.cpp)
 
 target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
 target_include_directories(aidadsp-loader PUBLIC src modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 
 # convert images into code
 add_custom_command(
-    PRE_BUILD
-    COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Artwork ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
-    MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
-    OUTPUT Artwork.cpp
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  PRE_BUILD
+  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Artwork ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
+  OUTPUT Artwork.cpp
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# use threads
+find_package(Threads)
+target_link_libraries(aidadsp-loader PRIVATE ${CMAKE_THREAD_LIBS_INIT})
