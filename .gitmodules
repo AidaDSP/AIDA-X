@@ -1,0 +1,6 @@
+[submodule "dpf"]
+	path = dpf
+	url = https://github.com/DISTRHO/DPF.git
+[submodule "rtneural"]
+	path = rtneural
+	url = https://github.com/jatinchowdhury18/RTNeural.git
