@@ -47,6 +47,6 @@ find_package(Threads)
 target_link_libraries(aidadsp-loader PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # needed for enabling SSE in pffft under 32bit systems
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
   target_compile_definitions(aidadsp-loader PUBLIC i386)
 endif()
