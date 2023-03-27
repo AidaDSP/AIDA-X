@@ -15,6 +15,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          lto: true
           target: ${{ matrix.target }}
 
   macos:
@@ -30,6 +31,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          lto: true
           target: ${{ matrix.target }}
 
   windows:
@@ -43,6 +45,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          lto: true
           target: ${{ matrix.target }}
 
   pluginval:
