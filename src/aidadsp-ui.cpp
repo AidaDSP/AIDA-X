@@ -7,136 +7,10 @@
 
 #include "DistrhoUI.hpp"
 
-#include "Artwork.hpp"
-#include "EventHandlers.hpp"
-#include "ImageWidgets.hpp"
 #include "Layout.hpp"
+#include "Widgets.hpp"
 
 START_NAMESPACE_DISTRHO
-
-// --------------------------------------------------------------------------------------------------------------------
-
-class AidaKnob : public NanoSubWidget,
-                 public KnobEventHandler
-{
-    UI* const ui;
-    const NanoImage& knobImage;
-    const NanoImage& scaleImage;
-    const char* label;
-
-public:
-    static constexpr const uint kKnobSize = 55;
-    static constexpr const uint kKnobMargin = 17;
-    static constexpr const uint kScaleSize = 90;
-    static constexpr const uint kFullHeight = 100;
-
-    AidaKnob(UI* const ui_, KnobEventHandler::Callback* const cb,
-             const NanoImage& knobImg, const NanoImage& scaleImg, const Parameters paramId)
-        : NanoSubWidget(ui_),
-          KnobEventHandler(this),
-          ui(ui_),
-          knobImage(knobImg),
-          scaleImage(scaleImg)
-    {
-        const double scaleFactor = ui->getScaleFactor();
-        setSize(kScaleSize * scaleFactor, kFullHeight * scaleFactor);
-
-        const Parameter& param(kParameters[paramId]);
-        setId(paramId);
-        setRange(param.ranges.min, param.ranges.max);
-        setDefault(param.ranges.def);
-        setValue(param.ranges.def, false);
-        setCallback(cb);
-        label = param.name;
-    }
-
-protected:
-    void onNanoDisplay() override
-    {
-        const uint width = getWidth();
-        const uint height = getHeight();
-
-        const double scaleFactor = ui->getScaleFactor();
-        const double scaleSize = kScaleSize * scaleFactor;
-        const double knobSize = kKnobSize * scaleFactor;
-        const double knobHalfSize = knobSize / 2;
-        const double knobMargin = kKnobMargin * scaleFactor;
-
-        beginPath();
-        rect(0, 0, scaleSize, scaleSize);
-        fillPaint(imagePattern(0, 0, scaleSize, scaleSize, 0.f, scaleImage, 1.f));
-        fill();
-
-        strokeColor(Color(1.f, 1.f, 1.f));
-        fontSize(13.f * scaleFactor);
-        textAlign(ALIGN_CENTER | ALIGN_BASELINE);
-        text(width/2, height, label, nullptr);
-
-        const Paint knobImgPat = imagePattern(-knobHalfSize, -knobHalfSize, knobSize, knobSize, 0.f, knobImage, 1.f);
-
-        save();
-        translate(knobMargin + knobHalfSize, knobMargin + knobHalfSize);
-        rotate(degToRad(270.f * (getNormalizedValue() - 0.5f)));
-
-        beginPath();
-        rect(-knobHalfSize, -knobHalfSize, knobSize, knobSize);
-        fillPaint(knobImgPat);
-        fill();
-
-        restore();
-    }
-
-    bool onMouse(const MouseEvent& event) override
-    {
-        return KnobEventHandler::mouseEvent(event);
-    }
-
-    bool onMotion(const MotionEvent& event) override
-    {
-        return KnobEventHandler::motionEvent(event);
-    }
-
-    bool onScroll(const ScrollEvent& event) override
-    {
-        return KnobEventHandler::scrollEvent(event);
-    }
-};
-
-class AidaSplitter : public NanoSubWidget
-{
-    UI* const ui;
-
-public:
-    static constexpr const uint kLineWidth = 4;
-    static constexpr const uint kLineHeight = 80;
-    static constexpr const uint kFullHeight = 100;
-
-    AidaSplitter(UI* const ui_)
-        : NanoSubWidget(ui_),
-          ui(ui_)
-    {
-        const double scaleFactor = ui->getScaleFactor();
-        setSize(kLineWidth * scaleFactor, kFullHeight * scaleFactor);
-    }
-
-protected:
-    void onNanoDisplay() override
-    {
-        const uint width = getWidth();
-        const uint height = getHeight();
-
-        const double scaleFactor = ui->getScaleFactor();
-        const double lineHeight = kLineHeight * scaleFactor;
-
-        beginPath();
-        moveTo(width/2, height/2 - lineHeight/2);
-        lineTo(width/2, height/2 + lineHeight/2);
-        lineCap(ROUND);
-        strokeColor(Color(97, 97, 97, 0.484f));
-        strokeWidth(width);
-        stroke();
-    }
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -385,7 +259,7 @@ protected:
         // TODO
     }
 
-    bool onMouse(const MouseEvent& event)
+    bool onMouse(const MouseEvent& event) override
     {
         if (UI::onMouse(event))
             return true;
