@@ -14,6 +14,7 @@
 
 START_NAMESPACE_DISTRHO
 
+static constexpr const uint kSubWidgetsFontSize = 14;
 static constexpr const uint kSubWidgetsFullHeight = 100;
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -69,7 +70,7 @@ protected:
         fill();
 
         strokeColor(Color(1.f, 1.f, 1.f));
-        fontSize(13.f * scaleFactor);
+        fontSize(kSubWidgetsFontSize * scaleFactor);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(width/2, height, label, nullptr);
 
@@ -100,6 +101,85 @@ protected:
     bool onScroll(const ScrollEvent& event) override
     {
         return KnobEventHandler::scrollEvent(event);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+class AidaSwitch : public NanoSubWidget,
+                   public ButtonEventHandler
+{
+    NanoTopLevelWidget* const parent;
+    const ParameterEnumerationDetails& enumDetails;
+
+public:
+    static constexpr const uint kSwitchWidth = 25;
+    static constexpr const uint kSwitchHeight = 60;
+    static constexpr const uint kSwitchPadding = 8;
+    static constexpr const uint kSwitchRadius = kSwitchWidth / 2;
+    static constexpr const uint kFullWidth = kSwitchWidth + kSwitchPadding * 2;
+
+    AidaSwitch(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, const Parameters paramId)
+        : NanoSubWidget(p),
+          ButtonEventHandler(this),
+          parent(p),
+          enumDetails(kParameters[paramId].enumValues)
+    {
+        const double scaleFactor = p->getScaleFactor();
+        setSize(kFullWidth * scaleFactor, kSubWidgetsFullHeight * scaleFactor);
+
+        const Parameter& param(kParameters[paramId]);
+        setId(paramId);
+        setCheckable(true);
+        setCallback(cb);
+    }
+
+protected:
+    void onNanoDisplay() override
+    {
+        const uint width = getWidth();
+        const uint height = getHeight();
+
+        const double scaleFactor = parent->getScaleFactor();
+        const double switchWidth = kSwitchWidth * scaleFactor;
+        const double switchHeight = kSwitchHeight * scaleFactor;
+        const double switchPadding = kSwitchPadding * scaleFactor;
+        const double switchRadius = kSwitchRadius * scaleFactor;
+
+        beginPath();
+        rect(0, 0, width, height);
+
+        fontSize(kSubWidgetsFontSize * scaleFactor);
+        fillColor(Color(1.f, 1.f, 1.f));
+
+        textAlign(ALIGN_CENTER | ALIGN_TOP);
+        text(width/2, 0, enumDetails.values[0].label, nullptr);
+
+        textAlign(ALIGN_CENTER | ALIGN_BASELINE);
+        text(width/2, height, enumDetails.values[1].label, nullptr);
+
+        beginPath();
+        roundedRect(switchPadding, height/2 - switchHeight/2, switchWidth, switchHeight, switchRadius);
+        fillColor(Color(129, 247, 0));
+        fill();
+
+        beginPath();
+        circle(width / 2,
+               isChecked() ? height/2 - switchHeight/2 + switchWidth/2
+                           : height/2 + switchHeight/2 - switchWidth/2,
+               10 * scaleFactor);
+        fillColor(Color(24, 112, 4));
+        fill();
+    }
+
+    bool onMouse(const MouseEvent& event) override
+    {
+        return ButtonEventHandler::mouseEvent(event);
+    }
+
+    bool onMotion(const MotionEvent& event) override
+    {
+        return ButtonEventHandler::motionEvent(event);
     }
 };
 

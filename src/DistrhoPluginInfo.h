@@ -51,6 +51,7 @@ enum Parameters {
     kParameterDEPTH,
     kParameterPRESENCE,
     kParameterMASTER,
+    kParameterBYPASS,
     kParameterCount
 };
 
@@ -74,6 +75,11 @@ static const ParameterEnumerationValue kMTYPE[2] = {
     { kMidEqBandpass, "BANDPASS" }
 };
 
+static const ParameterEnumerationValue kBYPASS[2] = {
+    { 0.f, "ON" },
+    { 1.f, "OFF" }
+};
+
 static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 100.f, },
     { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", -6.f, -12.f, 0.f, },
@@ -91,6 +97,7 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "DEPTH", "DEPTH", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "PRESENCE", "PRESENCE", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "dB", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);

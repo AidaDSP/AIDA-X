@@ -15,11 +15,14 @@ START_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 class AidaDSPLoaderUI : public UI,
+                        public ButtonEventHandler::Callback,
                         public KnobEventHandler::Callback
 {
     float parameters[kNumParameters];
 
     struct {
+        NanoImage aida;
+        NanoImage ax;
         NanoImage background;
         NanoImage knob;
         NanoImage scale;
@@ -34,6 +37,12 @@ class AidaDSPLoaderUI : public UI,
         ScopedPointer<AidaKnob> presence;
         ScopedPointer<AidaKnob> master;
     } knobs;
+
+    struct {
+        ScopedPointer<AidaSwitch> bypass;
+        ScopedPointer<AidaSwitch> eqpos;
+        ScopedPointer<AidaSwitch> midtype;
+    } switches;
 
     struct {
         ScopedPointer<AidaSplitter> s1, s2, s3;
@@ -52,10 +61,13 @@ public:
 
         // Load resources
         using namespace Artwork;
+        images.aida = createImageFromMemory(aidaData, aidaDataSize, IMAGE_GENERATE_MIPMAPS);
+        images.ax = createImageFromMemory(axData, axDataSize, IMAGE_GENERATE_MIPMAPS);
         images.background = createImageFromMemory(backgroundData, backgroundDataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
         images.knob = createImageFromMemory(knobData, knobDataSize, IMAGE_GENERATE_MIPMAPS);
         images.scale = createImageFromMemory(scaleData, scaleDataSize, IMAGE_GENERATE_MIPMAPS);
-        fontFaceId(createFontFromMemory("conthrax", conthrax_sbData, conthrax_sbDataSize, false));
+        // fontFaceId(createFontFromMemory("conthrax", conthrax_sbData, conthrax_sbDataSize, false));
+        loadSharedResources();
 
         // Create subwidgets
         knobs.pregain = new AidaKnob(this, this, images.knob, images.scale, kParameterPREGAIN);
@@ -66,13 +78,20 @@ public:
         knobs.presence = new AidaKnob(this, this, images.knob, images.scale, kParameterPRESENCE);
         knobs.master = new AidaKnob(this, this, images.knob, images.scale, kParameterMASTER);
 
+        switches.bypass = new AidaSwitch(this, this, kParameterBYPASS);
+        switches.eqpos = new AidaSwitch(this, this, kParameterEQPOS);
+        switches.midtype = new AidaSwitch(this, this, kParameterMTYPE);
+
         splitters.s1 = new AidaSplitter(this);
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
         // Setup subwidgets layout
+        subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.pregain, Fixed });
         subwidgetsLayout.widgets.push_back({ splitters.s1, Fixed });
+        subwidgetsLayout.widgets.push_back({ switches.eqpos, Fixed });
+        subwidgetsLayout.widgets.push_back({ switches.midtype, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.bass, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.middle, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.treble, Fixed });
@@ -179,8 +198,6 @@ protected:
         const double marginHorizontal = (width - widthPedal) / 2;
         const double marginVertical = (height - heightPedal) / 2;
 
-        using namespace Artwork;
-
         // outer bounds gradient
         beginPath();
         rect(0, 0, width, height);
@@ -222,6 +239,8 @@ protected:
         stroke();
 
         // .rt-neural .background_head
+        const Size<uint> headBgSize(images.background.getSize() / 2 * scaleFactor);
+
         beginPath();
         roundedRect(marginHorizontal + marginHead,
                     marginVertical + marginHead,
@@ -238,8 +257,8 @@ protected:
 
         fillPaint(imagePattern(marginHorizontal + marginHead,
                                marginVertical + marginHead,
-                               images.background.getSize().getWidth() / 2 * scaleFactor,
-                               images.background.getSize().getHeight() / 2 * scaleFactor,
+                               headBgSize.getWidth(),
+                               headBgSize.getHeight(),
                                0.f, images.background, 1.f));
         fill();
 
@@ -253,10 +272,31 @@ protected:
         fill();
 
         // .rt-neural .brand
-        // TODO
+        const Size<uint> aidaLogoSize(111 * scaleFactor, 25 * scaleFactor);
+
+        save();
+        translate(marginHorizontal + marginHead * 2, marginVertical + headBgSize.getHeight());
+        beginPath();
+        rect(0, 0, aidaLogoSize.getWidth(), aidaLogoSize.getHeight());
+        fillPaint(imagePattern(0, 0, aidaLogoSize.getWidth(), aidaLogoSize.getHeight(), 0.f, images.aida, 1.f));
+        fill();
+        restore();
 
         // .rt-neural .plate
-        // TODO
+        const Size<uint> axLogoSize(250 * scaleFactor, 96 * scaleFactor);
+
+        save();
+        translate(width/2 - axLogoSize.getWidth()/2, marginVertical + marginHead + headBgSize.getHeight() / 6);
+        beginPath();
+        rect(0, 0, axLogoSize.getWidth(), axLogoSize.getHeight());
+        fillPaint(imagePattern(0, 0, axLogoSize.getWidth(), axLogoSize.getHeight(), 0.f, images.ax, 1.f));
+        fill();
+        restore();
+
+        fillColor(Color(0x0c, 0x2f, 0x03, 0.686f));
+        fontSize(24 * scaleFactor);
+        textAlign(ALIGN_CENTER | ALIGN_BASELINE);
+        text(width/2, marginVertical + heightHead - marginHead, "neural profile player", nullptr);
     }
 
     bool onMouse(const MouseEvent& event) override
@@ -316,12 +356,22 @@ protected:
 
         const uint unusedSpace = widthPedal
                                - (AidaKnob::kScaleSize * scaleFactor * 7)
+                               - (AidaSwitch::kFullWidth  * scaleFactor * 3)
                                - (AidaSplitter::kLineWidth * scaleFactor * 3);
-        const uint padding = unusedSpace / 10;
+        const uint padding = unusedSpace / 14;
         const uint maxHeight = subwidgetsLayout.setAbsolutePos(marginHorizontal + margin,
                                                                height - marginVertical - margin - 110 * scaleFactor,
                                                                padding);
         subwidgetsLayout.setSize(maxHeight, 0);
+    }
+
+    void buttonClicked(SubWidget* const widget, int button) override
+    {
+        const float value = static_cast<AidaSwitch*>(widget)->isChecked() ? 1.f : 0.f;
+
+        editParameter(widget->getId(), true);
+        setParameterValue(widget->getId(), value);
+        editParameter(widget->getId(), false);
     }
 
     void knobDragStarted(SubWidget* const widget) override
