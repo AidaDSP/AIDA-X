@@ -175,6 +175,7 @@ class AidaDSPLoaderPlugin : public Plugin
     DynamicModel* model = nullptr;
     std::atomic<bool> running { false };
     float parameters[kNumParameters];
+    bool bypassed = false;
 
 public:
     AidaDSPLoaderPlugin()
@@ -363,7 +364,15 @@ protected:
             aida.presence.setPeakGain(value);
             break;
         case kParameterMASTER:
-            aida.mastergain.setTarget(DB_CO(value));
+            if (!bypassed)
+                aida.mastergain.setTarget(DB_CO(value));
+            break;
+        case kParameterBYPASS:
+            bypassed = value > 0.5f;
+            if (bypassed)
+                aida.mastergain.setTarget(0.f);
+            else
+                aida.mastergain.setTarget(parameters[kParameterMASTER]);
             break;
         case kParameterCount:
             break;
