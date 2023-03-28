@@ -7,6 +7,8 @@
 #include "DistrhoUI.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 
+#include "Graphics.hpp"
+
 #include "Layout.hpp"
 #include "Widgets.hpp"
 
@@ -88,7 +90,7 @@ public:
             parameters[i] = kParameters[i].ranges.def;
 
         // Load resources
-        using namespace Artwork;
+        using namespace Graphics;
         images.aida = createImageFromMemory(aidaData, aidaDataSize, IMAGE_GENERATE_MIPMAPS);
         images.ax = createImageFromMemory(axData, axDataSize, IMAGE_GENERATE_MIPMAPS);
         images.background = createImageFromMemory(backgroundData, backgroundDataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
@@ -212,6 +214,10 @@ protected:
             break;
         case kParameterGLOBALBYPASS:
             switches.bypass->setChecked(value < 0.5f, false);
+            break;
+        case kParameterReportModelType:
+            break;
+        case kParameterReportCabinetLength:
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:

@@ -20,6 +20,7 @@ dpf_add_plugin(aida-x-plugin
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
+    Files.cpp
     modules/FFTConvolver/AudioFFT.cpp
     modules/FFTConvolver/FFTConvolver.cpp
     modules/FFTConvolver/TwoStageFFTConvolver.cpp
@@ -28,7 +29,7 @@ dpf_add_plugin(aida-x-plugin
     src/Biquad.cpp
     src/3rd-party.cpp
   FILES_UI
-    Artwork.cpp
+    Graphics.cpp
     src/aidadsp-ui.cpp)
 
 dpf_add_plugin(aida-x-standalone
@@ -36,6 +37,7 @@ dpf_add_plugin(aida-x-standalone
     #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
+    Files.cpp
     modules/FFTConvolver/AudioFFT.cpp
     modules/FFTConvolver/FFTConvolver.cpp
     modules/FFTConvolver/TwoStageFFTConvolver.cpp
@@ -44,19 +46,27 @@ dpf_add_plugin(aida-x-standalone
     src/Biquad.cpp
     src/3rd-party.cpp
   FILES_UI
-    Artwork.cpp
+    Graphics.cpp
     src/aidadsp-ui.cpp)
 
 target_include_directories(aida-x-plugin PUBLIC src src/plugin modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(aida-x-standalone PUBLIC src src/standalone modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
 
-# convert images into code
+# convert data into code
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Artwork ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Files ${CMAKE_SOURCE_DIR}/files ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/files
+  OUTPUT Files.cpp
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+add_custom_command(
+  PRE_BUILD
+  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
-  OUTPUT Artwork.cpp
+  OUTPUT Graphics.cpp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 

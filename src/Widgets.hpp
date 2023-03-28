@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "Artwork.hpp"
 #include "EventHandlers.hpp"
 #include "ImageWidgets.hpp"
 

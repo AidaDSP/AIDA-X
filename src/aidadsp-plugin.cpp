@@ -9,11 +9,13 @@
 
 #include "Biquad.h"
 #include "ExpSmoother.hpp"
+#include "Files.hpp"
 
 #include "model_variant.hpp"
 #include "extra/Sleep.hpp"
 
 #include <atomic>
+#include <strstream>
 
 #include "dr_flac.h"
 #include "dr_wav.h"
@@ -93,6 +95,7 @@ struct AidaToneControl {
 struct DynamicModel {
     ModelVariantType variant;
     bool input_skip; /* Means the model has been trained with first input element skipped to the output */
+    float input_gain;
     float output_gain;
 };
 
@@ -145,10 +148,11 @@ static void applyToneControls(AidaToneControl& aida, float* const out, uint32_t 
 void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
 {
     const bool input_skip = model->input_skip;
+    const float input_gain = model->input_gain;
     const float output_gain = model->output_gain;
 
     std::visit(
-        [&input_skip, &out, numSamples, output_gain] (auto&& custom_model)
+        [&input_skip, &out, numSamples, input_gain, output_gain] (auto&& custom_model)
         {
             using ModelType = std::decay_t<decltype (custom_model)>;
             if constexpr (ModelType::input_size == 1)
@@ -157,12 +161,18 @@ void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
                 if (input_skip)
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
                         out[i] += custom_model.forward(out + i) * output_gain;
+                    }
                 }
                 else
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
                         out[i] = custom_model.forward(out + i) * output_gain;
+                    }
                 }
             }
             else
@@ -183,11 +193,12 @@ class AidaDSPLoaderPlugin : public Plugin
     TwoStageThreadedConvolver* convolver = nullptr;
     std::atomic<bool> activeModel { false };
     std::atomic<bool> activeConvolver { false };
-    float* convolverInplaceBuffer = nullptr;
-    ExpSmoother convolverGain;
     String convolverFilename;
+    ExpSmoother convolverGain;
+    float* convolverInplaceBuffer = nullptr;
+    ExpSmoother bypassGain;
+    float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
-    bool bypassed = false;
 
 public:
     AidaDSPLoaderPlugin()
@@ -197,18 +208,26 @@ public:
         for (uint i=0; i<kNumParameters; ++i)
             parameters[i] = kParameters[i].ranges.def;
 
+        bypassGain.setTimeConstant(1);
+        bypassGain.setTarget(1.f);
+
         convolverGain.setTimeConstant(1);
         convolverGain.setTarget(1.f);
 
         // initialize
         bufferSizeChanged(getBufferSize());
         sampleRateChanged(getSampleRate());
+
+        // load default files
+        loadDefaultCabinet();
+        loadDefaultModel();
     }
 
     ~AidaDSPLoaderPlugin()
     {
         delete model;
         delete convolver;
+        delete[] bypassInplaceBuffer;
         delete[] convolverInplaceBuffer;
     }
 
@@ -404,18 +423,13 @@ protected:
             aida.presence.setPeakGain(value);
             break;
         case kParameterMASTER:
-            if (!bypassed)
-                aida.mastergain.setTarget(DB_CO(value));
+            aida.mastergain.setTarget(DB_CO(value));
             break;
         case kParameterCONVOLVERENABLE:
             convolverGain.setTarget(value > 0.5f ? 1.f : 0.f);
             break;
         case kParameterGLOBALBYPASS:
-            bypassed = value > 0.5f;
-            if (bypassed)
-                aida.mastergain.setTarget(0.f);
-            else
-                aida.mastergain.setTarget(DB_CO(parameters[kParameterMASTER]));
+            bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
             break;
         case kParameterReportModelType:
         case kParameterReportCabinetLength:
@@ -432,15 +446,43 @@ protected:
             return loadImpulseFromFile(value);
     }
 
+   /* -----------------------------------------------------------------------------------------------------------------
+    * Model loader */
+
+    void loadDefaultModel()
+    {
+        using namespace Files;
+
+        try {
+            std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(US_Double_Nrm_ModelData)),
+                                       US_Double_Nrm_ModelDataSize);
+            loadModelFromStream(jsonStream);
+        }
+        catch (const std::exception& e) {
+            d_stderr2("Unable to load json, error: %s", e.what());
+        };
+    }
+
     void loadModelFromFile(const char* const filename)
     {
+        try {
+            std::ifstream jsonStream(filename, std::ifstream::binary);
+            loadModelFromStream(jsonStream);
+        }
+        catch (const std::exception& e) {
+            d_stderr2("Unable to load json file: %s\nError: %s", filename, e.what());
+        };
+    }
+
+    void loadModelFromStream(std::istream& jsonStream)
+    {
         int input_skip;
+        float input_gain;
         float output_gain;
         nlohmann::json model_json;
         ReportModelType model_type;
 
         try {
-            std::ifstream jsonStream(filename, std::ifstream::binary);
             jsonStream >> model_json;
 
             /* Understand which model type to load */
@@ -457,6 +499,13 @@ protected:
                 input_skip = 0;
             }
 
+            if (model_json["in_gain"].is_number()) {
+                input_gain = DB_CO(model_json["in_gain"].get<float>());
+            }
+            else {
+                input_gain = 1.0f;
+            }
+
             if (model_json["out_gain"].is_number()) {
                 output_gain = DB_CO(model_json["out_gain"].get<float>());
             }
@@ -466,11 +515,9 @@ protected:
 
             // TODO
             model_type = kReportModelStandard;
-
-            d_stdout("Successfully loaded json file: %s", filename);
         }
         catch (const std::exception& e) {
-            d_stderr2("Unable to load json file: %s\nError: %s", filename, e.what());
+            d_stderr2("Unable to load json, error: %s", e.what());
             return;
         }
 
@@ -499,6 +546,7 @@ protected:
 
         // save extra info
         newmodel->input_skip = input_skip != 0;
+        newmodel->input_gain = input_gain;
         newmodel->output_gain = output_gain;
 
         // Pre-buffer to avoid "clicks" during initialization
@@ -518,6 +566,28 @@ protected:
         delete oldmodel;
     }
 
+   /* -----------------------------------------------------------------------------------------------------------------
+    * Cabinet loader */
+
+    void loadDefaultCabinet()
+    {
+        using namespace Files;
+
+        uint channels;
+        uint sampleRate;
+        drwav_uint64 numFrames;
+        float* const ir = drwav_open_memory_and_read_pcm_frames_f32(US_Double_Nrm_CabData,
+                                                                    US_Double_Nrm_CabDataSize,
+                                                                    &channels,
+                                                                    &sampleRate,
+                                                                    &numFrames,
+                                                                    nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(ir != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(channels == 1,);
+
+        loadImpulse(channels, sampleRate, numFrames, ir);
+    }
+
     void loadImpulseFromFile(const char* const filename)
     {
         uint channels;
@@ -532,6 +602,13 @@ protected:
             ir = drwav_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
         DISTRHO_SAFE_ASSERT_RETURN(ir != nullptr,);
 
+        loadImpulse(channels, sampleRate, numFrames, ir);
+
+        convolverFilename = filename;
+    }
+
+    void loadImpulse(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
+    {
         float* irBuf;
         if (channels == 1)
         {
@@ -549,19 +626,16 @@ protected:
 
         if (sampleRate != hostSampleRate)
         {
-            r8b::CDSPResampler16IR resampler(sampleRate, getSampleRate(), numFrames);
+            r8b::CDSPResampler16IR resampler(sampleRate, hostSampleRate, numFrames);
             const int numResampledFrames = resampler.getMaxOutLen(0);
             DISTRHO_SAFE_ASSERT_RETURN(numResampledFrames > 0,);
 
             float* const irBufResampled = new float[numResampledFrames];
-            resampler.oneshot(irBuf, numFrames, irBufResampled, numResampledFrames);
-            delete[] irBuf;
+            resampler.oneshot(ir, numFrames, irBufResampled, numResampledFrames);
             irBuf = irBufResampled;
 
             numFrames = numResampledFrames;
         }
-
-        convolverFilename = filename;
 
         TwoStageThreadedConvolver* const newConvolver = new TwoStageThreadedConvolver();
         newConvolver->init(headBlockSize, tailBlockSize, irBuf, numFrames);
@@ -595,6 +669,7 @@ protected:
     {
         aida.pregain.clearToTarget();
         aida.mastergain.clearToTarget();
+        bypassGain.clearToTarget();
         convolverGain.clearToTarget();
 
         if (model != nullptr)
@@ -632,6 +707,9 @@ protected:
             if (!std::isfinite(out[i]))
                 __builtin_unreachable();
         }
+
+        // Copy input for bypass buffer
+        std::memcpy(bypassInplaceBuffer, in, sizeof(float)*numSamples);
 
         // High frequencies roll-off (lowpass)
         applyBiquadFilter(aida.in_lpf, out, in, numSamples);
@@ -674,6 +752,13 @@ protected:
         // Master volume
         applyGainRamp(aida.mastergain, out, numSamples);
 
+        // Bypass
+        for (uint32_t i = 0; i < numSamples; ++i)
+        {
+            const float b = bypassGain.next();
+            out[i] = out[i] * b + bypassInplaceBuffer[i] * (1.f - b);
+        }
+
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         std::memcpy(outputs[1], out, sizeof(float)*numSamples);
        #endif
@@ -681,7 +766,9 @@ protected:
 
     void bufferSizeChanged(const uint newBufferSize) override
     {
+        delete[] bypassInplaceBuffer;
         delete[] convolverInplaceBuffer;
+        bypassInplaceBuffer = new float[newBufferSize];
         convolverInplaceBuffer = new float[newBufferSize];
     }
 
@@ -693,6 +780,7 @@ protected:
     {
         aida.setSampleRate(parameters, newSampleRate);
 
+        bypassGain.setSampleRate(newSampleRate);
         convolverGain.setSampleRate(newSampleRate);
         // convolverGain.setTarget(parameters[kParameterCONVOLVERENABLE] > 0.5f ? 1.f : 0.f);
 
