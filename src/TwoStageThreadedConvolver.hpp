@@ -6,10 +6,13 @@
 
 #pragma once
 
-#include "Semaphore.hpp"
-#include "extra/Thread.hpp"
-
-#include "TwoStageFFTConvolver.h"
+#ifndef DISTRHO_OS_WASM
+# include "Semaphore.hpp"
+# include "extra/Thread.hpp"
+# include "TwoStageFFTConvolver.h"
+#else
+# include "TwoStageFFTConvolver.h"
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -18,6 +21,7 @@ static constexpr const size_t tailBlockSize = 1024;
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_WASM
 class TwoStageThreadedConvolver : public fftconvolver::TwoStageFFTConvolver,
                                   private Thread
 {
@@ -78,6 +82,27 @@ protected:
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TwoStageThreadedConvolver)
 };
+#else
+class TwoStageThreadedConvolver : public fftconvolver::FFTConvolver
+{
+public:
+    TwoStageThreadedConvolver()
+        : fftconvolver::FFTConvolver() {}
+
+    bool init(const size_t headBlockSize, size_t, const fftconvolver::Sample* const ir, const size_t irLen)
+    {
+        return fftconvolver::FFTConvolver::init(headBlockSize, ir, irLen);
+    }
+
+    void start()
+    {
+    }
+
+    void stop()
+    {
+    }
+};
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 

@@ -430,11 +430,11 @@ protected:
             break;
         case kButtonLoadModel:
             fileLoaderMode = kFileLoaderModel;
-            requestStateFile("json", "Open AidaDSP model json");
+            requestStateFile("json", "model.json", "Open AidaDSP model json");
             break;
         case kButtonLoadCabinet:
             fileLoaderMode = kFileLoaderImpulse;
-            requestStateFile("ir", "Open Cabinet Simulator IR");
+            requestStateFile("ir", "cab-ir.wav", "Open Cabinet Simulator IR");
             break;
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
@@ -443,15 +443,18 @@ protected:
         }
     }
 
-    void requestStateFile(const char* const stateKey, const char* const fallbackTitle)
+    void requestStateFile(const char* const stateKey, const char* const defaultName, const char* const title)
     {
+       #ifndef DISTRHO_OS_WASM
         if (UI::requestStateFile(stateKey))
             return;
-
         d_stdout("File through host failed, doing it manually");
+       #endif
 
         DISTRHO_NAMESPACE::FileBrowserOptions opts;
-        opts.title = fallbackTitle;
+        opts.defaultName = defaultName;
+        opts.title = title;
+
         if (!openFileBrowser(opts))
         {
             d_stdout("Failed to open a file dialog!");
