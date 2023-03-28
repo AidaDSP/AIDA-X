@@ -25,6 +25,7 @@ dpf_add_plugin(aidadsp-loader
     modules/FFTConvolver/TwoStageFFTConvolver.cpp
     modules/FFTConvolver/Utilities.cpp
     src/aidadsp-plugin.cpp
+    src/Biquad.cpp
     src/3rd-party.cpp
   FILES_UI
     Artwork.cpp

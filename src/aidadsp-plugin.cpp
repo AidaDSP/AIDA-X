@@ -7,7 +7,7 @@
 
 #include "DistrhoPlugin.hpp"
 
-#include "Biquad.cpp"
+#include "Biquad.h"
 #include "ExpSmoother.hpp"
 
 #include "model_variant.hpp"

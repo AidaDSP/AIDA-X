@@ -178,7 +178,7 @@ protected:
             // TODO
             break;
         case kParameterGLOBALBYPASS:
-            switches.bypass->setChecked(value > 0.5f, false);
+            switches.bypass->setChecked(value < 0.5f, false);
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:
@@ -217,8 +217,8 @@ protected:
         beginPath();
         rect(0, 0, width, height);
         fillPaint(linearGradient(0, 0, 0, height,
-                                 Color::fromHTML("#cdff05").plus(50),
-                                 Color::fromHTML("#8bf700").plus(50)));
+                                 Color(0xcd, 0xff, 0x05).plus(50),
+                                 Color(0x8b, 0xf7, 0x00).plus(50)));
         fill();
 
         // outer bounds inner shadow matching host color, if provided
@@ -266,8 +266,8 @@ protected:
                                  marginVertical + marginHead,
                                  marginHorizontal + marginHead,
                                  marginVertical + heightHead,
-                                 Color::fromHTML("#8bf700"),
-                                 Color::fromHTML("#cdff05")));
+                                 Color(0x8b, 0xf7, 0x00),
+                                 Color(0xcd, 0xff, 0x05)));
         fill();
 
         fillPaint(imagePattern(marginHorizontal + marginHead,
@@ -311,7 +311,7 @@ protected:
         fillColor(Color(0x0c, 0x2f, 0x03, 0.686f));
         fontSize(24 * scaleFactor);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
-        text(width/2, marginVertical + heightHead - marginHead, "neural profile player", nullptr);
+        text(width/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
     }
 
     void onResize(const ResizeEvent& event) override

@@ -131,6 +131,7 @@ public:
         const Parameter& param(kParameters[paramId]);
         setId(paramId);
         setCheckable(true);
+        setChecked(paramId == kParameterGLOBALBYPASS ? param.ranges.def < 0.5f : param.ranges.def > 0.5f, false);
         setCallback(cb);
     }
 
