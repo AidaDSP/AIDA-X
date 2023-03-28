@@ -13,20 +13,20 @@ NAME = Aida-X
 # Files to build
 
 FILES_DSP = \
-	../3rd-party.cpp \
-	../aidadsp-plugin.cpp \
-	../Biquad.cpp \
-	../../build/Files.cpp \
-	../../modules/FFTConvolver/AudioFFT.cpp \
-	../../modules/FFTConvolver/FFTConvolver.cpp \
-	../../modules/FFTConvolver/TwoStageFFTConvolver.cpp \
-	../../modules/FFTConvolver/Utilities.cpp \
-	../../modules/r8brain/pffft.cpp \
-	../../modules/r8brain/r8bbase.cpp
+	aidadsp-plugin.cpp \
+	3rd-party.cpp \
+	AudioFFT.cpp \
+	Biquad.cpp \
+	FFTConvolver.cpp \
+	Files.cpp \
+	TwoStageFFTConvolver.cpp \
+	Utilities.cpp \
+	pffft.cpp \
+	r8bbase.cpp
 
 FILES_UI  = \
-	../aidadsp-ui.cpp \
-	../../build/Graphics.cpp
+	aidadsp-ui.cpp \
+	Graphics.cpp
 
 ifeq ($(WINDOWS),true)
 FILES_UI += ax.rc
@@ -55,11 +55,25 @@ BUILD_CXX_FLAGS += -I../../modules/FFTConvolver
 BUILD_CXX_FLAGS += -I../../modules/dr_libs
 BUILD_CXX_FLAGS += -I../../modules/r8brain
 BUILD_CXX_FLAGS += -I../../modules/rtneural
+# BUILD_CXX_FLAGS += -I../../modules/rtneural/RTNeural
+
+# BUILD_CXX_FLAGS += -DRTNEURAL_USE_EIGEN=1
+# BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/Eigen
+
+BUILD_CXX_FLAGS += -DRTNEURAL_USE_XSIMD=1
+BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/xsimd/include
+
+ifeq ($(CPU_I386),true)
+# needed for enabling SSE in pffft
+BUILD_CXX_FLAGS += -Di386
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for emscripten
 
 ifeq ($(WASM),true)
+
+# BUILD_CXX_FLAGS += -DEIGEN_DONT_VECTORIZE=1
 
 LINK_FLAGS += -O3
 LINK_FLAGS += -sALLOW_MEMORY_GROWTH
