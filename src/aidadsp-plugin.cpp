@@ -673,6 +673,10 @@ protected:
 
         // Master volume
         applyGainRamp(aida.mastergain, out, numSamples);
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        std::memcpy(outputs[1], out, sizeof(float)*numSamples);
+       #endif
     }
 
     void bufferSizeChanged(const uint newBufferSize) override
