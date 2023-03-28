@@ -111,6 +111,7 @@ class AidaSwitch : public NanoSubWidget,
 {
     NanoTopLevelWidget* const parent;
     const ParameterEnumerationValues& enumValues;
+    const bool isInverted;
 
 public:
     static constexpr const uint kSwitchWidth = 25;
@@ -123,7 +124,8 @@ public:
         : NanoSubWidget(p),
           ButtonEventHandler(this),
           parent(p),
-          enumValues(kParameters[paramId].enumValues)
+          enumValues(kParameters[paramId].enumValues),
+          isInverted(paramId == kParameterGLOBALBYPASS)
     {
         const double scaleFactor = p->getScaleFactor();
         setSize(kFullWidth * scaleFactor, kSubWidgetsFullHeight * scaleFactor);
@@ -131,7 +133,7 @@ public:
         const Parameter& param(kParameters[paramId]);
         setId(paramId);
         setCheckable(true);
-        setChecked(paramId == kParameterGLOBALBYPASS ? param.ranges.def < 0.5f : param.ranges.def > 0.5f, false);
+        setChecked(isInverted ? param.ranges.def < 0.5f : param.ranges.def > 0.5f, false);
         setCallback(cb);
     }
 
@@ -147,6 +149,8 @@ protected:
         const double switchPadding = kSwitchPadding * scaleFactor;
         const double switchRadius = kSwitchRadius * scaleFactor;
 
+        const bool checked = isInverted ? !isChecked() : isChecked();
+
         beginPath();
         rect(0, 0, width, height);
 
@@ -161,15 +165,15 @@ protected:
 
         beginPath();
         roundedRect(switchPadding, height/2 - switchHeight/2, switchWidth, switchHeight, switchRadius);
-        fillColor(Color(129, 247, 0));
+        fillColor(checked ? Color(84, 84, 84) : Color(129, 247, 0));
         fill();
 
         beginPath();
         circle(width / 2,
-               isChecked() ? height/2 - switchHeight/2 + switchWidth/2
-                           : height/2 + switchHeight/2 - switchWidth/2,
+               checked ? height/2 + switchHeight/2 - switchWidth/2
+                       : height/2 - switchHeight/2 + switchWidth/2,
                10 * scaleFactor);
-        fillColor(Color(24, 112, 4));
+        fillColor(checked ? Color(218, 214, 203) : Color(24, 112, 4));
         fill();
     }
 
@@ -223,19 +227,19 @@ protected:
 
 // --------------------------------------------------------------------------------------------------------------------
 
-class AidaFileButton : public NanoSubWidget,
+class AidaButton : public NanoSubWidget,
                        public ButtonEventHandler
 {
     NanoTopLevelWidget* const parent;
     const String label;
 
 public:
-    static constexpr const uint kButtonWidth = 110;
+    static constexpr const uint kButtonWidth = 140;
     static constexpr const uint kButtonHeight = 30;
     static constexpr const uint kButtonRadius = 4;
 
-    AidaFileButton(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, 
-                   const Parameters paramId, const char* const lbl)
+    AidaButton(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, 
+               const uint widgetId, const char* const lbl)
         : NanoSubWidget(p),
           ButtonEventHandler(this),
           parent(p),
@@ -244,7 +248,7 @@ public:
         const double scaleFactor = p->getScaleFactor();
         setSize(kButtonWidth * scaleFactor, kButtonHeight * scaleFactor);
 
-        setId(paramId);
+        setId(widgetId);
         setCallback(cb);
     }
 

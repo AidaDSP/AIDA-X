@@ -417,6 +417,8 @@ protected:
             else
                 aida.mastergain.setTarget(DB_CO(parameters[kParameterMASTER]));
             break;
+        case kParameterReportModelType:
+        case kParameterReportCabinetLength:
         case kParameterCount:
             break;
         }
@@ -435,6 +437,7 @@ protected:
         int input_skip;
         float output_gain;
         nlohmann::json model_json;
+        ReportModelType model_type;
 
         try {
             std::ifstream jsonStream(filename, std::ifstream::binary);
@@ -460,6 +463,9 @@ protected:
             else {
                 output_gain = 1.0f;
             }
+
+            // TODO
+            model_type = kReportModelStandard;
 
             d_stdout("Successfully loaded json file: %s", filename);
         }
@@ -507,6 +513,8 @@ protected:
         while (oldmodel != nullptr && activeModel.load())
             d_msleep(1);
 
+        parameters[kParameterReportModelType] = model_type;
+
         delete oldmodel;
     }
 
@@ -537,7 +545,9 @@ protected:
                 irBuf[i] = ir[j];
         }
 
-        if (sampleRate != getSampleRate())
+        const double hostSampleRate = getSampleRate();
+
+        if (sampleRate != hostSampleRate)
         {
             r8b::CDSPResampler16IR resampler(sampleRate, getSampleRate(), numFrames);
             const int numResampledFrames = resampler.getMaxOutLen(0);
@@ -569,6 +579,8 @@ protected:
         // if processing, wait for process cycle to complete
         while (oldconvolver != nullptr && activeConvolver.load())
             d_msleep(1);
+
+        parameters[kParameterReportCabinetLength] = static_cast<double>(numFrames) / hostSampleRate;
 
         delete oldconvolver;
     }

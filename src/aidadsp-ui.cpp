@@ -5,6 +5,7 @@
  */
 
 #include "DistrhoUI.hpp"
+#include "DistrhoStandaloneUtils.hpp"
 
 #include "Layout.hpp"
 #include "Widgets.hpp"
@@ -12,6 +13,18 @@
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
+
+enum ButtonIds {
+    kButtonLoadModel,
+    kButtonLoadCabinet,
+    kButtonEnableMicInput
+};
+
+enum MicInputState {
+    kMicInputUnsupported,
+    kMicInputSupported,
+    kMicInputEnabled
+};
 
 class AidaDSPLoaderUI : public UI,
                         public ButtonEventHandler::Callback,
@@ -48,9 +61,14 @@ class AidaDSPLoaderUI : public UI,
     } splitters;
     
     struct {
-        ScopedPointer<AidaFileButton> model;
-        ScopedPointer<AidaFileButton> ir;
+        ScopedPointer<AidaButton> model;
+        ScopedPointer<AidaButton> ir;
     } filebuttons;
+
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+    ScopedPointer<AidaButton> micButton;
+    MicInputState micInputState = kMicInputUnsupported;
+   #endif
 
     HorizontalLayout subwidgetsLayout;
 
@@ -96,8 +114,23 @@ public:
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
-        filebuttons.model = new AidaFileButton(this, this, kParameterNETBYPASS, "Load model...");
-        filebuttons.ir = new AidaFileButton(this, this, kParameterCONVOLVERENABLE, "Load IR...");
+        filebuttons.model = new AidaButton(this, this, kButtonLoadModel, "Load model...");
+        filebuttons.ir = new AidaButton(this, this, kButtonLoadCabinet, "Load IR...");
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        if (isUsingNativeAudio())
+        {
+            if (supportsAudioInput())
+            {
+                micButton = new AidaButton(this, this, kButtonEnableMicInput, "Enable Mic/Input");
+                micInputState = kMicInputSupported;
+            }
+        }
+        else
+        {
+            micInputState = kMicInputEnabled;
+        }
+       #endif
 
         // Setup subwidgets layout
         subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
@@ -312,6 +345,26 @@ protected:
         fontSize(24 * scaleFactor);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(width/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        fillColor(Color(0, 0, 0));
+        fontSize(kSubWidgetsFontSize * scaleFactor);
+        textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+
+        const double micx = marginHorizontal + 150 * scaleFactor;
+        switch (micInputState)
+        {
+        case kMicInputUnsupported:
+            text(micx, marginVertical/2, "Mic/Input Unsupported", nullptr);
+            break;
+        case kMicInputSupported:
+            text(micx, marginVertical/2, "Please enable Mic/Input...", nullptr);
+            break;
+        case kMicInputEnabled:
+            text(micx, marginVertical/2, "Mic/Input Enabled", nullptr);
+            break;
+        }
+       #endif
     }
 
     void onResize(const ResizeEvent& event) override
@@ -344,6 +397,11 @@ protected:
 
         filebuttons.model->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 20 * scaleFactor);
         filebuttons.ir->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 80 * scaleFactor);
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        if (micButton != nullptr)
+            micButton->setAbsolutePos(marginHorizontal, marginVertical/2 - micButton->getHeight()/2);
+       #endif
     }
 
     void buttonClicked(SubWidget* const widget, int button) override
@@ -363,13 +421,17 @@ protected:
             setParameterValue(id, static_cast<AidaSwitch*>(widget)->isChecked() ? 0.f : 1.f);
             editParameter(id, false);
             break;
-        case kParameterNETBYPASS:
+        case kButtonLoadModel:
             fileLoaderMode = kFileLoaderModel;
             requestStateFile("json", "Open AidaDSP model json");
             break;
-        case kParameterCONVOLVERENABLE:
+        case kButtonLoadCabinet:
             fileLoaderMode = kFileLoaderImpulse;
             requestStateFile("ir", "Open Cabinet Simulator IR");
+            break;
+        case kButtonEnableMicInput:
+            if (supportsAudioInput() && !isAudioInputEnabled())
+                requestAudioInput();
             break;
         }
     }
@@ -403,6 +465,21 @@ protected:
     {
         setParameterValue(widget->getId(), value);
     }
+
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+    void uiIdle() override
+    {
+        if (isUsingNativeAudio() && supportsAudioInput())
+        {
+            const MicInputState newMicInputState = isAudioInputEnabled() ? kMicInputEnabled : kMicInputSupported;
+            if (micInputState != newMicInputState)
+            {
+                micInputState = newMicInputState;
+                repaint();
+            }
+        }
+    }
+   #endif
 
    /**
       Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().

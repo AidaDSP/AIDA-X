@@ -15,7 +15,7 @@ message("RTNEURAL_XSIMD in ${CMAKE_PROJECT_NAME} = ${RTNEURAL_XSIMD}")
 add_subdirectory(dpf)
 add_subdirectory(rtneural)
 
-dpf_add_plugin(aidadsp-loader
+dpf_add_plugin(aida-x-plugin
   TARGETS clap lv2 vst2 vst3
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
@@ -31,8 +31,25 @@ dpf_add_plugin(aidadsp-loader
     Artwork.cpp
     src/aidadsp-ui.cpp)
 
+dpf_add_plugin(aida-x-standalone
+  TARGETS jack
+    #NO_SHARED_RESOURCES
+  UI_TYPE opengl
+  FILES_DSP
+    modules/FFTConvolver/AudioFFT.cpp
+    modules/FFTConvolver/FFTConvolver.cpp
+    modules/FFTConvolver/TwoStageFFTConvolver.cpp
+    modules/FFTConvolver/Utilities.cpp
+    src/aidadsp-plugin.cpp
+    src/Biquad.cpp
+    src/3rd-party.cpp
+  FILES_UI
+    Artwork.cpp
+    src/aidadsp-ui.cpp)
+
+target_include_directories(aida-x-plugin PUBLIC src src/plugin modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(aida-x-standalone PUBLIC src src/standalone modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
-target_include_directories(aidadsp-loader PUBLIC src modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 
 # convert images into code
 add_custom_command(
@@ -45,7 +62,8 @@ add_custom_command(
 
 # use threads
 find_package(Threads REQUIRED)
-target_link_libraries(aidadsp-loader PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(aida-x-plugin PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(aida-x-standalone PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # use IPO
 set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

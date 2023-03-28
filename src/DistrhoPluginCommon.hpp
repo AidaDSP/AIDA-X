@@ -1,5 +1,5 @@
 /*
- * aidadsp-loader
+ * Aida-X DPF plugin
  * Copyright (C) 2022-2023 Massimo Pennazio <maxipenna@libero.it>
  * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -16,8 +16,6 @@
 
 #define DISTRHO_PLUGIN_HAS_UI          1
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
-#define DISTRHO_PLUGIN_NUM_INPUTS      1
-#define DISTRHO_PLUGIN_NUM_OUTPUTS     1
 #define DISTRHO_PLUGIN_WANT_PROGRAMS   0
 #define DISTRHO_PLUGIN_WANT_STATE      1
 #define DISTRHO_UI_FILE_BROWSER        1
@@ -53,6 +51,8 @@ enum Parameters {
     kParameterMASTER,
     kParameterCONVOLVERENABLE,
     kParameterGLOBALBYPASS,
+    kParameterReportModelType,
+    kParameterReportCabinetLength,
     kParameterCount
 };
 
@@ -70,6 +70,13 @@ enum EqPos {
 enum MidEqType {
     kMidEqPeak,
     kMidEqBandpass
+};
+
+enum ReportModelType {
+    kReportModelNone,
+    kReportModelStandard,
+    kReportModelLight,
+    kReportModelHeavy
 };
 
 static const ParameterEnumerationValue kEQPOS[2] = {
@@ -106,6 +113,8 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CONVOLVERENABLE", "CONVOLVERENABLE", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
+    { kParameterIsOutput, "ReportModelType", "ReportModelType", "", 0.f, 0.f, kReportModelHeavy, },
+    { kParameterIsOutput, "ReportCabinetLength", "ReportCabinetLength", "", 0.f, 0.f, 3600.f, },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);
