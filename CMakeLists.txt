@@ -28,6 +28,8 @@ dpf_add_plugin(aida-x-plugin
     modules/FFTConvolver/FFTConvolver.cpp
     modules/FFTConvolver/TwoStageFFTConvolver.cpp
     modules/FFTConvolver/Utilities.cpp
+    modules/r8brain/pffft.cpp
+    modules/r8brain/r8bbase.cpp
     src/aidadsp-plugin.cpp
     src/Biquad.cpp
     src/3rd-party.cpp
@@ -45,6 +47,8 @@ dpf_add_plugin(aida-x-standalone
     modules/FFTConvolver/FFTConvolver.cpp
     modules/FFTConvolver/TwoStageFFTConvolver.cpp
     modules/FFTConvolver/Utilities.cpp
+    modules/r8brain/pffft.cpp
+    modules/r8brain/r8bbase.cpp
     src/aidadsp-plugin.cpp
     src/Biquad.cpp
     src/3rd-party.cpp

@@ -305,4 +305,45 @@ protected:
 
 // --------------------------------------------------------------------------------------------------------------------
 
+class AidaFileGroup : public NanoSubWidget
+{
+    NanoTopLevelWidget* const parent;
+    const String label;
+
+    AidaButton button;
+    AidaSwitch toggle;
+
+public:
+    static constexpr const uint kMargin = 10;
+    static constexpr const uint kFullWidth = 150;
+
+    AidaFileGroup(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb,
+                  const Parameters toggleId, const uint buttonId, const char* const lbl)
+        : NanoSubWidget(p),
+          parent(p),
+          label(lbl),
+          button(p, cb, buttonId, "B"),
+          toggle(p, cb, toggleId)
+    {
+        const double scaleFactor = p->getScaleFactor();
+        setSize(kFullWidth * scaleFactor, kFullWidth * scaleFactor);
+    }
+
+protected:
+    void onNanoDisplay() override
+    {
+        const uint width = getWidth();
+        const uint height = getHeight();
+
+        const double scaleFactor = parent->getScaleFactor();
+
+        beginPath();
+        rect(0, 0, width, height);
+        fillColor(Color(0,0,0,0.5f));
+        fill();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
 END_NAMESPACE_DISTRHO
