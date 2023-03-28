@@ -20,7 +20,7 @@
 #include "dr_flac.h"
 #include "dr_wav.h"
 // -Wunused-variable
-#include "r8brain/CDSPResampler.h"
+#include "CDSPResampler.h"
 #include "TwoStageThreadedConvolver.hpp"
 
 START_NAMESPACE_DISTRHO

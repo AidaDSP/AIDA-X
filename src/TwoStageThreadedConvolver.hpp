@@ -9,7 +9,7 @@
 #include "Semaphore.hpp"
 #include "extra/Thread.hpp"
 
-#include "FFTConvolver/TwoStageFFTConvolver.h"
+#include "TwoStageFFTConvolver.h"
 
 START_NAMESPACE_DISTRHO
 

@@ -56,25 +56,46 @@ dpf_add_plugin(aida-x-standalone
     Graphics.cpp
     src/aidadsp-ui.cpp)
 
-target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
-target_include_directories(aida-x-plugin PUBLIC src src/plugin modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
-target_include_directories(aida-x-standalone PUBLIC src src/standalone modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(dgl-opengl PUBLIC
+  NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
+)
+
+target_include_directories(aida-x-plugin PUBLIC
+  src
+  src/plugin
+  modules/dr_libs
+  modules/FFTConvolver
+  modules/r8brain
+  modules/rtneural
+  ${CMAKE_BINARY_DIR}
+)
+
+target_include_directories(aida-x-standalone PUBLIC
+  src
+  src/standalone
+  modules/dr_libs
+  modules/FFTConvolver
+  modules/r8brain
+  modules/rtneural
+  ${CMAKE_BINARY_DIR}
+)
+
 target_link_libraries(aida-x-plugin PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(aida-x-standalone PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
 
 # convert data into code
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Files ${CMAKE_SOURCE_DIR}/files ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Files ${CMAKE_SOURCE_DIR}/files ${CMAKE_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/files
   OUTPUT Files.cpp
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
   OUTPUT Graphics.cpp
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
