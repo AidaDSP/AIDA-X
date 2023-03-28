@@ -20,17 +20,17 @@
 #define DISTRHO_PLUGIN_WANT_STATE      1
 #define DISTRHO_UI_FILE_BROWSER        1
 #define DISTRHO_UI_USE_NANOVG          1
-#define DISTRHO_UI_USER_RESIZABLE      1
 
 #define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:SimulatorPlugin"
 
 // known and defined in advance
 static const constexpr uint kPedalWidth = 900;
 static const constexpr uint kPedalHeight = 328;
-static const constexpr uint kPedalMargin = 40;
+static const constexpr uint kPedalMargin = 20;
+static const constexpr uint kPedalMarginTop = 40;
 
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
-#define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin * 2)
+#define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)
 
 enum Parameters {
     kParameterINLPF,

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#include "DistrhoPluginCommon.hpp"
 #include "DistrhoUI.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 
@@ -152,8 +153,8 @@ public:
 
         // adjust size
         const double scaleFactor = getScaleFactor();
-        setGeometryConstraints((kPedalWidth + kPedalMargin/2) * scaleFactor,
-                               (kPedalHeight + kPedalMargin/2) * scaleFactor);
+        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH * scaleFactor,
+                               DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor);
 
         if (scaleFactor != 1.0)
             setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
@@ -249,8 +250,8 @@ protected:
         const double heightPedal = kPedalHeight * scaleFactor;
         const double widthHead = widthPedal - marginHead * 2;
         const double heightHead = 177 * scaleFactor;
-        const double marginHorizontal = (width - widthPedal) / 2;
-        const double marginVertical = (height - heightPedal) / 2;
+        const double marginHorizontal = kPedalMargin * scaleFactor;
+        const double marginVertical = kPedalMarginTop * scaleFactor;
 
         // outer bounds gradient
         beginPath();
@@ -340,7 +341,7 @@ protected:
         const Size<uint> axLogoSize(250 * scaleFactor, 96 * scaleFactor);
 
         save();
-        translate(width/2 - axLogoSize.getWidth()/2, marginVertical + marginHead + headBgSize.getHeight() / 6);
+        translate(marginHorizontal + widthPedal/2 - axLogoSize.getWidth()/2, marginVertical + marginHead + headBgSize.getHeight() / 6);
         beginPath();
         rect(0, 0, axLogoSize.getWidth(), axLogoSize.getHeight());
         fillPaint(imagePattern(0, 0, axLogoSize.getWidth(), axLogoSize.getHeight(), 0.f, images.ax, 1.f));
@@ -350,7 +351,7 @@ protected:
         fillColor(Color(0x0c, 0x2f, 0x03, 0.686f));
         fontSize(24 * scaleFactor);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
-        text(width/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
+        text(marginHorizontal + widthPedal/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         fillColor(Color(0, 0, 0));
@@ -387,8 +388,8 @@ protected:
         const double scaleFactor = getScaleFactor();
         const double widthPedal = kPedalWidth * scaleFactor;
         const double heightPedal = kPedalHeight * scaleFactor;
-        const double marginHorizontal = (width - widthPedal) / 2;
-        const double marginVertical = (height - heightPedal) / 2;
+        const double marginHorizontal = kPedalMargin * scaleFactor;
+        const double marginTop = kPedalMarginTop * scaleFactor;
         const double margin = 15 * scaleFactor;
 
         const uint unusedSpace = widthPedal
@@ -397,16 +398,16 @@ protected:
                                - (AidaSplitter::kLineWidth * scaleFactor * 3);
         const uint padding = unusedSpace / 14;
         const uint maxHeight = subwidgetsLayout.setAbsolutePos(marginHorizontal + margin,
-                                                               height - marginVertical - margin - 110 * scaleFactor,
+                                                               marginTop + heightPedal - margin - kSubWidgetsFullHeight * scaleFactor,
                                                                padding);
         subwidgetsLayout.setSize(maxHeight, 0);
 
-        filebuttons.model->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 20 * scaleFactor);
-        filebuttons.ir->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginVertical + margin + 80 * scaleFactor);
+        filebuttons.model->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginTop + margin + 20 * scaleFactor);
+        filebuttons.ir->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginTop + margin + 80 * scaleFactor);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         if (micButton != nullptr)
-            micButton->setAbsolutePos(marginHorizontal, marginVertical/2 - micButton->getHeight()/2);
+            micButton->setAbsolutePos(marginHorizontal, marginTop/2 - micButton->getHeight()/2);
        #endif
     }
 
