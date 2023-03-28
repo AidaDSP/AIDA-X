@@ -1,8 +1,8 @@
 [submodule "dpf"]
-	path = dpf
+	path = modules/dpf
 	url = https://github.com/DISTRHO/DPF.git
 [submodule "rtneural"]
-	path = rtneural
+	path = modules/rtneural
 	url = https://github.com/jatinchowdhury18/RTNeural.git
 [submodule "modules/FFTConvolver"]
 	path = modules/FFTConvolver
@@ -10,3 +10,9 @@
 [submodule "modules/r8brain"]
 	path = modules/r8brain
 	url = https://github.com/avaneev/r8brain-free-src.git
+[submodule "modules/dpf"]
+	path = modules/dpf
+	url = https://github.com/DISTRHO/DPF.git
+[submodule "modules/rtneural"]
+	path = modules/rtneural
+	url = https://github.com/jatinchowdhury18/RTNeural.git

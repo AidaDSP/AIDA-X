@@ -1,5 +1,7 @@
 *~
 *.kdev4
 *.json
+.DS_Store
+.cache
 /build/
 !/files/*.json

@@ -12,8 +12,11 @@ endif()
 set(RTNEURAL_XSIMD ${PREFER_RTNEURAL_XSIMD} CACHE BOOL "Use RTNeural with this backend")
 message("RTNEURAL_XSIMD in ${CMAKE_PROJECT_NAME} = ${RTNEURAL_XSIMD}")
 
-add_subdirectory(dpf)
-add_subdirectory(rtneural)
+add_subdirectory(modules/dpf)
+add_subdirectory(modules/rtneural)
+
+find_package(Threads REQUIRED)
+set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 dpf_add_plugin(aida-x-plugin
   TARGETS clap lv2 vst2 vst3
@@ -49,14 +52,16 @@ dpf_add_plugin(aida-x-standalone
     Graphics.cpp
     src/aidadsp-ui.cpp)
 
+target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
 target_include_directories(aida-x-plugin PUBLIC src src/plugin modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(aida-x-standalone PUBLIC src src/standalone modules rtneural ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_definitions(dgl-opengl PUBLIC NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST)
+target_link_libraries(aida-x-plugin PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(aida-x-standalone PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
 
 # convert data into code
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Files ${CMAKE_SOURCE_DIR}/files ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Files ${CMAKE_SOURCE_DIR}/files ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/files
   OUTPUT Files.cpp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -64,16 +69,8 @@ add_custom_command(
 
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
   OUTPUT Graphics.cpp
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-# use threads
-find_package(Threads REQUIRED)
-target_link_libraries(aida-x-plugin PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(aida-x-standalone PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-
-# use IPO
-set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)

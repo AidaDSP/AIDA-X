@@ -15,6 +15,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          dpf_path: ./modules/dpf
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
@@ -32,6 +33,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          dpf_path: ./modules/dpf
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
@@ -47,6 +49,7 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          dpf_path: ./modules/dpf
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
@@ -59,4 +62,5 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
+          dpf_path: ./modules/dpf
           target: pluginval
