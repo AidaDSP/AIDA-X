@@ -227,7 +227,7 @@ protected:
 // --------------------------------------------------------------------------------------------------------------------
 
 class AidaButton : public NanoSubWidget,
-                       public ButtonEventHandler
+                   public ButtonEventHandler
 {
     NanoTopLevelWidget* const parent;
     const String label;
@@ -262,8 +262,29 @@ protected:
 
         beginPath();
         roundedRect(0, 0, width, height, buttonRadius);
-        fillColor(Color(0, 0, 0));
+
+        switch (getState())
+        {
+        case kButtonStateDefault:
+            fillColor(Color(0, 0, 0));
+            strokeColor(Color(90, 90, 90));
+            break;
+        case kButtonStateHover:
+            fillColor(Color(50, 50, 50));
+            strokeColor(Color(90, 90, 90));
+            break;
+        case kButtonStateActive:
+            fillColor(Color(120, 120, 120));
+            strokeColor(Color(90, 90, 90));
+            break;
+        case kButtonStateActiveHover:
+            fillColor(Color(120, 120, 120));
+            strokeColor(Color(120, 120, 120));
+            break;
+        }
+
         fill();
+        stroke();
 
         fillColor(Color(1.f, 1.f, 1.f));
         fontSize(16 * scaleFactor);
