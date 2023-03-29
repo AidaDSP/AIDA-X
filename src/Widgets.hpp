@@ -26,6 +26,7 @@ class AidaKnob : public NanoSubWidget,
     const NanoImage& knobImage;
     const NanoImage& scaleImage;
     const char* label;
+    const char* unit;
 
 public:
     static constexpr const uint kScaleSize = 80;
@@ -50,6 +51,7 @@ public:
         setValue(param.ranges.def, false);
         setCallback(cb);
         label = param.name;
+        unit = param.unit;
     }
 
 protected:
@@ -63,14 +65,15 @@ protected:
         const double knobSize = kKnobSize * scaleFactor;
         const double knobHalfSize = knobSize / 2;
         const double knobMargin = kKnobMargin * scaleFactor;
+        const double wfontSize = kSubWidgetsFontSize * scaleFactor;
 
         beginPath();
         rect(0, 0, scaleSize, scaleSize);
         fillPaint(imagePattern(0, 0, scaleSize, scaleSize, 0.f, scaleImage, 1.f));
         fill();
 
-        strokeColor(Color(1.f, 1.f, 1.f));
-        fontSize(kSubWidgetsFontSize * scaleFactor);
+        fillColor(Color(1.f, 1.f, 1.f));
+        fontSize(wfontSize);
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(width/2, height, label, nullptr);
 
@@ -86,6 +89,26 @@ protected:
         fill();
 
         restore();
+
+        if (getState() & kKnobStateDragging)
+        {
+            const double padding = 4 * scaleFactor;
+            beginPath();
+            roundedRect(padding, 0,
+                        scaleSize - padding,
+                        wfontSize + padding * 2,
+                        2 * scaleFactor);
+            fillColor(Color(0,0,0,0.5f));
+            fill();
+
+            char textBuf[24];
+            std::snprintf(textBuf, sizeof(textBuf)-1, "%.2f %s", getValue(), unit);
+            textBuf[sizeof(textBuf)-1] = '\0';
+
+            fillColor(Color(1.f, 1.f, 1.f));
+            textAlign(ALIGN_CENTER | ALIGN_TOP);
+            text(width/2, padding, textBuf, nullptr);
+        }
     }
 
     bool onMouse(const MouseEvent& event) override
