@@ -389,7 +389,8 @@ protected:
         restore();
 
         // .rt-neural .plate
-        const Size<uint> axLogoSize(250 * scaleFactor, 96 * scaleFactor);
+        const Size<uint> axLogoSize(100 * scaleFactor * 1548 / 727,
+                                    100 * scaleFactor);
 
         save();
         translate(marginHorizontal + widthPedal/2 - axLogoSize.getWidth()/2, marginVertical + marginHead + headBgSize.getHeight() / 6);
