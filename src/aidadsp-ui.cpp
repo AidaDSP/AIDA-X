@@ -26,7 +26,8 @@ enum ButtonIds {
 enum MicInputState {
     kMicInputUnsupported,
     kMicInputSupported,
-    kMicInputEnabled
+    kMicInputEnabled,
+    kMicInputJACK
 };
 
 class AidaDSPLoaderUI : public UI,
@@ -131,7 +132,7 @@ public:
         }
         else
         {
-            micInputState = kMicInputEnabled;
+            micInputState = kMicInputJACK;
         }
        #endif
 
@@ -358,7 +359,7 @@ protected:
         fontSize(kSubWidgetsFontSize * scaleFactor);
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 
-        const double micx = marginHorizontal + 150 * scaleFactor;
+        const double micx = marginHorizontal + (micButton != nullptr ? 150 : 10) * scaleFactor;
         switch (micInputState)
         {
         case kMicInputUnsupported:
@@ -368,7 +369,10 @@ protected:
             text(micx, marginVertical/2, "Please enable Mic/Input...", nullptr);
             break;
         case kMicInputEnabled:
-            text(micx, marginVertical/2, "Mic/Input Enabled", nullptr);
+            text(micx, marginVertical/2, "Mic/Input enabled", nullptr);
+            break;
+        case kMicInputJACK:
+            text(micx, marginVertical/2, "Mic/Input always enabled (using JACK)", nullptr);
             break;
         }
        #endif
@@ -479,9 +483,10 @@ protected:
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE
     void uiIdle() override
     {
-        if (isUsingNativeAudio() && supportsAudioInput())
+        if (micButton != nullptr)
         {
             const MicInputState newMicInputState = isAudioInputEnabled() ? kMicInputEnabled : kMicInputSupported;
+
             if (micInputState != newMicInputState)
             {
                 micInputState = newMicInputState;

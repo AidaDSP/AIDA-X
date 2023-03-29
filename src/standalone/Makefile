@@ -36,7 +36,7 @@ endif
 # Do some magic
 
 DPF_PATH = ../../modules/dpf
-DPF_BUILD_DIR = ../../build/dpf
+DPF_BUILD_DIR = ../../build
 DPF_TARGET_DIR = ../../build/bin
 NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
 WINDOWS_ICON_ID = 401
@@ -67,6 +67,19 @@ ifeq ($(CPU_I386),true)
 # needed for enabling SSE in pffft
 BUILD_CXX_FLAGS += -Di386
 endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Extra rules for generating needed files
+
+$(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.hpp
+
+$(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.hpp
+
+$(BUILD_DIR)/Files.hpp: # $(wildcard ../../files/*.*)
+	$(DPF_PATH)/utils/res2c.py Files ../../files $(BUILD_DIR)
+
+$(BUILD_DIR)/Graphics.hpp: # $(wildcard ../../graphics/*.*)
+	$(DPF_PATH)/utils/res2c.py Graphics ../../graphics $(BUILD_DIR)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for macOS app bundle

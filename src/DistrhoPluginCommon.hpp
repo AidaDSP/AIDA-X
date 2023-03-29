@@ -72,6 +72,7 @@ enum MidEqType {
     kMidEqBandpass
 };
 
+// TODO, unused for now
 enum ReportModelType {
     kReportModelNone,
     kReportModelStandard,
@@ -95,7 +96,7 @@ static const ParameterEnumerationValue kBYPASS[2] = {
 };
 
 static const Parameter kParameters[] = {
-    { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 100.f, },
+    { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 99.f, },
     { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", -6.f, -12.f, 0.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
