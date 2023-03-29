@@ -46,6 +46,13 @@ class AidaDSPLoaderUI : public UI,
     } images;
 
     struct {
+        NanoImage amp;
+        NanoImage ampOn;
+        NanoImage cab;
+        NanoImage cabOn;
+    } icons;
+
+    struct {
         ScopedPointer<AidaKnob> pregain;
         ScopedPointer<AidaKnob> bass;
         ScopedPointer<AidaKnob> middle;
@@ -101,6 +108,12 @@ public:
         images.background = createImageFromMemory(backgroundData, backgroundDataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
         images.knob = createImageFromMemory(knobData, knobDataSize, IMAGE_GENERATE_MIPMAPS);
         images.scale = createImageFromMemory(scaleData, scaleDataSize, IMAGE_GENERATE_MIPMAPS);
+
+        icons.amp = createImageFromMemory(ax_ampData, ax_ampDataSize, IMAGE_GENERATE_MIPMAPS);
+        icons.ampOn = createImageFromMemory(ax_amp_onData, ax_amp_onDataSize, IMAGE_GENERATE_MIPMAPS);
+        icons.cab = createImageFromMemory(ax_cabData, ax_cabDataSize, IMAGE_GENERATE_MIPMAPS);
+        icons.cabOn = createImageFromMemory(ax_cab_onData, ax_cab_onDataSize, IMAGE_GENERATE_MIPMAPS);
+
         // fontFaceId(createFontFromMemory("conthrax", conthrax_sbData, conthrax_sbDataSize, false));
         loadSharedResources();
 
@@ -121,10 +134,10 @@ public:
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
-        loaders.model = new AidaFilenameButton(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "model");
+        loaders.model = new AidaFilenameButton(this, this, kParameterNETBYPASS, kButtonLoadModel, "model", icons.amp, icons.ampOn);
         loaders.model->setFilename("US-Double-Nrm-Model.json");
 
-        loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "cabinet IR");
+        loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, kButtonLoadCabinet, "cabinet IR", icons.cab, icons.cabOn);
         loaders.cabsim->setFilename("US-Double-Nrm-Cab.wav");
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
@@ -443,7 +456,7 @@ protected:
         const double loadersX = marginHorizontal + widthPedal * 2 / 3;
         const double loadersY = marginTop + heightPedal - heightHead;
 
-        loaders.model->setAbsolutePos(loadersX, loadersY - margin - loaders.cabsim->getHeight());
+        loaders.model->setAbsolutePos(loadersX, loadersY - margin / 2 - loaders.cabsim->getHeight());
         loaders.model->setWidth(widthPedal / 3 - margin * 2);
 
         loaders.cabsim->setAbsolutePos(loadersX, loadersY);

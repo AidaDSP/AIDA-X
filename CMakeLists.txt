@@ -16,7 +16,7 @@ add_subdirectory(modules/dpf)
 add_subdirectory(modules/rtneural)
 
 find_package(Threads REQUIRED)
-# set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 dpf_add_plugin(AIDA-X
   TARGETS clap lv2 vst2 vst3
@@ -69,7 +69,7 @@ add_custom_command(
 
 add_custom_command(
   PRE_BUILD
-  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_SOURCE_DIR}/modules/dpf/utils/res2c.py Graphics ${CMAKE_SOURCE_DIR}/graphics/png ${CMAKE_BINARY_DIR}
   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/graphics
   OUTPUT Graphics.cpp
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

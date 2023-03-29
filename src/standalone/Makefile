@@ -75,11 +75,11 @@ $(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.hpp
 
 $(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.hpp
 
-$(BUILD_DIR)/Files.hpp: # $(wildcard ../../files/*.*)
+$(BUILD_DIR)/Files.hpp: $(wildcard ../../files/*.*)
 	$(DPF_PATH)/utils/res2c.py Files ../../files $(BUILD_DIR)
 
-$(BUILD_DIR)/Graphics.hpp: # $(wildcard ../../graphics/*.*)
-	$(DPF_PATH)/utils/res2c.py Graphics ../../graphics $(BUILD_DIR)
+$(BUILD_DIR)/Graphics.hpp: $(wildcard ../../graphics/png/*.*)
+	$(DPF_PATH)/utils/res2c.py Graphics ../../graphics/png $(BUILD_DIR)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for macOS app bundle

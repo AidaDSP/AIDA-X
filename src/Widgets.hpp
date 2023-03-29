@@ -313,23 +313,28 @@ protected:
 
 class AidaFilenameButton : public NanoSubWidget
 {
-    static constexpr const uint kCommonHeight = 30;
-    static constexpr const uint kCommonRadius = 4;
+    static constexpr const uint kCommonHeight = 32;
+    static constexpr const uint kCommonRadius = 10;
     static constexpr const uint kButtonMargin = 8;
+    static constexpr const uint kIconSize     = 20;
     static constexpr const uint kInitialWidth = 100;
 
     struct AidaFileSwitch : NanoSubWidget,
                             ButtonEventHandler
     {
         NanoTopLevelWidget* const parent;
+        const NanoImage& imageOff;
+        const NanoImage& imageOn;
 
-        AidaFileSwitch(NanoTopLevelWidget* const p, const char* const lbl)
+        AidaFileSwitch(NanoTopLevelWidget* const p, const NanoImage& imgOff, const NanoImage& imgOn)
             : NanoSubWidget(p),
               ButtonEventHandler(this),
-              parent(p)
+              parent(p),
+              imageOff(imgOff),
+              imageOn(imgOn)
         {
             const double scaleFactor = p->getScaleFactor();
-            setSize(kCommonHeight * scaleFactor, kCommonHeight * scaleFactor);
+            setSize((kCommonHeight + kButtonMargin) * scaleFactor, kCommonHeight * scaleFactor);
 
             setCheckable(true);
             setChecked(true, false);
@@ -346,17 +351,44 @@ class AidaFilenameButton : public NanoSubWidget
             const uint height = getHeight();
 
             const double scaleFactor = parent->getScaleFactor();
-//             const double switchWidth = kSwitchWidth * scaleFactor;
-//             const double switchHeight = kSwitchHeight * scaleFactor;
-//             const double switchPadding = kSwitchPadding * scaleFactor;
+            const double iconSize = kIconSize * scaleFactor;
             const double switchRadius = kCommonRadius * scaleFactor;
 
-            const bool checked = isChecked();
+            uint state = getState();
+            if (isChecked())
+                state |= kButtonStateActive;
+
+            switch (state)
+            {
+            case kButtonStateDefault:
+                fillColor(Color(0x74,0x92,0x32));
+                break;
+            case kButtonStateHover:
+                fillColor(Color(0x74,0x92,0x32));
+                break;
+            case kButtonStateActive:
+                fillColor(Color(0x15,0x2c,0x0d));
+                break;
+            case kButtonStateActiveHover:
+                fillColor(Color(0x15,0x2c,0x0d));
+                break;
+            }
 
             beginPath();
             roundedRect(0, 0, width, height, switchRadius);
-            fillColor(checked ? Color(129, 247, 0) : Color(84, 84, 84));
             fill();
+
+            beginPath();
+            rect(height/2, 0, width-height/2, height);
+            fill();
+
+            save();
+            translate(width/2 - iconSize/2, height/2 - iconSize/2);
+            beginPath();
+            rect(0, 0, iconSize, iconSize);
+            fillPaint(imagePattern(0, 0, iconSize, iconSize, 0.f, isChecked() ? imageOn : imageOff, 1.f));
+            fill();
+            restore();
 
             // TODO draw icon
         }
@@ -406,42 +438,40 @@ class AidaFilenameButton : public NanoSubWidget
             const uint height = getHeight();
 
             const double scaleFactor = parent->getScaleFactor();
-            const double buttonMargin = (kCommonHeight + kButtonMargin) * scaleFactor;
+            const double buttonMargin = (kCommonHeight + kButtonMargin * 2) * scaleFactor;
             const double buttonRadius = kCommonRadius * scaleFactor;
 
             beginPath();
             roundedRect(0, 0, width, height, buttonRadius);
 
-    //         switch (getState())
-    //         {
-    //         case kButtonStateDefault:
-    //             fillColor(Color(0, 0, 0));
-    //             strokeColor(Color(90, 90, 90));
-    //             break;
-    //         case kButtonStateHover:
-    //             fillColor(Color(50, 50, 50));
-    //             strokeColor(Color(90, 90, 90));
-    //             break;
-    //         case kButtonStateActive:
-    //             fillColor(Color(120, 120, 120));
-    //             strokeColor(Color(90, 90, 90));
-    //             break;
-    //         case kButtonStateActiveHover:
-                fillColor(Color(0x59, 0x75, 0x29));
-//                 strokeColor(Color(0x59, 0x75, 0x29).minus(0x10));
-    //             break;
-    //         }
+            switch (getState())
+            {
+            case kButtonStateDefault:
+                fillColor(Color(0x56,0x73,0x28));
+                break;
+            case kButtonStateHover:
+                fillColor(Color(0x74,0x92,0x32));
+                break;
+            case kButtonStateActive:
+                fillColor(Color(0x15,0x2c,0x0d));
+                break;
+            case kButtonStateActiveHover:
+                fillColor(Color(0x15,0x2c,0x0d));
+                break;
+            }
 
             fill();
-//             stroke();
 
             fillColor(Color(1.f, 1.f, 1.f));
             fontSize(16 * scaleFactor);
             textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+            save();
+            scissor(buttonMargin, 0, width - buttonMargin, height/2 + 16 * scaleFactor / 2);
             textBox(buttonMargin, height/2, width - buttonMargin,
-                 hoverButton->isHover() ? hoverButton->isChecked() ? labels.disable : labels.enable
-                                        : getState() & kButtonStateHover ? labels.load : filename,
-                 nullptr);
+                    hoverButton->isHover() ? hoverButton->isChecked() ? labels.disable : labels.enable
+                                           : getState() & kButtonStateHover ? labels.load : filename,
+                    nullptr);
+            restore();
         }
 
         bool onMouse(const MouseEvent& event) override
@@ -463,9 +493,10 @@ class AidaFilenameButton : public NanoSubWidget
 public:
     AidaFilenameButton(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb,
                        const uint switchId,
-                       const char* const switchLabel,
                        const uint buttonId,
-                       const char* const buttonLabel)
+                       const char* const buttonLabel,
+                       const NanoImage& imgOff,
+                       const NanoImage& imgOn)
         : NanoSubWidget(p),
           parent(p)
     {
@@ -473,7 +504,7 @@ public:
         button->setCallback(cb);
         button->setId(buttonId);
 
-        toggle = new AidaFileSwitch(p, switchLabel);
+        toggle = new AidaFileSwitch(p, imgOff, imgOn);
         toggle->setCallback(cb);
         toggle->setId(switchId);
 
