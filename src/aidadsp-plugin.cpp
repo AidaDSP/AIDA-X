@@ -190,12 +190,12 @@ class AidaDSPLoaderPlugin : public Plugin
 {
     AidaToneControl aida;
     DynamicModel* model = nullptr;
-    TwoStageThreadedConvolver* convolver = nullptr;
+    TwoStageThreadedConvolver* cabsim = nullptr;
     std::atomic<bool> activeModel { false };
     std::atomic<bool> activeConvolver { false };
-    String convolverFilename;
-    ExpSmoother convolverGain;
-    float* convolverInplaceBuffer = nullptr;
+    String cabsimFilename;
+    ExpSmoother cabsimGain;
+    float* cabsimInplaceBuffer = nullptr;
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
@@ -211,8 +211,8 @@ public:
         bypassGain.setTimeConstant(1);
         bypassGain.setTarget(1.f);
 
-        convolverGain.setTimeConstant(1);
-        convolverGain.setTarget(1.f);
+        cabsimGain.setTimeConstant(1);
+        cabsimGain.setTarget(1.f);
 
         // initialize
         bufferSizeChanged(getBufferSize());
@@ -226,9 +226,9 @@ public:
     ~AidaDSPLoaderPlugin()
     {
         delete model;
-        delete convolver;
+        delete cabsim;
         delete[] bypassInplaceBuffer;
-        delete[] convolverInplaceBuffer;
+        delete[] cabsimInplaceBuffer;
     }
 
 protected:
@@ -425,8 +425,8 @@ protected:
         case kParameterMASTER:
             aida.mastergain.setTarget(DB_CO(value));
             break;
-        case kParameterCONVOLVERENABLE:
-            convolverGain.setTarget(value > 0.5f ? 1.f : 0.f);
+        case kParameterCABSIMBYPASS:
+            cabsimGain.setTarget(value > 0.5f ? 0.f : 1.f);
             break;
         case kParameterGLOBALBYPASS:
             bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
@@ -604,7 +604,7 @@ protected:
 
         loadImpulse(channels, sampleRate, numFrames, ir);
 
-        convolverFilename = filename;
+        cabsimFilename = filename;
     }
 
     void loadImpulse(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
@@ -646,17 +646,17 @@ protected:
 
         drwav_free(ir, nullptr);
 
-        // swap active convolver
-        TwoStageThreadedConvolver* const oldconvolver = convolver;
-        convolver = newConvolver;
+        // swap active cabsim
+        TwoStageThreadedConvolver* const oldcabsim = cabsim;
+        cabsim = newConvolver;
 
         // if processing, wait for process cycle to complete
-        while (oldconvolver != nullptr && activeConvolver.load())
+        while (oldcabsim != nullptr && activeConvolver.load())
             d_msleep(1);
 
         parameters[kParameterReportCabinetLength] = static_cast<double>(numFrames) / hostSampleRate;
 
-        delete oldconvolver;
+        delete oldcabsim;
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -670,7 +670,7 @@ protected:
         aida.pregain.clearToTarget();
         aida.mastergain.clearToTarget();
         bypassGain.clearToTarget();
-        convolverGain.clearToTarget();
+        cabsimGain.clearToTarget();
 
         if (model != nullptr)
         {
@@ -732,17 +732,17 @@ protected:
         applyBiquadFilter(aida.dc_blocker, out, numSamples);
 
         // Cabinet convolution
-        if (convolver != nullptr)
+        if (cabsim != nullptr)
         {
-            std::memcpy(convolverInplaceBuffer, out, sizeof(float)*numSamples);
+            std::memcpy(cabsimInplaceBuffer, out, sizeof(float)*numSamples);
 
             activeConvolver.store(true);
-            convolver->process(convolverInplaceBuffer, out, numSamples);
+            cabsim->process(cabsimInplaceBuffer, out, numSamples);
             activeConvolver.store(false);
 
-            // convolver smooth bypass and -12dB compensation
+            // cabsim smooth bypass and -12dB compensation
             for (uint32_t i = 0; i < numSamples; ++i)
-                out[i] *= convolverGain.next() * DB_CO(-12);
+                out[i] *= cabsimGain.next() * DB_CO(-12);
         }
 
         // Equalizer section
@@ -767,9 +767,9 @@ protected:
     void bufferSizeChanged(const uint newBufferSize) override
     {
         delete[] bypassInplaceBuffer;
-        delete[] convolverInplaceBuffer;
+        delete[] cabsimInplaceBuffer;
         bypassInplaceBuffer = new float[newBufferSize];
-        convolverInplaceBuffer = new float[newBufferSize];
+        cabsimInplaceBuffer = new float[newBufferSize];
     }
 
    /**
@@ -781,11 +781,11 @@ protected:
         aida.setSampleRate(parameters, newSampleRate);
 
         bypassGain.setSampleRate(newSampleRate);
-        convolverGain.setSampleRate(newSampleRate);
-        // convolverGain.setTarget(parameters[kParameterCONVOLVERENABLE] > 0.5f ? 1.f : 0.f);
+        cabsimGain.setSampleRate(newSampleRate);
+        // cabsimGain.setTarget(parameters[kParameterCONVOLVERENABLE] > 0.5f ? 1.f : 0.f);
 
-        // reload convolver file
-        if (char* const filename = convolverFilename.getAndReleaseBuffer())
+        // reload cabsim file
+        if (char* const filename = cabsimFilename.getAndReleaseBuffer())
         {
             setState("ir", filename);
             std::free(filename);
