@@ -328,11 +328,17 @@ protected:
         // .rt-neural .grid
         beginPath();
         roundedRect(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius);
-        fillPaint(linearGradient(marginHorizontal,
-                                 marginVertical,
-                                 marginHorizontal + widthPedal,
-                                 marginVertical + heightPedal,
+        fillPaint(linearGradient(marginHorizontal, 0,
+                                 marginHorizontal + widthPedal * 0.52f, 0,
                                  Color(28, 23, 12),
+                                 Color(42, 34, 15)));
+        fill();
+
+        beginPath();
+        roundedRect(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius);
+        fillPaint(linearGradient(marginHorizontal + widthPedal * 0.50f, 0,
+                                 marginHorizontal + widthPedal, 0,
+                                 Color(42, 34, 15),
                                  Color(19, 19, 19)));
         fill();
 

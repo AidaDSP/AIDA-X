@@ -271,20 +271,17 @@ protected:
         switch (getState())
         {
         case kButtonStateDefault:
-            fillColor(Color(0, 0, 0));
-            strokeColor(Color(90, 90, 90));
+            fillColor(Color(0x15,0x14,0x13));
+            strokeColor(Color(0x15,0x14,0x13,0.8f));
             break;
         case kButtonStateHover:
-            fillColor(Color(50, 50, 50));
-            strokeColor(Color(90, 90, 90));
+            fillColor(Color(0x15,0x14,0x13,0.8f));
+            strokeColor(Color(0x15,0x14,0x13,0.8f));
             break;
         case kButtonStateActive:
-            fillColor(Color(120, 120, 120));
-            strokeColor(Color(90, 90, 90));
-            break;
         case kButtonStateActiveHover:
-            fillColor(Color(120, 120, 120));
-            strokeColor(Color(120, 120, 120));
+            fillColor(Color(0x15,0x14,0x13,0.4f));
+            strokeColor(Color(0x15,0x14,0x13,0.4f));
             break;
         }
 
