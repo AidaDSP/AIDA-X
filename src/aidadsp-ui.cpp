@@ -5,6 +5,7 @@
  */
 
 #include "DistrhoPluginCommon.hpp"
+#include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 
@@ -18,7 +19,7 @@ START_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 enum ButtonIds {
-    kButtonLoadModel,
+    kButtonLoadModel = 1001,
     kButtonLoadCabinet,
     kButtonEnableMicInput
 };
@@ -26,7 +27,8 @@ enum ButtonIds {
 enum MicInputState {
     kMicInputUnsupported,
     kMicInputSupported,
-    kMicInputEnabled
+    kMicInputEnabled,
+    kMicInputJACK
 };
 
 class AidaDSPLoaderUI : public UI,
@@ -54,9 +56,9 @@ class AidaDSPLoaderUI : public UI,
     } knobs;
 
     struct {
-        ScopedPointer<AidaSwitch> bypass;
-        ScopedPointer<AidaSwitch> eqpos;
-        ScopedPointer<AidaSwitch> midtype;
+        ScopedPointer<AidaPluginSwitch> bypass;
+        ScopedPointer<AidaPluginSwitch> eqpos;
+        ScopedPointer<AidaPluginSwitch> midtype;
     } switches;
 
     struct {
@@ -64,12 +66,12 @@ class AidaDSPLoaderUI : public UI,
     } splitters;
     
     struct {
-        ScopedPointer<AidaButton> model;
-        ScopedPointer<AidaButton> ir;
-    } filebuttons;
+        ScopedPointer<AidaFileGroup> model;
+        ScopedPointer<AidaFileGroup> cabsim;
+    } loaders;
 
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-    ScopedPointer<AidaButton> micButton;
+    ScopedPointer<AidaPushButton> micButton;
     MicInputState micInputState = kMicInputUnsupported;
    #endif
 
@@ -80,6 +82,8 @@ class AidaDSPLoaderUI : public UI,
         kFileLoaderModel,
         kFileLoaderImpulse,
     } fileLoaderMode = kFileLoaderNull;
+
+    String aboutLabel;
 
 public:
     /* constructor */
@@ -109,29 +113,35 @@ public:
         knobs.presence = new AidaKnob(this, this, images.knob, images.scale, kParameterPRESENCE);
         knobs.master = new AidaKnob(this, this, images.knob, images.scale, kParameterMASTER);
 
-        switches.bypass = new AidaSwitch(this, this, kParameterGLOBALBYPASS);
-        switches.eqpos = new AidaSwitch(this, this, kParameterEQPOS);
-        switches.midtype = new AidaSwitch(this, this, kParameterMTYPE);
+        switches.bypass = new AidaPluginSwitch(this, this, kParameterGLOBALBYPASS);
+        switches.eqpos = new AidaPluginSwitch(this, this, kParameterEQPOS);
+        switches.midtype = new AidaPluginSwitch(this, this, kParameterMTYPE);
 
         splitters.s1 = new AidaSplitter(this);
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
-        filebuttons.model = new AidaButton(this, this, kButtonLoadModel, "Load model...");
-        filebuttons.ir = new AidaButton(this, this, kButtonLoadCabinet, "Load IR...");
+        loaders.model = new AidaFileGroup(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "Load model...");
+        loaders.model->setFilename("US-Double-Nrm-Model.json");
+
+        loaders.cabsim = new AidaFileGroup(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "Load cabinet IR...");
+        loaders.cabsim->setFilename("US-Double-Nrm-Cab.wav");
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         if (isUsingNativeAudio())
         {
             if (supportsAudioInput())
             {
-                micButton = new AidaButton(this, this, kButtonEnableMicInput, "Enable Mic/Input");
+                micButton = new AidaPushButton(this);
+                micButton->setCallback(this);
+                micButton->setId(kButtonEnableMicInput);
+                micButton->setLabel("Enable Input");
                 micInputState = kMicInputSupported;
             }
         }
         else
         {
-            micInputState = kMicInputEnabled;
+            micInputState = kMicInputJACK;
         }
        #endif
 
@@ -158,6 +168,11 @@ public:
 
         if (scaleFactor != 1.0)
             setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
+
+        aboutLabel = "AIDA-X ";
+        aboutLabel += getPluginFormatName();
+        aboutLabel += " ";
+        aboutLabel += kVersionString;
     }
 
 protected:
@@ -181,7 +196,7 @@ protected:
             knobs.pregain->setValue(value, false);
             break;
         case kParameterNETBYPASS:
-            // TODO
+            loaders.model->setChecked(value < 0.5f);
             break;
         case kParameterEQBYPASS:
             // TODO
@@ -210,8 +225,8 @@ protected:
         case kParameterMASTER:
             knobs.master->setValue(value, false);
             break;
-        case kParameterCONVOLVERENABLE:
-            // TODO
+        case kParameterCABSIMBYPASS:
+            loaders.cabsim->setChecked(value < 0.5f);
             break;
         case kParameterGLOBALBYPASS:
             switches.bypass->setChecked(value < 0.5f, false);
@@ -229,8 +244,12 @@ protected:
         }
     }
 
-    void stateChanged(const char* key, const char* value) override
+    void stateChanged(const char* const key, const char* const value) override
     {
+        if (std::strcmp(key, "json") == 0)
+            return loaders.model->setFilename(value);
+        if (std::strcmp(key, "ir") == 0)
+            return loaders.cabsim->setFilename(value);
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -238,8 +257,6 @@ protected:
 
     void onNanoDisplay() override
     {
-        const GraphicsContext& ctx(getGraphicsContext());
-
         const uint width = getWidth();
         const uint height = getHeight();
         const double scaleFactor = getScaleFactor();
@@ -257,8 +274,8 @@ protected:
         beginPath();
         rect(0, 0, width, height);
         fillPaint(linearGradient(0, 0, 0, height,
-                                 Color(0xcd, 0xff, 0x05).plus(50),
-                                 Color(0x8b, 0xf7, 0x00).plus(50)));
+                                 Color(0xcd, 0xff, 0x05).minus(50).invert(),
+                                 Color(0x8b, 0xf7, 0x00).minus(50).invert()));
         fill();
 
         // outer bounds inner shadow matching host color, if provided
@@ -278,6 +295,12 @@ protected:
         fillPaint(boxGradient(0, 0, width, height, cornerRadius, cornerRadius, bgColor.withAlpha(0.f), bgColor));
         fill();
 
+        // box shadow
+        beginPath();
+        rect(marginHorizontal/2, marginVertical/2, marginHorizontal+widthPedal, marginVertical+heightPedal);
+        fillPaint(boxGradient(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius, cornerRadius, Color(0,0,0,1.f), Color(0,0,0,0.f)));
+        fill();
+
         // .rt-neural .grid
         beginPath();
         roundedRect(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius);
@@ -290,7 +313,7 @@ protected:
         fill();
 
         // extra
-        strokeColor(Color(50, 50, 50, 0.5f));
+        strokeColor(Color(150, 150, 150, 0.25f));
         stroke();
 
         // .rt-neural .background_head
@@ -354,37 +377,42 @@ protected:
         text(marginHorizontal + widthPedal/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-        fillColor(Color(0, 0, 0));
-        fontSize(kSubWidgetsFontSize * scaleFactor);
+        fillColor(Color(1.f,1.f,1.f));
+        fontSize((kSubWidgetsFontSize + 1) * scaleFactor);
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 
-        const double micx = marginHorizontal + 150 * scaleFactor;
+        const double micx = marginHorizontal + (micButton != nullptr ? 150 : 10) * scaleFactor;
         switch (micInputState)
         {
         case kMicInputUnsupported:
-            text(micx, marginVertical/2, "Mic/Input Unsupported", nullptr);
+            text(micx, marginVertical/2, "Input Unsupported", nullptr);
             break;
         case kMicInputSupported:
-            text(micx, marginVertical/2, "Please enable Mic/Input...", nullptr);
+            text(micx, marginVertical/2, "Please enable Input...", nullptr);
             break;
         case kMicInputEnabled:
-            text(micx, marginVertical/2, "Mic/Input Enabled", nullptr);
+            text(micx, marginVertical/2, "Input enabled", nullptr);
+            break;
+        case kMicInputJACK:
+            text(micx, marginVertical/2, "Input always enabled (using JACK)", nullptr);
             break;
         }
        #endif
+
+       textAlign(ALIGN_RIGHT | ALIGN_MIDDLE);
+       text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
     }
 
+    /*
     void onResize(const ResizeEvent& event) override
     {
         UI::onResize(event);
         repositionWidgets();
     }
+    */
 
     void repositionWidgets()
     {
-        const uint width = getWidth();
-        const uint height = getHeight();
-
         const double scaleFactor = getScaleFactor();
         const double widthPedal = kPedalWidth * scaleFactor;
         const double heightPedal = kPedalHeight * scaleFactor;
@@ -394,7 +422,7 @@ protected:
 
         const uint unusedSpace = widthPedal
                                - (AidaKnob::kScaleSize * scaleFactor * 7)
-                               - (AidaSwitch::kFullWidth  * scaleFactor * 3)
+                               - (AidaPluginSwitch::kFullWidth  * scaleFactor * 3)
                                - (AidaSplitter::kLineWidth * scaleFactor * 3);
         const uint padding = unusedSpace / 14;
         const uint maxHeight = subwidgetsLayout.setAbsolutePos(marginHorizontal + margin,
@@ -402,8 +430,13 @@ protected:
                                                                padding);
         subwidgetsLayout.setSize(maxHeight, 0);
 
-        filebuttons.model->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginTop + margin + 20 * scaleFactor);
-        filebuttons.ir->setAbsolutePos(marginHorizontal + widthPedal * 2 / 3, marginTop + margin + 80 * scaleFactor);
+        const double loadersX = marginHorizontal + widthPedal * 2 / 3;
+
+        loaders.model->setAbsolutePos(loadersX, marginTop + margin + margin / 2);
+        loaders.model->setWidth(widthPedal / 3 - margin * 2);
+
+        loaders.cabsim->setAbsolutePos(loadersX, marginTop + margin * 2 + loaders.model->getHeight());
+        loaders.cabsim->setWidth(widthPedal / 3 - margin * 2);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         if (micButton != nullptr)
@@ -413,6 +446,9 @@ protected:
 
     void buttonClicked(SubWidget* const widget, int button) override
     {
+        if (button != kMouseButtonLeft)
+            return;
+
         const uint id = widget->getId();
 
         switch (id)
@@ -420,12 +456,12 @@ protected:
         case kParameterEQPOS:
         case kParameterMTYPE:
             editParameter(id, true);
-            setParameterValue(id, static_cast<AidaSwitch*>(widget)->isChecked() ? 1.f : 0.f);
+            setParameterValue(id, static_cast<AidaPluginSwitch*>(widget)->isChecked() ? 1.f : 0.f);
             editParameter(id, false);
             break;
         case kParameterGLOBALBYPASS:
             editParameter(id, true);
-            setParameterValue(id, static_cast<AidaSwitch*>(widget)->isChecked() ? 0.f : 1.f);
+            setParameterValue(id, static_cast<AidaPluginSwitch*>(widget)->isChecked() ? 0.f : 1.f);
             editParameter(id, false);
             break;
         case kButtonLoadModel:
@@ -479,9 +515,10 @@ protected:
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE
     void uiIdle() override
     {
-        if (isUsingNativeAudio() && supportsAudioInput())
+        if (micButton != nullptr)
         {
             const MicInputState newMicInputState = isAudioInputEnabled() ? kMicInputEnabled : kMicInputSupported;
+
             if (micInputState != newMicInputState)
             {
                 micInputState = newMicInputState;

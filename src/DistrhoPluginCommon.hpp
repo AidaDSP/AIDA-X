@@ -9,6 +9,9 @@
 
 #include "DistrhoDetails.hpp"
 
+static constexpr const char* const kVersionString = "v0.1.0";
+static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
+
 #define DISTRHO_PLUGIN_BRAND   "AIDA-X"
 #define DISTRHO_PLUGIN_NAME    "RT Neural Loader"
 #define DISTRHO_PLUGIN_URI     "http://aidadsp.cc/plugins/aidadsp-bundle/rt-neural-loader"
@@ -24,10 +27,10 @@
 #define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:SimulatorPlugin"
 
 // known and defined in advance
-static const constexpr uint kPedalWidth = 900;
-static const constexpr uint kPedalHeight = 328;
-static const constexpr uint kPedalMargin = 20;
-static const constexpr uint kPedalMarginTop = 40;
+static constexpr const uint kPedalWidth = 900;
+static constexpr const uint kPedalHeight = 318;
+static constexpr const uint kPedalMargin = 20;
+static constexpr const uint kPedalMarginTop = 40;
 
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)
@@ -49,7 +52,7 @@ enum Parameters {
     kParameterDEPTH,
     kParameterPRESENCE,
     kParameterMASTER,
-    kParameterCONVOLVERENABLE,
+    kParameterCABSIMBYPASS,
     kParameterGLOBALBYPASS,
     kParameterReportModelType,
     kParameterReportCabinetLength,
@@ -72,6 +75,7 @@ enum MidEqType {
     kMidEqBandpass
 };
 
+// TODO, unused for now
 enum ReportModelType {
     kReportModelNone,
     kReportModelStandard,
@@ -95,7 +99,7 @@ static const ParameterEnumerationValue kBYPASS[2] = {
 };
 
 static const Parameter kParameters[] = {
-    { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 100.f, },
+    { kParameterIsAutomatable, "INLPF", "INLPF", "%", 50.f, 25.f, 99.f, },
     { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", -6.f, -12.f, 0.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
@@ -111,7 +115,7 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "DEPTH", "DEPTH", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "PRESENCE", "PRESENCE", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
-    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CONVOLVERENABLE", "CONVOLVERENABLE", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CABSIMBYPASS", "CABSIMBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
     { kParameterIsOutput, "ReportModelType", "ReportModelType", "", 0.f, 0.f, kReportModelHeavy, },
     { kParameterIsOutput, "ReportCabinetLength", "ReportCabinetLength", "", 0.f, 0.f, 3600.f, },

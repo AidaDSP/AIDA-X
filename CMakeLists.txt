@@ -18,7 +18,7 @@ add_subdirectory(modules/rtneural)
 find_package(Threads REQUIRED)
 # set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
-dpf_add_plugin(Aida-X
+dpf_add_plugin(AIDA-X
   TARGETS clap lv2 vst2 vst3
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
@@ -41,7 +41,7 @@ target_compile_definitions(dgl-opengl PUBLIC
   NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
 )
 
-target_include_directories(Aida-X PUBLIC
+target_include_directories(AIDA-X PUBLIC
   src
   src/plugin
   modules/dr_libs
@@ -53,10 +53,10 @@ target_include_directories(Aida-X PUBLIC
 
 # needed for enabling SSE in pffft
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
-  target_compile_definitions(Aida-X PUBLIC i386)
+  target_compile_definitions(AIDA-X PUBLIC i386)
 endif()
 
-target_link_libraries(Aida-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(AIDA-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
 
 # convert data into code
 add_custom_command(
