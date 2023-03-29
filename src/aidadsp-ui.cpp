@@ -66,8 +66,8 @@ class AidaDSPLoaderUI : public UI,
     } splitters;
     
     struct {
-        ScopedPointer<AidaFileGroup> model;
-        ScopedPointer<AidaFileGroup> cabsim;
+        ScopedPointer<AidaFilenameButton> model;
+        ScopedPointer<AidaFilenameButton> cabsim;
     } loaders;
 
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE
@@ -121,10 +121,10 @@ public:
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
-        loaders.model = new AidaFileGroup(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "Load model...");
+        loaders.model = new AidaFilenameButton(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "model");
         loaders.model->setFilename("US-Double-Nrm-Model.json");
 
-        loaders.cabsim = new AidaFileGroup(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "Load cabinet IR...");
+        loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "cabinet IR");
         loaders.cabsim->setFilename("US-Double-Nrm-Cab.wav");
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
@@ -270,6 +270,8 @@ protected:
         const double marginHorizontal = kPedalMargin * scaleFactor;
         const double marginVertical = kPedalMarginTop * scaleFactor;
 
+        const Size<uint> headBgSize(images.background.getSize() / 2 * scaleFactor);
+
         // outer bounds gradient
         beginPath();
         rect(0, 0, width, height);
@@ -292,7 +294,16 @@ protected:
             bgColor = Color(0,0,0);
         }
 
-        fillPaint(boxGradient(0, 0, width, height, cornerRadius, cornerRadius, bgColor.withAlpha(0.f), bgColor));
+        fillPaint(boxGradient(scaleFactor, scaleFactor, width-scaleFactor*2, height-scaleFactor*2,
+                              cornerRadius/2, cornerRadius/4, bgColor.withAlpha(0.f), bgColor));
+        fill();
+
+        // outer bounds pattern
+        fillPaint(imagePattern(0,
+                               0,
+                               headBgSize.getWidth(),
+                               headBgSize.getHeight(),
+                               0.f, images.background, 1.f));
         fill();
 
         // box shadow
@@ -317,8 +328,6 @@ protected:
         stroke();
 
         // .rt-neural .background_head
-        const Size<uint> headBgSize(images.background.getSize() / 2 * scaleFactor);
-
         beginPath();
         roundedRect(marginHorizontal + marginHead,
                     marginVertical + marginHead,
@@ -378,7 +387,7 @@ protected:
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         fillColor(Color(1.f,1.f,1.f));
-        fontSize((kSubWidgetsFontSize + 1) * scaleFactor);
+        fontSize((kSubWidgetsFontSize + 2) * scaleFactor);
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 
         const double micx = marginHorizontal + (micButton != nullptr ? 150 : 10) * scaleFactor;
@@ -418,6 +427,7 @@ protected:
         const double heightPedal = kPedalHeight * scaleFactor;
         const double marginHorizontal = kPedalMargin * scaleFactor;
         const double marginTop = kPedalMarginTop * scaleFactor;
+        const double heightHead = 177 * scaleFactor;
         const double margin = 15 * scaleFactor;
 
         const uint unusedSpace = widthPedal
@@ -431,11 +441,12 @@ protected:
         subwidgetsLayout.setSize(maxHeight, 0);
 
         const double loadersX = marginHorizontal + widthPedal * 2 / 3;
+        const double loadersY = marginTop + heightPedal - heightHead;
 
-        loaders.model->setAbsolutePos(loadersX, marginTop + margin + margin / 2);
+        loaders.model->setAbsolutePos(loadersX, loadersY - margin - loaders.cabsim->getHeight());
         loaders.model->setWidth(widthPedal / 3 - margin * 2);
 
-        loaders.cabsim->setAbsolutePos(loadersX, marginTop + margin * 2 + loaders.model->getHeight());
+        loaders.cabsim->setAbsolutePos(loadersX, loadersY);
         loaders.cabsim->setWidth(widthPedal / 3 - margin * 2);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
