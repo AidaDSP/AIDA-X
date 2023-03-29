@@ -3,7 +3,7 @@ project(aidadsp-loader VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(amd64|AMD64|i.86|x64|X64|x86|x86_64|X86)$")
   set(PREFER_RTNEURAL_XSIMD TRUE)
 else()
   set(PREFER_RTNEURAL_XSIMD FALSE)
@@ -50,6 +50,11 @@ target_include_directories(Aida-X PUBLIC
   modules/rtneural
   ${CMAKE_BINARY_DIR}
 )
+
+# needed for enabling SSE in pffft
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
+  target_compile_definitions(Aida-X PUBLIC i386)
+endif()
 
 target_link_libraries(Aida-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
 
