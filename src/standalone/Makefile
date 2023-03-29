@@ -69,6 +69,17 @@ BUILD_CXX_FLAGS += -Di386
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Extra rules for macOS app bundle
+
+$(TARGET_DIR)/Aida-X.app/Contents/Info.plist: ../../utils/Info.plist $(TARGET_DIR)/Aida-X.app/Contents/Resources/ax.icns
+	-@mkdir -p $(shell dirname $@)
+	cp $< $@
+
+$(TARGET_DIR)/Aida-X.app/Contents/Resources/ax.icns: ../../utils/ax.icns
+	-@mkdir -p $(shell dirname $@)
+	cp $< $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for emscripten
 
 ifeq ($(WASM),true)

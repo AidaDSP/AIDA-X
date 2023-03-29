@@ -16,7 +16,7 @@ add_subdirectory(modules/dpf)
 add_subdirectory(modules/rtneural)
 
 find_package(Threads REQUIRED)
-set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+# set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 dpf_add_plugin(Aida-X
   TARGETS clap lv2 vst2 vst3
