@@ -25,7 +25,7 @@
 
 // known and defined in advance
 static const constexpr uint kPedalWidth = 900;
-static const constexpr uint kPedalHeight = 328;
+static const constexpr uint kPedalHeight = 318;
 static const constexpr uint kPedalMargin = 20;
 static const constexpr uint kPedalMarginTop = 40;
 

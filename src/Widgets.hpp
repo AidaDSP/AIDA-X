@@ -14,7 +14,7 @@
 START_NAMESPACE_DISTRHO
 
 static constexpr const uint kSubWidgetsFontSize = 14;
-static constexpr const uint kSubWidgetsFullHeight = 100;
+static constexpr const uint kSubWidgetsFullHeight = 90;
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -27,9 +27,9 @@ class AidaKnob : public NanoSubWidget,
     const char* label;
 
 public:
+    static constexpr const uint kScaleSize = 80;
     static constexpr const uint kKnobSize = 55;
-    static constexpr const uint kKnobMargin = 17;
-    static constexpr const uint kScaleSize = 90;
+    static constexpr const uint kKnobMargin = (kScaleSize - kKnobSize) / 2;
 
     AidaKnob(NanoTopLevelWidget* const p, KnobEventHandler::Callback* const cb,
              const NanoImage& knobImg, const NanoImage& scaleImg, const Parameters paramId)

@@ -118,10 +118,10 @@ public:
         splitters.s2 = new AidaSplitter(this);
         splitters.s3 = new AidaSplitter(this);
 
-        loaders.model = new AidaFileGroup(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "Load Model...");
+        loaders.model = new AidaFileGroup(this, this, kParameterNETBYPASS, "MODEL", kButtonLoadModel, "Load model...");
         loaders.model->setFilename("US-Double-Nrm-Model.json");
 
-        loaders.cabsim = new AidaFileGroup(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "Load Cabinet IR...");
+        loaders.cabsim = new AidaFileGroup(this, this, kParameterCABSIMBYPASS, "CABINET IR", kButtonLoadCabinet, "Load cabinet IR...");
         loaders.cabsim->setFilename("US-Double-Nrm-Cab.wav");
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
@@ -132,7 +132,7 @@ public:
                 micButton = new AidaPushButton(this);
                 micButton->setCallback(this);
                 micButton->setId(kButtonEnableMicInput);
-                micButton->setLabel("Enable Mic/Input");
+                micButton->setLabel("Enable Input");
                 micInputState = kMicInputSupported;
             }
         }
@@ -377,16 +377,16 @@ protected:
         switch (micInputState)
         {
         case kMicInputUnsupported:
-            text(micx, marginVertical/2, "Mic/Input Unsupported", nullptr);
+            text(micx, marginVertical/2, "Input Unsupported", nullptr);
             break;
         case kMicInputSupported:
-            text(micx, marginVertical/2, "Please enable Mic/Input...", nullptr);
+            text(micx, marginVertical/2, "Please enable Input...", nullptr);
             break;
         case kMicInputEnabled:
-            text(micx, marginVertical/2, "Mic/Input enabled", nullptr);
+            text(micx, marginVertical/2, "Input enabled", nullptr);
             break;
         case kMicInputJACK:
-            text(micx, marginVertical/2, "Mic/Input always enabled (using JACK)", nullptr);
+            text(micx, marginVertical/2, "Input always enabled (using JACK)", nullptr);
             break;
         }
        #endif
