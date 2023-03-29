@@ -9,6 +9,9 @@
 
 #include "DistrhoDetails.hpp"
 
+static constexpr const char* const kVersionString = "v0.1.0";
+static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
+
 #define DISTRHO_PLUGIN_BRAND   "AIDA-X"
 #define DISTRHO_PLUGIN_NAME    "RT Neural Loader"
 #define DISTRHO_PLUGIN_URI     "http://aidadsp.cc/plugins/aidadsp-bundle/rt-neural-loader"
@@ -24,10 +27,10 @@
 #define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:SimulatorPlugin"
 
 // known and defined in advance
-static const constexpr uint kPedalWidth = 900;
-static const constexpr uint kPedalHeight = 318;
-static const constexpr uint kPedalMargin = 20;
-static const constexpr uint kPedalMarginTop = 40;
+static constexpr const uint kPedalWidth = 900;
+static constexpr const uint kPedalHeight = 318;
+static constexpr const uint kPedalMargin = 20;
+static constexpr const uint kPedalMarginTop = 40;
 
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)

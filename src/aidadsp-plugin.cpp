@@ -282,7 +282,7 @@ protected:
     */
     uint32_t getVersion() const override
     {
-        return d_version(1, 0, 0);
+        return kVersionNumber;
     }
 
    /**

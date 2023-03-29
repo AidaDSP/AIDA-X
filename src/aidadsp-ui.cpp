@@ -5,6 +5,7 @@
  */
 
 #include "DistrhoPluginCommon.hpp"
+#include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 
@@ -81,6 +82,8 @@ class AidaDSPLoaderUI : public UI,
         kFileLoaderModel,
         kFileLoaderImpulse,
     } fileLoaderMode = kFileLoaderNull;
+
+    String aboutLabel;
 
 public:
     /* constructor */
@@ -165,6 +168,11 @@ public:
 
         if (scaleFactor != 1.0)
             setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
+
+        aboutLabel = "AIDA-X ";
+        aboutLabel += getPluginFormatName();
+        aboutLabel += " ";
+        aboutLabel += kVersionString;
     }
 
 protected:
@@ -390,6 +398,9 @@ protected:
             break;
         }
        #endif
+
+       textAlign(ALIGN_RIGHT | ALIGN_MIDDLE);
+       text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
     }
 
     /*
