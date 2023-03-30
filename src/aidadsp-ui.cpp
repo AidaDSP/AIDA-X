@@ -508,7 +508,7 @@ protected:
             break;
         case kButtonLoadCabinet:
             fileLoaderMode = kFileLoaderImpulse;
-            requestStateFile("ir", "cab-ir.wav", "Open Cabinet Simulator IR");
+            requestStateFile("cabinet", "cab-ir.wav", "Open Cabinet Simulator IR");
             break;
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
@@ -584,9 +584,11 @@ protected:
             break;
         case kFileLoaderModel:
             setState("json", filename);
+            loaders.model->setFilename(filename);
             break;
         case kFileLoaderImpulse:
-            setState("ir", filename);
+            setState("cabinet", filename);
+            loaders.cabsim->setFilename(filename);
             break;
         }
 
