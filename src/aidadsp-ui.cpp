@@ -105,7 +105,11 @@ public:
         using namespace Graphics;
         images.aida = createImageFromMemory(aidaData, aidaDataSize, IMAGE_GENERATE_MIPMAPS);
         images.ax = createImageFromMemory(axData, axDataSize, IMAGE_GENERATE_MIPMAPS);
+#ifdef DGL_USE_GLES
+        images.background = createImageFromMemory(background_p2Data, background_p2DataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
+#else
         images.background = createImageFromMemory(backgroundData, backgroundDataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
+#endif
         images.knob = createImageFromMemory(knobData, knobDataSize, IMAGE_GENERATE_MIPMAPS);
         images.scale = createImageFromMemory(scaleData, scaleDataSize, IMAGE_GENERATE_MIPMAPS);
 

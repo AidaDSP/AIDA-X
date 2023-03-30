@@ -5,7 +5,7 @@ AIDA-X is an Amp Model Player, allowing it to load models of AI trained music ge
 Its main intended use is to provide high fidelity simulations of amplifiers.  
 However, it is also possible to run entire signal chains consisting of any combination of amp, cab, dist, drive, fuzz, boost and eq.
 
-This repository contains the source code for the DPF-based plugin variant, see [aidadsp-lv2](https://github.com/AidaDSP/aidadsp-lv2) for the LV2 embed version of the same engine.
+This repository contains the source code for the [DPF-based](https://github.com/DISTRHO/DPF) plugin variant, see [aidadsp-lv2](https://github.com/AidaDSP/aidadsp-lv2) for the LV2 embed version of the same engine.
 
 ![screenshot](utils/Screenshot.png "Screenshot")
 
@@ -41,3 +41,7 @@ Behind the scenes AIDA-X uses [RTNeural](https://github.com/jatinchowdhury18/RTN
 This implies neural network training. Please follow __*Automated_GuitarAmpModelling.ipynb*__ script available on
 
 - [Automated-GuitarAmpModelling](https://github.com/MaxPayne86/Automated-GuitarAmpModelling/tree/aidadsp_devel)
+
+##### License #####
+
+AIDA-X is licensed under GPLv3+, see [LICENSE](LICENSE) for more details.
