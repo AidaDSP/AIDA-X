@@ -39,6 +39,7 @@ DPF_PATH = ../../modules/dpf
 DPF_BUILD_DIR = ../../build
 DPF_TARGET_DIR = ../../build/bin
 NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
+WASM_EXCEPTIONS = true
 WINDOWS_ICON_ID = 401
 include ../../modules/dpf/Makefile.plugins.mk
 
