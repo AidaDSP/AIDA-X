@@ -267,8 +267,7 @@ public:
     AidaPushButton(NanoTopLevelWidget* const p)
         : NanoSubWidget(p),
           ButtonEventHandler(this),
-          parent(p),
-          label("R")
+          parent(p)
     {
         const double scaleFactor = p->getScaleFactor();
         setSize(kButtonWidth * scaleFactor, kButtonHeight * scaleFactor);
@@ -310,6 +309,9 @@ protected:
 
         fill();
         stroke();
+
+        if (label.isEmpty())
+            return;
 
         fillColor(Color(1.f, 1.f, 1.f));
         fontSize(16 * scaleFactor);
@@ -409,8 +411,6 @@ class AidaFilenameButton : public NanoSubWidget
             fillPaint(imagePattern(0, 0, iconSize, iconSize, 0.f, isChecked() ? imageOn : imageOff, 1.f));
             fill();
             restore();
-
-            // TODO draw icon
         }
 
         bool onMouse(const MouseEvent& event) override
@@ -441,8 +441,7 @@ class AidaFilenameButton : public NanoSubWidget
         AidaFileButton(NanoTopLevelWidget* const p, const String& label)
             : NanoSubWidget(p),
               ButtonEventHandler(this),
-              parent(p),
-              filename("file.name")
+              parent(p)
         {
             const double scaleFactor = p->getScaleFactor();
             setSize(kInitialWidth * scaleFactor, kCommonHeight * scaleFactor);

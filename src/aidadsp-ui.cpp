@@ -135,10 +135,10 @@ public:
         splitters.s3 = new AidaSplitter(this);
 
         loaders.model = new AidaFilenameButton(this, this, kParameterNETBYPASS, kButtonLoadModel, "model", icons.amp, icons.ampOn);
-        loaders.model->setFilename("US-Double-Nrm-Model.json");
+        loaders.model->setFilename(kDefaultModelName);
 
         loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, kButtonLoadCabinet, "cabinet IR", icons.cab, icons.cabOn);
-        loaders.cabsim->setFilename("US-Double-Nrm-Cab.wav");
+        loaders.cabsim->setFilename(kDefaultCabinetName);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         if (isUsingNativeAudio())
@@ -259,10 +259,12 @@ protected:
 
     void stateChanged(const char* const key, const char* const value) override
     {
+        const bool isDefault = value == nullptr || value[0] == '\0' || std::strcmp(value, "default") == 0;
+
         if (std::strcmp(key, "json") == 0)
-            return loaders.model->setFilename(value);
-        if (std::strcmp(key, "ir") == 0)
-            return loaders.cabsim->setFilename(value);
+            return loaders.model->setFilename(isDefault ? kDefaultModelName : value);
+        if (std::strcmp(key, "cabinet") == 0)
+            return loaders.cabsim->setFilename(isDefault ? kDefaultCabinetName : value);
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -405,8 +407,9 @@ protected:
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(marginHorizontal + widthPedal/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         fillColor(Color(1.f,1.f,1.f));
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         fontSize((kSubWidgetsFontSize + 2) * scaleFactor);
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 

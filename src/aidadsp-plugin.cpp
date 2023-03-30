@@ -333,7 +333,7 @@ protected:
         case kStateModelFile:
             state.hints = kStateIsFilenamePath;
             state.key = "json";
-            state.defaultValue = "";
+            state.defaultValue = "default";
             state.label = "Neural Model";
             state.description = "";
            #ifdef __MOD_DEVICES__
@@ -342,9 +342,9 @@ protected:
             break;
         case kStateImpulseFile:
             state.hints = kStateIsFilenamePath;
-            state.key = "ir";
-            state.defaultValue = "";
-            state.label = "Impulse Response";
+            state.key = "cabinet";
+            state.defaultValue = "default";
+            state.label = "Cabinet Impulse Response";
             state.description = "";
            #ifdef __MOD_DEVICES__
             state.fileTypes = "cabsim";
@@ -440,10 +440,12 @@ protected:
 
     void setState(const char* const key, const char* const value) override
     {
+        const bool isDefault = value == nullptr || value[0] == '\0' || std::strcmp(value, "default") == 0;
+
         if (std::strcmp(key, "json") == 0)
-            return loadModelFromFile(value);
-        if (std::strcmp(key, "ir") == 0)
-            return loadImpulseFromFile(value);
+            return isDefault ? loadDefaultModel() : loadModelFromFile(value);
+        if (std::strcmp(key, "cabinet") == 0)
+            return isDefault ? loadDefaultCabinet() : loadCabinetFromFile(value);
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -585,10 +587,10 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(ir != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(channels == 1,);
 
-        loadImpulse(channels, sampleRate, numFrames, ir);
+        loadCabinet(channels, sampleRate, numFrames, ir);
     }
 
-    void loadImpulseFromFile(const char* const filename)
+    void loadCabinetFromFile(const char* const filename)
     {
         uint channels;
         uint sampleRate;
@@ -602,12 +604,12 @@ protected:
             ir = drwav_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
         DISTRHO_SAFE_ASSERT_RETURN(ir != nullptr,);
 
-        loadImpulse(channels, sampleRate, numFrames, ir);
+        loadCabinet(channels, sampleRate, numFrames, ir);
 
         cabsimFilename = filename;
     }
 
-    void loadImpulse(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
+    void loadCabinet(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
     {
         float* irBuf;
         if (channels == 1)
@@ -787,8 +789,12 @@ protected:
         // reload cabsim file
         if (char* const filename = cabsimFilename.getAndReleaseBuffer())
         {
-            setState("ir", filename);
+            setState("cabinet", filename);
             std::free(filename);
+        }
+        else
+        {
+            loadDefaultCabinet();
         }
     }
 

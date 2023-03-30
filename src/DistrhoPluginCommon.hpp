@@ -35,6 +35,9 @@ static constexpr const uint kPedalMarginTop = 40;
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)
 
+static constexpr const char* const kDefaultModelName = "US-Double-Nrm-Model.json";
+static constexpr const char* const kDefaultCabinetName = "US-Double-Nrm-Cab.wav";
+
 enum Parameters {
     kParameterINLPF,
     kParameterPREGAIN,
