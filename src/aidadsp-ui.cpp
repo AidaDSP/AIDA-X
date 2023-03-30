@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "DistrhoPluginCommon.hpp"
 #include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
 #include "DistrhoStandaloneUtils.hpp"
@@ -249,10 +248,6 @@ protected:
             break;
         case kParameterGLOBALBYPASS:
             switches.bypass->setChecked(value < 0.5f, false);
-            break;
-        case kParameterReportModelType:
-            break;
-        case kParameterReportCabinetLength:
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:
@@ -499,6 +494,8 @@ protected:
             setParameterValue(id, static_cast<AidaPluginSwitch*>(widget)->isChecked() ? 1.f : 0.f);
             editParameter(id, false);
             break;
+        case kParameterCABSIMBYPASS:
+        case kParameterNETBYPASS:
         case kParameterGLOBALBYPASS:
             editParameter(id, true);
             setParameterValue(id, static_cast<AidaPluginSwitch*>(widget)->isChecked() ? 0.f : 1.f);

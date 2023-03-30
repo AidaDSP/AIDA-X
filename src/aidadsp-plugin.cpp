@@ -21,6 +21,7 @@
 #include "dr_wav.h"
 // -Wunused-variable
 #include "CDSPResampler.h"
+
 #include "TwoStageThreadedConvolver.hpp"
 
 START_NAMESPACE_DISTRHO
@@ -89,6 +90,27 @@ struct AidaToneControl {
 
         mastergain.setSampleRate(sampleRate);
         mastergain.setTarget(DB_CO(parameters[kParameterMASTER]));
+    }
+};
+
+struct AudioFile {
+    float* buffer;
+    drwav_uint64 currentFrame;
+    drwav_uint64 numFrames;
+    bool resampled;
+
+    AudioFile(float* const buffer_, const drwav_uint64 numFrames_, const bool resampled_) noexcept
+        : buffer(buffer_),
+          currentFrame(0),
+          numFrames(numFrames_),
+          resampled(resampled_) {}
+
+    ~AudioFile() noexcept
+    {
+        if (resampled)
+            delete[] buffer;
+        else
+            free(buffer);
     }
 };
 
@@ -198,6 +220,10 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+    AudioFile* audiofile = nullptr;
+    std::atomic<bool> activeAudiofile { false };
+   #endif
 
 public:
     AidaDSPLoaderPlugin()
@@ -220,12 +246,20 @@ public:
         // load default files
         loadDefaultCabinet();
         loadDefaultModel();
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        // TESTING
+        loadAudioFile("/Users/falktx/Documents/loop.wav");
+       #endif
     }
 
     ~AidaDSPLoaderPlugin()
     {
         delete model;
         delete cabsim;
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        delete audiofile;
+       #endif
         delete[] bypassInplaceBuffer;
         delete[] cabsimInplaceBuffer;
     }
@@ -349,6 +383,20 @@ protected:
             state.fileTypes = "cabsim";
            #endif
             break;
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        case kStateAudioFile:
+            state.hints = kStateIsFilenamePath;
+            state.key = "audiofile";
+            state.defaultValue = "";
+            state.label = "Audio Loop File";
+            state.description = "";
+           #ifdef __MOD_DEVICES__
+            state.fileTypes = "audioloop";
+           #endif
+            break;
+        case kStateReverbMode:
+            break;
+       #endif
         case kStateCount:
             break;
         }
@@ -430,8 +478,6 @@ protected:
         case kParameterGLOBALBYPASS:
             bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
             break;
-        case kParameterReportModelType:
-        case kParameterReportCabinetLength:
         case kParameterCount:
             break;
         }
@@ -445,6 +491,10 @@ protected:
             return isDefault ? loadDefaultModel() : loadModelFromFile(value);
         if (std::strcmp(key, "cabinet") == 0)
             return isDefault ? loadDefaultCabinet() : loadCabinetFromFile(value);
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        if (std::strcmp(key, "audiofile") == 0)
+            return loadAudioFile(value);
+       #endif
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -481,7 +531,6 @@ protected:
         float input_gain;
         float output_gain;
         nlohmann::json model_json;
-        ReportModelType model_type;
 
         try {
             jsonStream >> model_json;
@@ -513,9 +562,6 @@ protected:
             else {
                 output_gain = 1.0f;
             }
-
-            // TODO
-            model_type = kReportModelStandard;
         }
         catch (const std::exception& e) {
             d_stderr2("Unable to load json, error: %s", e.what());
@@ -561,8 +607,6 @@ protected:
         // if processing, wait for process cycle to complete
         while (oldmodel != nullptr && activeModel.load())
             d_msleep(1);
-
-        parameters[kParameterReportModelType] = model_type;
 
         delete oldmodel;
     }
@@ -655,10 +699,67 @@ protected:
         while (oldcabsim != nullptr && activeConvolver.load())
             d_msleep(1);
 
-        parameters[kParameterReportCabinetLength] = static_cast<double>(numFrames) / hostSampleRate;
-
         delete oldcabsim;
     }
+
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   /* -----------------------------------------------------------------------------------------------------------------
+    * Audio file loader */
+
+    void loadAudioFile(const char* const filename)
+    {
+        uint channels;
+        uint sampleRate;
+        drwav_uint64 numFrames;
+        float* data;
+        if (::strncasecmp(filename + std::max(0, static_cast<int>(std::strlen(filename)) - 5), ".flac", 5) == 0)
+            data = drflac_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
+        else
+            data = drwav_open_file_and_read_pcm_frames_f32(filename, &channels, &sampleRate, &numFrames, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+
+        // use left channel if not mono
+        if (channels != 1)
+        {
+            for (drwav_uint64 i=0, j=0; i<numFrames; ++i, j+=channels)
+                data[i] = data[j];
+            numFrames /= channels;
+        }
+
+        const double hostSampleRate = getSampleRate();
+
+        float* dataResampled;
+        if (sampleRate != hostSampleRate)
+        {
+            r8b::CDSPResampler24 resampler(sampleRate, hostSampleRate, numFrames);
+            const int numResampledFrames = resampler.getMaxOutLen(0);
+            DISTRHO_SAFE_ASSERT_RETURN(numResampledFrames > 0,);
+
+            dataResampled = new float[numResampledFrames];
+            resampler.oneshot(data, numFrames, dataResampled, numResampledFrames);
+
+            numFrames = numResampledFrames;
+        }
+        else
+        {
+            dataResampled = data;
+        }
+
+        if (dataResampled != data)
+            drwav_free(data, nullptr);
+
+        // swap active cabsim
+        AudioFile* const newaudiofile = new AudioFile(dataResampled, numFrames, dataResampled != data);
+        AudioFile* const oldaudiofile = audiofile;
+        audiofile = newaudiofile;
+
+        // if processing, wait for process cycle to complete
+        while (oldaudiofile != nullptr && activeAudiofile.load())
+            d_msleep(1);
+
+        delete oldaudiofile;
+    }
+   #endif
 
    /* -----------------------------------------------------------------------------------------------------------------
     * Process */
@@ -709,11 +810,34 @@ protected:
                 __builtin_unreachable();
         }
 
-        // Copy input for bypass buffer
-        std::memcpy(bypassInplaceBuffer, in, sizeof(float)*numSamples);
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+        if (audiofile != nullptr)
+        {
+            activeAudiofile.store(true);
+            const uint32_t numPartialSamples = std::min((uint32_t)(audiofile->numFrames - audiofile->currentFrame), numSamples);
+            std::memcpy(bypassInplaceBuffer, audiofile->buffer + audiofile->currentFrame, sizeof(float) * numPartialSamples);
+
+            if (numSamples != numPartialSamples)
+            {
+                const uint32_t extraSamples = numSamples - numPartialSamples;
+                std::memcpy(bypassInplaceBuffer, audiofile->buffer, sizeof(float) * extraSamples);
+                audiofile->currentFrame = extraSamples;
+            }
+            else
+            {
+                audiofile->currentFrame += numSamples;
+            }
+            activeAudiofile.store(false);
+        }
+        else
+       #endif
+        {
+            // Copy input for bypass buffer
+            std::memcpy(bypassInplaceBuffer, in, sizeof(float)*numSamples);
+        }
 
         // High frequencies roll-off (lowpass)
-        applyBiquadFilter(aida.in_lpf, out, in, numSamples);
+        applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
 
         // Pre-gain
         applyGainRamp(aida.pregain, out, numSamples);
@@ -743,7 +867,10 @@ protected:
 
             // cabsim smooth bypass and -12dB compensation
             for (uint32_t i = 0; i < numSamples; ++i)
-                out[i] *= cabsimGain.next() * DB_CO(-12);
+            {
+                const float b = cabsimGain.next() * DB_CO(-12);
+                out[i] = out[i] * b + cabsimInplaceBuffer[i] * (1.f - b);
+            }
         }
 
         // Equalizer section

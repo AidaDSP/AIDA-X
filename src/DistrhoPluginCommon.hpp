@@ -57,14 +57,16 @@ enum Parameters {
     kParameterMASTER,
     kParameterCABSIMBYPASS,
     kParameterGLOBALBYPASS,
-    kParameterReportModelType,
-    kParameterReportCabinetLength,
     kParameterCount
 };
 
 enum States {
     kStateModelFile,
     kStateImpulseFile,
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+    kStateAudioFile,
+    kStateReverbMode,
+   #endif
     kStateCount
 };
 
@@ -76,14 +78,6 @@ enum EqPos {
 enum MidEqType {
     kMidEqPeak,
     kMidEqBandpass
-};
-
-// TODO, unused for now
-enum ReportModelType {
-    kReportModelNone,
-    kReportModelStandard,
-    kReportModelLight,
-    kReportModelHeavy
 };
 
 static const ParameterEnumerationValue kEQPOS[2] = {
@@ -120,8 +114,6 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CABSIMBYPASS", "CABSIMBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
-    { kParameterIsOutput, "ReportModelType", "ReportModelType", "", 0.f, 0.f, kReportModelHeavy, },
-    { kParameterIsOutput, "ReportCabinetLength", "ReportCabinetLength", "", 0.f, 0.f, 3600.f, },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);

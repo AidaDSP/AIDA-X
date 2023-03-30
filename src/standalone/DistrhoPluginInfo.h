@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "DistrhoPluginCommon.hpp"
-
 #define DISTRHO_PLUGIN_NUM_INPUTS      1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS     2
 #define DISTRHO_UI_USER_RESIZABLE      1
 
 #define DISTRHO_PLUGIN_VARIANT_PLUGIN     0
 #define DISTRHO_PLUGIN_VARIANT_STANDALONE 1
+
+#include "DistrhoPluginCommon.hpp"
