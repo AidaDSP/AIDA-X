@@ -39,6 +39,9 @@ static constexpr const float COMMON_Q = 0.707f;
 static constexpr const float DEPTH_FREQ = 75.f;
 static constexpr const float PRESENCE_FREQ = 900.f;
 
+/* Gain compensation for cabinet IR (-6dB) */
+static constexpr const float kCabinetMaxGain = 0.5f;
+
 // --------------------------------------------------------------------------------------------------------------------
 
 struct AidaToneControl {
@@ -239,7 +242,7 @@ public:
         bypassGain.setTarget(1.f);
 
         cabsimGain.setTimeConstant(1);
-        cabsimGain.setTarget(1.f);
+        cabsimGain.setTarget(kCabinetMaxGain);
 
         // initialize
         bufferSizeChanged(getBufferSize());
@@ -471,7 +474,7 @@ protected:
             aida.mastergain.setTarget(DB_CO(value));
             break;
         case kParameterCABSIMBYPASS:
-            cabsimGain.setTarget(value > 0.5f ? 0.f : 1.f);
+            cabsimGain.setTarget(value > 0.5f ? 0.f : kCabinetMaxGain);
             break;
         case kParameterGLOBALBYPASS:
             bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
@@ -874,8 +877,8 @@ protected:
             // cabsim smooth bypass and -12dB compensation
             for (uint32_t i = 0; i < numSamples; ++i)
             {
-                const float b = cabsimGain.next() * DB_CO(-12);
-                out[i] = out[i] * b + cabsimInplaceBuffer[i] * (1.f - b);
+                const float b = cabsimGain.next();
+                out[i] = out[i] * b + cabsimInplaceBuffer[i] * (kCabinetMaxGain - b);
             }
         }
 
@@ -916,7 +919,6 @@ protected:
 
         bypassGain.setSampleRate(newSampleRate);
         cabsimGain.setSampleRate(newSampleRate);
-        // cabsimGain.setTarget(parameters[kParameterCONVOLVERENABLE] > 0.5f ? 1.f : 0.f);
 
         // reload cabsim file
         if (char* const filename = cabsimFilename.getAndReleaseBuffer())

@@ -19,3 +19,6 @@
 [submodule "modules/dr_libs"]
 	path = modules/dr_libs
 	url = https://github.com/mackron/dr_libs.git
+[submodule "modules/dpf-widgets"]
+	path = modules/dpf-widgets
+	url = https://github.com/DISTRHO/DPF-Widgets.git
