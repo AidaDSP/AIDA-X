@@ -16,7 +16,7 @@ Builds are available through [GitHub actions](https://github.com/AidaDSP/aida-x/
 Once the software is stable enough we will make proper releases with installers.
 
 Alternatively an experimental online version is available at [aida.kx.studio](https://aida.kx.studio/).  
-Audio input quality and latency in browsers is known to not be ideal, we will an integrated audio file player to it soon for easy testing.
+Audio input quality and latency in browsers is known to not be ideal, we will add an integrated audio file player to it soon for easy testing.
 
 ### Building ###
 
