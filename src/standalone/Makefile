@@ -58,11 +58,11 @@ BUILD_CXX_FLAGS += -I../../modules/r8brain
 BUILD_CXX_FLAGS += -I../../modules/rtneural
 # BUILD_CXX_FLAGS += -I../../modules/rtneural/RTNeural
 
-# BUILD_CXX_FLAGS += -DRTNEURAL_USE_EIGEN=1
-# BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/Eigen
+BUILD_CXX_FLAGS += -DRTNEURAL_USE_EIGEN=1
+BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/Eigen
 
-BUILD_CXX_FLAGS += -DRTNEURAL_USE_XSIMD=1
-BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/xsimd/include
+# BUILD_CXX_FLAGS += -DRTNEURAL_USE_XSIMD=1
+# BUILD_CXX_FLAGS += -I../../modules/rtneural/modules/xsimd/include
 
 ifeq ($(CPU_I386),true)
 # needed for enabling SSE in pffft
@@ -98,7 +98,7 @@ $(TARGET_DIR)/AIDA-X.app/Contents/Resources/ax.icns: ../../utils/ax.icns
 
 ifeq ($(WASM),true)
 
-# BUILD_CXX_FLAGS += -DEIGEN_DONT_VECTORIZE=1
+BUILD_CXX_FLAGS += -DEIGEN_DONT_VECTORIZE=1
 
 LINK_FLAGS += -O3
 LINK_FLAGS += -sALLOW_MEMORY_GROWTH
