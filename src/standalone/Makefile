@@ -12,9 +12,9 @@ NAME = AIDA-X
 # ---------------------------------------------------------------------------------------------------------------------
 # Do some magic (part 1)
 
-NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
-WASM_EXCEPTIONS = true
-WINDOWS_ICON_ID = 401
+export NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
+export WASM_EXCEPTIONS = true
+export WINDOWS_ICON_ID = 401
 include ../../modules/dpf/Makefile.base.mk
 
 # ---------------------------------------------------------------------------------------------------------------------
