@@ -528,17 +528,20 @@ protected:
             fileLoaderMode = kFileLoaderImpulse;
             requestStateFile("cabinet", lastDirCabinet, "Open Cabinet Simulator IR");
             break;
+      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
                 requestAudioInput();
             break;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+       #else
         case kButtonAudioFileStartId:
         case kButtonAudioFileStartId+1:
         case kButtonAudioFileStartId+2:
             setState("audiofile", kAudioLoopFilenames[id - kButtonAudioFileStartId]);
             break;
        #endif
+      #endif
         }
     }
 
