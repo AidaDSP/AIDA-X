@@ -28,10 +28,10 @@ START_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 /* Define a constexpr for converting a gain in dB to a coefficient */
-static constexpr const float DB_CO(const float g) { return g > -90.f ? std::pow(10.f, g * 0.05f) : 0.f; }
+static constexpr float DB_CO(const float g) { return g > -90.f ? std::pow(10.f, g * 0.05f) : 0.f; }
 
 /* Define a constexpr to scale % to coeff */
-static constexpr const float PC_CO(const float g) { return g < 100.f ? (g / 100.f) : 1.f; }
+static constexpr float PC_CO(const float g) { return g < 100.f ? (g / 100.f) : 1.f; }
 
 /* Defines for tone controls */
 static constexpr const float COMMON_Q = 0.707f;
@@ -157,7 +157,6 @@ void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
             using ModelType = std::decay_t<decltype (custom_model)>;
             if constexpr (ModelType::input_size == 1)
             {
-                float f;
                 if (input_skip)
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
