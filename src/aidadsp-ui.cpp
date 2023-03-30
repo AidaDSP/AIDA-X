@@ -91,6 +91,8 @@ class AidaDSPLoaderUI : public UI,
     } fileLoaderMode = kFileLoaderNull;
 
     String aboutLabel;
+    String lastDirModel;
+    String lastDirCabinet;
 
 public:
     /* constructor */
@@ -504,11 +506,11 @@ protected:
             break;
         case kButtonLoadModel:
             fileLoaderMode = kFileLoaderModel;
-            requestStateFile("json", "model.json", "Open AidaDSP model json");
+            requestStateFile("json", lastDirModel, "Open AidaDSP model json");
             break;
         case kButtonLoadCabinet:
             fileLoaderMode = kFileLoaderImpulse;
-            requestStateFile("cabinet", "cab-ir.wav", "Open Cabinet Simulator IR");
+            requestStateFile("cabinet", lastDirCabinet, "Open Cabinet Simulator IR");
             break;
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
@@ -517,7 +519,7 @@ protected:
         }
     }
 
-    void requestStateFile(const char* const stateKey, const char* const defaultName, const char* const title)
+    void requestStateFile(const char* const stateKey, const String& lastDir, const char* const title)
     {
        #ifndef DISTRHO_OS_WASM
         if (UI::requestStateFile(stateKey))
@@ -526,8 +528,10 @@ protected:
        #endif
 
         DISTRHO_NAMESPACE::FileBrowserOptions opts;
-        opts.defaultName = defaultName;
         opts.title = title;
+
+        if (lastDir.isNotEmpty())
+            opts.startDir = lastDir;
 
         if (!openFileBrowser(opts))
         {
@@ -583,12 +587,32 @@ protected:
         case kFileLoaderNull:
             break;
         case kFileLoaderModel:
+            // notify DSP
             setState("json", filename);
+
+            // update UI
             loaders.model->setFilename(filename);
+
+            // save dirname for next time
+            if (const char* const lastsep = std::strrchr(filename, DISTRHO_OS_SEP))
+            {
+                lastDirModel = filename;
+                lastDirModel.truncate(lastsep - filename);
+            }
             break;
         case kFileLoaderImpulse:
+            // notify DSP
             setState("cabinet", filename);
+
+            // update UI
             loaders.cabsim->setFilename(filename);
+
+            // save dirname for next time
+            if (const char* const lastsep = std::strrchr(filename, DISTRHO_OS_SEP))
+            {
+                lastDirCabinet = filename;
+                lastDirCabinet.truncate(lastsep - filename);
+            }
             break;
         }
 
