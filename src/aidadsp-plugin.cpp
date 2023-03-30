@@ -93,6 +93,7 @@ struct AidaToneControl {
     }
 };
 
+#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
 struct AudioFile {
     float* buffer;
     drwav_uint64 currentFrame;
@@ -113,6 +114,7 @@ struct AudioFile {
             free(buffer);
     }
 };
+#endif
 
 struct DynamicModel {
     ModelVariantType variant;
@@ -220,7 +222,7 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
     AudioFile* audiofile = nullptr;
     std::atomic<bool> activeAudiofile { false };
    #endif
@@ -246,10 +248,8 @@ public:
         // load default files
         loadDefaultCabinet();
         loadDefaultModel();
-
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-        // TESTING
-        loadAudioFile("/Users/falktx/Documents/loop.wav");
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+        loadAudioFile(kAudioLoopFilenames[0]);
        #endif
     }
 
@@ -257,7 +257,7 @@ public:
     {
         delete model;
         delete cabsim;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
         delete audiofile;
        #endif
         delete[] bypassInplaceBuffer;
@@ -383,7 +383,7 @@ protected:
             state.fileTypes = "cabsim";
            #endif
             break;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
         case kStateAudioFile:
             state.hints = kStateIsFilenamePath;
             state.key = "audiofile";
@@ -393,8 +393,6 @@ protected:
            #ifdef __MOD_DEVICES__
             state.fileTypes = "audioloop";
            #endif
-            break;
-        case kStateReverbMode:
             break;
        #endif
         case kStateCount:
@@ -491,7 +489,7 @@ protected:
             return isDefault ? loadDefaultModel() : loadModelFromFile(value);
         if (std::strcmp(key, "cabinet") == 0)
             return isDefault ? loadDefaultCabinet() : loadCabinetFromFile(value);
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
         if (std::strcmp(key, "audiofile") == 0)
             return loadAudioFile(value);
        #endif
@@ -702,7 +700,7 @@ protected:
         delete oldcabsim;
     }
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
    /* -----------------------------------------------------------------------------------------------------------------
     * Audio file loader */
 
@@ -798,19 +796,23 @@ protected:
     */
     void run(const float** inputs, float** outputs, uint32_t numSamples) override
     {
-        const float* const in  = inputs[0];
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+        const float* const in = inputs[0];
+       #endif
         /* */ float* const out = outputs[0];
 
         // optimize for non-denormal usage
         for (uint32_t i = 0; i < numSamples; ++i)
         {
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             if (!std::isfinite(in[i]))
                 __builtin_unreachable();
+           #endif
             if (!std::isfinite(out[i]))
                 __builtin_unreachable();
         }
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
         if (audiofile != nullptr)
         {
             activeAudiofile.store(true);
@@ -832,8 +834,12 @@ protected:
         else
        #endif
         {
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             // Copy input for bypass buffer
             std::memcpy(bypassInplaceBuffer, in, sizeof(float)*numSamples);
+           #else
+            std::memset(bypassInplaceBuffer, 0, sizeof(float)*numSamples);
+           #endif
         }
 
         // High frequencies roll-off (lowpass)

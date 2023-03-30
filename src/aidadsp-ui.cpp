@@ -20,7 +20,13 @@ START_NAMESPACE_DISTRHO
 enum ButtonIds {
     kButtonLoadModel = 1001,
     kButtonLoadCabinet,
-    kButtonEnableMicInput
+  #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+    kButtonEnableMicInput,
+   #else
+    kButtonAudioFileStartId = 2001,
+   #endif
+  #endif
 };
 
 enum MicInputState {
@@ -76,10 +82,14 @@ class AidaDSPLoaderUI : public UI,
         ScopedPointer<AidaFilenameButton> cabsim;
     } loaders;
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-    ScopedPointer<AidaPushButton> micButton;
+  #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     MicInputState micInputState = kMicInputUnsupported;
+    ScopedPointer<AidaPushButton> micButton;
+   #else
+    ScopedPointer<AidaFileList> audioFileList;
    #endif
+  #endif
 
     HorizontalLayout subwidgetsLayout;
 
@@ -145,7 +155,8 @@ public:
         loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, kButtonLoadCabinet, "cabinet IR", icons.cab, icons.cabOn);
         loaders.cabsim->setFilename(kDefaultCabinetName);
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (isUsingNativeAudio())
         {
             if (supportsAudioInput())
@@ -161,7 +172,13 @@ public:
         {
             micInputState = kMicInputJACK;
         }
+       #else
+        audioFileList = new AidaFileList(this, this, kButtonAudioFileStartId);
+        audioFileList->setFilename(0, kAudioLoopFilenames[0], true);
+        audioFileList->setFilename(1, kAudioLoopFilenames[1]);
+        audioFileList->setFilename(2, kAudioLoopFilenames[2]);
        #endif
+      #endif
 
         // Setup subwidgets layout
         subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
@@ -283,7 +300,7 @@ protected:
         const double heightPedal = kPedalHeight * scaleFactor;
         const double widthHead = widthPedal - marginHead * 2;
         const double heightHead = 177 * scaleFactor;
-        const double marginHorizontal = kPedalMargin * scaleFactor;
+        const double marginHorizontal = kPedalMargin * scaleFactor + (getWidth() - DISTRHO_UI_DEFAULT_WIDTH * scaleFactor) / 2;
         const double marginVertical = kPedalMarginTop * scaleFactor;
 
         const Size<uint> headBgSize(images.background.getSize() / 2 * scaleFactor);
@@ -409,9 +426,11 @@ protected:
         text(marginHorizontal + widthPedal/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
 
         fillColor(Color(1.f,1.f,1.f));
-
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         fontSize((kSubWidgetsFontSize + 2) * scaleFactor);
+        textAlign(ALIGN_RIGHT | ALIGN_MIDDLE);
+        text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 
         const double micx = marginHorizontal + (micButton != nullptr ? 150 : 10) * scaleFactor;
@@ -431,25 +450,20 @@ protected:
             break;
         }
        #endif
-
-       textAlign(ALIGN_RIGHT | ALIGN_MIDDLE);
-       text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
     }
 
-    /*
     void onResize(const ResizeEvent& event) override
     {
         UI::onResize(event);
         repositionWidgets();
     }
-    */
 
     void repositionWidgets()
     {
         const double scaleFactor = getScaleFactor();
         const double widthPedal = kPedalWidth * scaleFactor;
         const double heightPedal = kPedalHeight * scaleFactor;
-        const double marginHorizontal = kPedalMargin * scaleFactor;
+        const double marginHorizontal = kPedalMargin * scaleFactor + (getWidth() - DISTRHO_UI_DEFAULT_WIDTH * scaleFactor) / 2;
         const double marginTop = kPedalMarginTop * scaleFactor;
         const double heightHead = 177 * scaleFactor;
         const double margin = 15 * scaleFactor;
@@ -473,10 +487,15 @@ protected:
         loaders.cabsim->setAbsolutePos(loadersX, loadersY);
         loaders.cabsim->setWidth(widthPedal / 3 - margin * 2);
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (micButton != nullptr)
             micButton->setAbsolutePos(marginHorizontal, marginTop/2 - micButton->getHeight()/2);
+       #else
+        audioFileList->setAbsolutePos(loadersX, marginTop + margin * 3 / 2);
+        audioFileList->setWidth(widthPedal / 3 - margin * 2);
        #endif
+      #endif
     }
 
     void buttonClicked(SubWidget* const widget, int button) override
@@ -513,6 +532,13 @@ protected:
             if (supportsAudioInput() && !isAudioInputEnabled())
                 requestAudioInput();
             break;
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+        case kButtonAudioFileStartId:
+        case kButtonAudioFileStartId+1:
+        case kButtonAudioFileStartId+2:
+            setState("audiofile", kAudioLoopFilenames[id - kButtonAudioFileStartId]);
+            break;
+       #endif
         }
     }
 
@@ -551,7 +577,7 @@ protected:
         setParameterValue(widget->getId(), value);
     }
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
     void uiIdle() override
     {
         if (micButton != nullptr)

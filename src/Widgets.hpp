@@ -331,6 +331,214 @@ protected:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// filelist selector
+
+class AidaFileList : public NanoSubWidget,
+                     public ButtonEventHandler::Callback
+{
+    static constexpr const uint kCommonRadius = 10;
+    static constexpr const uint kSingleHeight = 24;
+    static constexpr const uint kSingleMargin = 8;
+    static constexpr const uint kInitialWidth = 100;
+
+    struct AidaFileButton : NanoSubWidget,
+                            ButtonEventHandler
+    {
+        NanoTopLevelWidget* const parent;
+        String label;
+
+        enum Position {
+            Top,
+            Middle,
+            Bottom
+        } position;
+
+        AidaFileButton(NanoTopLevelWidget* const p, const Position pos)
+            : NanoSubWidget(p),
+              ButtonEventHandler(this),
+              parent(p),
+              position(pos)
+        {
+            const double scaleFactor = p->getScaleFactor();
+            setSize(kInitialWidth * scaleFactor, kSingleHeight * scaleFactor);
+        }
+
+        void onNanoDisplay() override
+        {
+            if (label.isEmpty())
+                return;
+
+            const uint width = getWidth();
+            const uint height = getHeight();
+
+            const double scaleFactor = parent->getScaleFactor();
+            const double wfontSize = kSubWidgetsFontSize * scaleFactor;
+            const double margin = kSingleMargin * scaleFactor;
+            const double radius = kCommonRadius * scaleFactor;
+
+            uint state = getState();
+            if (isChecked())
+                state |= kButtonStateActive;
+
+            switch (state)
+            {
+            case kButtonStateDefault:
+                fillColor(Color(0x74,0x92,0x32));
+                break;
+            case kButtonStateHover:
+                fillColor(Color(0x56,0x73,0x28));
+                break;
+            case kButtonStateActive:
+                fillColor(Color(0x15,0x2c,0x0d));
+                break;
+            case kButtonStateActiveHover:
+                Color c(0x56,0x73,0x28);
+                c.interpolate(Color(0x15,0x2c,0x0d), 0.5f);
+                fillColor(c);
+                break;
+            }
+
+            switch (position)
+            {
+            case Middle:
+                beginPath();
+                rect(0, 0, width, height);
+                fill();
+                break;
+            case Top:
+            case Bottom:
+                beginPath();
+                roundedRect(0, 0, width, height, radius);
+                fill();
+                beginPath();
+                if (position == Top)
+                    rect(0, height/2, width, height);
+                else
+                    rect(0, 0, width, height/2);
+                fill();
+                break;
+            }
+
+            fillColor(Color(1.f, 1.f, 1.f));
+            fontSize(wfontSize);
+            textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+            text(margin, height / 2, label, nullptr);
+        }
+
+        bool onMouse(const MouseEvent& event) override
+        {
+            return ButtonEventHandler::mouseEvent(event);
+        }
+
+        bool onMotion(const MotionEvent& event) override
+        {
+            return ButtonEventHandler::motionEvent(event);
+        }
+    };
+
+public:
+    NanoTopLevelWidget* const parent;
+    ScopedPointer<AidaFileButton> buttons[3];
+    ButtonEventHandler::Callback* const callback;
+
+    AidaFileList(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, const uint buttonStartId)
+        : NanoSubWidget(p),
+          parent(p),
+          callback(cb)
+    {
+        buttons[0] = new AidaFileButton(p, AidaFileButton::Top);
+        buttons[0]->setCallback(this);
+        buttons[0]->setId(buttonStartId);
+
+        buttons[1] = new AidaFileButton(p, AidaFileButton::Middle);
+        buttons[1]->setCallback(this);
+        buttons[1]->setId(buttonStartId + 1);
+
+        buttons[2] = new AidaFileButton(p, AidaFileButton::Bottom);
+        buttons[2]->setCallback(this);
+        buttons[2]->setId(buttonStartId + 2);
+
+        const double scaleFactor = p->getScaleFactor();
+        setSize(kInitialWidth * scaleFactor, kSingleHeight * 3 * scaleFactor);
+    }
+
+    void setFilename(const int id, const char* const filename, const bool setAsActive = false)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(id >= 0 && id < 3,);
+
+        if (const char* const bname = std::strrchr(filename, DISTRHO_OS_SEP))
+            buttons[id]->label = bname + 1;
+        else
+            buttons[id]->label = filename;
+
+        if (setAsActive)
+            buttons[id]->setChecked(true, false);
+
+        buttons[id]->repaint();
+    }
+
+protected:
+    void onNanoDisplay() override
+    {
+        beginPath();
+        roundedRect(0, 0, getWidth(), getHeight(), kCommonRadius * parent->getScaleFactor());
+        fillColor(Color(0.f, 0.f, 0.f));
+        fill();
+    }
+
+    void buttonClicked(SubWidget* const widget, const int button) override
+    {
+        if (button != kMouseButtonLeft)
+            return;
+
+        /**/ if (buttons[0] == widget)
+        {
+            buttons[1]->setChecked(false, false);
+            buttons[2]->setChecked(false, false);
+            buttons[0]->setChecked(true, true);
+        }
+        else if (buttons[1] == widget)
+        {
+            buttons[0]->setChecked(false, false);
+            buttons[2]->setChecked(false, false);
+            buttons[1]->setChecked(true, true);
+        }
+        else if (buttons[2] == widget)
+        {
+            buttons[0]->setChecked(false, false);
+            buttons[1]->setChecked(false, false);
+            buttons[2]->setChecked(true, true);
+        }
+
+        callback->buttonClicked(widget, button);
+    }
+
+    void onPositionChanged(const PositionChangedEvent& event) override
+    {
+        NanoSubWidget::onPositionChanged(event);
+
+        const double scaleFactor = parent->getScaleFactor();
+        const double widgetX = event.pos.getX();
+        const double widgetY = event.pos.getY();
+        const double singleHeight = kSingleHeight * scaleFactor;
+
+        buttons[0]->setAbsolutePos(widgetX, widgetY);
+        buttons[1]->setAbsolutePos(widgetX, widgetY + singleHeight);
+        buttons[2]->setAbsolutePos(widgetX, widgetY + singleHeight * 2);
+    }
+
+    void onResize(const ResizeEvent& event) override
+    {
+        NanoSubWidget::onResize(event);
+
+        const uint width = event.size.getWidth();
+        buttons[0]->setWidth(width);
+        buttons[1]->setWidth(width);
+        buttons[2]->setWidth(width);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // switch and filename as button combo
 
 class AidaFilenameButton : public NanoSubWidget
@@ -504,8 +712,6 @@ class AidaFilenameButton : public NanoSubWidget
         }
     };
 
-    NanoTopLevelWidget* const parent;
-
     ScopedPointer<AidaFileButton> button;
     ScopedPointer<AidaFileSwitch> toggle;
 
@@ -516,8 +722,7 @@ public:
                        const char* const buttonLabel,
                        const NanoImage& imgOff,
                        const NanoImage& imgOn)
-        : NanoSubWidget(p),
-          parent(p)
+        : NanoSubWidget(p)
     {
         button = new AidaFileButton(p, String(buttonLabel));
         button->setCallback(cb);
@@ -548,18 +753,14 @@ public:
     }
 
 protected:
-    void onNanoDisplay() override
-    {
-    }
+    void onNanoDisplay() override {}
 
     void onPositionChanged(const PositionChangedEvent& event) override
     {
         NanoSubWidget::onPositionChanged(event);
 
-        const double scaleFactor = parent->getScaleFactor();
         const double widgetX = event.pos.getX();
         const double widgetY = event.pos.getY();
-
         toggle->setAbsolutePos(widgetX, widgetY);
         button->setAbsolutePos(widgetX, widgetY);
     }

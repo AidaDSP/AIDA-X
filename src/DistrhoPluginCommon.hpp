@@ -63,9 +63,8 @@ enum Parameters {
 enum States {
     kStateModelFile,
     kStateImpulseFile,
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
     kStateAudioFile,
-    kStateReverbMode,
    #endif
     kStateCount
 };
