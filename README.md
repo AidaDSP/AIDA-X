@@ -15,7 +15,7 @@ Builds are available through [GitHub actions](https://github.com/AidaDSP/aida-x/
 
 Once the software is stable enough we will make proper releases with installers.
 
-Alternatively an experimental online version is available at [aida.kx.studio](https://aida.kx.studio/].  
+Alternatively an experimental online version is available at [aida.kx.studio](https://aida.kx.studio/).  
 Audio input quality and latency in browsers is known to not be ideal, we will an integrated audio file player to it soon for easy testing.
 
 ### Building ###
@@ -36,12 +36,12 @@ Binaries will be placed in `./build/bin`
 
 Behind the scenes AIDA-X uses [RTNeural](https://github.com/jatinchowdhury18/RTNeural), which does the heavy lifting for us.
 
-##### Generate json models #####
+#### Generate json models ####
 
 This implies neural network training. Please follow __*Automated_GuitarAmpModelling.ipynb*__ script available on
 
 - [Automated-GuitarAmpModelling](https://github.com/MaxPayne86/Automated-GuitarAmpModelling/tree/aidadsp_devel)
 
-##### License #####
+### License ###
 
 AIDA-X is licensed under GPLv3+, see [LICENSE](LICENSE) for more details.
