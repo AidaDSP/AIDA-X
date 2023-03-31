@@ -33,11 +33,11 @@ enum ButtonIds {
   #endif
 };
 
-enum MicInputState {
-    kMicInputUnsupported,
-    kMicInputSupported,
-    kMicInputEnabled,
-    kMicInputJACK
+enum EnableInputState {
+    kEnableInputUnsupported,
+    kEnableInputSupported,
+    kEnableInputEnabled,
+    kEnableInputJACK
 };
 
 class AidaDSPLoaderUI : public UI,
@@ -92,9 +92,9 @@ class AidaDSPLoaderUI : public UI,
 
   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-    MicInputState micInputState = kMicInputUnsupported;
+    EnableInputState enableInputState = kEnableInputUnsupported;
     ScopedPointer<BlendishSubWidgetSharedContext> blendishParent;
-    ScopedPointer<BlendishToolButton> micButton;
+    ScopedPointer<BlendishToolButton> enableInputButton;
     ScopedPointer<BlendishComboBox> bufferSizeComboBox;
    #else
     ScopedPointer<AidaFileList> audioFileList;
@@ -172,12 +172,13 @@ public:
             if (supportsAudioInput())
             {
                 blendishParent = new BlendishSubWidgetSharedContext(this);
+                blendishParent->setSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT);
 
-                micButton = new BlendishToolButton(blendishParent);
-                micButton->setCallback(this);
-                micButton->setId(kButtonEnableMicInput);
-                micButton->setLabel("Enable Audio Input");
-                micInputState = kMicInputSupported;
+                enableInputButton = new BlendishToolButton(blendishParent);
+                enableInputButton->setCallback(this);
+                enableInputButton->setId(kButtonEnableMicInput);
+                enableInputButton->setLabel("Enable Audio Input");
+                enableInputState = kEnableInputSupported;
 
                 bufferSizeComboBox = new BlendishComboBox(blendishParent);
                 bufferSizeComboBox->setCallback(this);
@@ -196,7 +197,7 @@ public:
         }
         else
         {
-            micInputState = kMicInputJACK;
+            enableInputState = kEnableInputJACK;
         }
        #else
         audioFileList = new AidaFileList(this, this, kButtonAudioFileStartId);
@@ -220,6 +221,7 @@ public:
         subwidgetsLayout.widgets.push_back({ knobs.presence, Fixed });
         subwidgetsLayout.widgets.push_back({ splitters.s3, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.master, Fixed });
+
         repositionWidgets();
 
         // give event priority to knob dragging
@@ -469,18 +471,18 @@ protected:
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
 
         const double micx = getWidth() / 2;
-        switch (micInputState)
+        switch (enableInputState)
         {
-        case kMicInputUnsupported:
+        case kEnableInputUnsupported:
             text(micx, marginVertical/2, "Audio Input unsupported", nullptr);
             break;
-        case kMicInputSupported:
+        case kEnableInputSupported:
             // text(micx, marginVertical/2, "Please enable Input...", nullptr);
             break;
-        case kMicInputEnabled:
+        case kEnableInputEnabled:
             text(micx, marginVertical/2, "Audio Input enabled", nullptr);
             break;
-        case kMicInputJACK:
+        case kEnableInputJACK:
             text(micx, marginVertical/2, "Audio Input always enabled (using JACK)", nullptr);
             break;
         }
@@ -530,8 +532,8 @@ protected:
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (blendishParent != nullptr)
         {
-            micButton->setAbsolutePos(getWidth() / 2 - micButton->getWidth()/2,
-                                      marginTop/2 - micButton->getHeight()/2);
+            enableInputButton->setAbsolutePos(getWidth() / 2 - enableInputButton->getWidth()/2,
+                                              marginTop/2 - enableInputButton->getHeight()/2);
             bufferSizeComboBox->setAbsolutePos(getWidth() / 2 - bufferSizeComboBox->getWidth()/2,
                                                marginTop/2 - bufferSizeComboBox->getHeight()/2);
         }
@@ -646,17 +648,17 @@ protected:
 
     void uiIdle() override
     {
-        if (micButton != nullptr)
+        if (enableInputButton != nullptr)
         {
-            const MicInputState newMicInputState = isAudioInputEnabled() ? kMicInputEnabled : kMicInputSupported;
+            const EnableInputState newInputState = isAudioInputEnabled() ? kEnableInputEnabled : kEnableInputSupported;
 
-            if (micInputState != newMicInputState)
+            if (enableInputState != newInputState)
             {
-                micInputState = newMicInputState;
+                enableInputState = newInputState;
                 repaint();
 
-                if (micInputState == kMicInputEnabled)
-                    micButton->hide();
+                if (enableInputState == kEnableInputEnabled)
+                    enableInputButton->hide();
             }
         }
     }
