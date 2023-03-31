@@ -100,8 +100,8 @@ jobs:
           NM: emnm
           RANLIB: emranlib
           STRIP: emstrip
-          CFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
-          CXXFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
