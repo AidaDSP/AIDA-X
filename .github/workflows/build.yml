@@ -87,6 +87,7 @@ jobs:
           CXXFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
+          source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
           make -C src/standalone NOOPT=true -j $(nproc)
           mv build/bin bin-opt
@@ -103,6 +104,7 @@ jobs:
           CXXFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
+          source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
           make -C src/standalone NOOPT=true -j $(nproc)
 
