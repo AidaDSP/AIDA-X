@@ -85,7 +85,11 @@ ifeq ($(CPU_I386),true)
 BUILD_CXX_FLAGS += -Di386
 endif
 
-ifeq ($(NO_SIMD),true)
+ifeq ($(MOD_BUILD),true)
+BUILD_CXX_FLAGS += -DMOD_BUILD
+endif
+
+ifeq ($(NOSIMD),true)
 BUILD_CXX_FLAGS += -DNOSIMD -DPFFFT_SIMD_DISABLE
 endif
 

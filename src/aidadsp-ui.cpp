@@ -109,7 +109,9 @@ class AidaDSPLoaderUI : public UI,
         kFileLoaderImpulse,
     } fileLoaderMode = kFileLoaderNull;
 
+   #ifndef MOD_BUILD
     String aboutLabel;
+   #endif
     String lastDirModel;
     String lastDirCabinet;
 
@@ -241,6 +243,7 @@ public:
         if (scaleFactor != 1.0)
             setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
 
+      #ifndef MOD_BUILD
         aboutLabel = "AIDA-X ";
         aboutLabel += getPluginFormatName();
         aboutLabel += " ";
@@ -248,6 +251,7 @@ public:
        #ifdef NOSIMD
         aboutLabel += " (no simd)";
        #endif
+      #endif
     }
 
 protected:
@@ -345,6 +349,7 @@ protected:
 
         const Size<uint> headBgSize(images.background.getSize() / 2 * scaleFactor);
 
+       #ifndef MOD_BUILD
         // outer bounds gradient
         beginPath();
         rect(0, 0, width, height);
@@ -384,6 +389,7 @@ protected:
         rect(marginHorizontal/2, marginVertical/2, marginHorizontal+widthPedal, marginVertical+heightPedal);
         fillPaint(boxGradient(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius, cornerRadius, Color(0,0,0,1.f), Color(0,0,0,0.f)));
         fill();
+       #endif
 
         // .rt-neural .grid
         beginPath();
@@ -465,10 +471,12 @@ protected:
         textAlign(ALIGN_CENTER | ALIGN_BASELINE);
         text(marginHorizontal + widthPedal/2, marginVertical + heightHead - marginHead, "AI CRAFTED TONE", nullptr);
 
+       #ifndef MOD_BUILD
         fillColor(Color(1.f,1.f,1.f));
         fontSize((kSubWidgetsFontSize + 2) * scaleFactor);
         textAlign(ALIGN_RIGHT | ALIGN_MIDDLE);
         text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
+       #endif
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);

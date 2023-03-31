@@ -29,8 +29,13 @@ static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
 // known and defined in advance
 static constexpr const uint kPedalWidth = 900;
 static constexpr const uint kPedalHeight = 318;
+#ifndef MOD_BUILD
 static constexpr const uint kPedalMargin = 20;
 static constexpr const uint kPedalMarginTop = 40;
+#else
+static constexpr const uint kPedalMargin = 0;
+static constexpr const uint kPedalMarginTop = 0;
+#endif
 
 #define DISTRHO_UI_DEFAULT_WIDTH  (kPedalWidth + kPedalMargin * 2)
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)
