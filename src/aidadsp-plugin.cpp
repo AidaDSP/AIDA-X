@@ -12,6 +12,7 @@
 #include "Files.hpp"
 
 #include "model_variant.hpp"
+#include "extra/ScopedDenormalDisable.hpp"
 #include "extra/Sleep.hpp"
 
 #include <atomic>
@@ -813,6 +814,7 @@ protected:
         /* */ float* const out = outputs[0];
 
         // optimize for non-denormal usage
+        const ScopedDenormalDisable sdd;
         for (uint32_t i = 0; i < numSamples; ++i)
         {
            #if DISTRHO_PLUGIN_NUM_INPUTS != 0

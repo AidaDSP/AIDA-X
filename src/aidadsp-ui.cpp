@@ -182,19 +182,22 @@ public:
                 enableInputButton->setLabel("Enable Audio Input");
                 enableInputState = kEnableInputSupported;
 
-                bufferSizeComboBox = new BlendishComboBox(blendishParent);
-                bufferSizeComboBox->setCallback(this);
-                bufferSizeComboBox->setDefaultLabel("Buffer Size: " + String(getBufferSize()));
-                bufferSizeComboBox->addMenuItem("128");
-                bufferSizeComboBox->addMenuItem("256");
-                bufferSizeComboBox->addMenuItem("512");
-                bufferSizeComboBox->addMenuItem("1024");
-                bufferSizeComboBox->addMenuItem("2048");
-                bufferSizeComboBox->addMenuItem("4096");
-                bufferSizeComboBox->addMenuItem("8192");
+                if (supportsBufferSizeChanges())
+                {
+                    bufferSizeComboBox = new BlendishComboBox(blendishParent);
+                    bufferSizeComboBox->setCallback(this);
+                    bufferSizeComboBox->setDefaultLabel("Buffer Size: " + String(getBufferSize()));
+                    bufferSizeComboBox->addMenuItem("128");
+                    bufferSizeComboBox->addMenuItem("256");
+                    bufferSizeComboBox->addMenuItem("512");
+                    bufferSizeComboBox->addMenuItem("1024");
+                    bufferSizeComboBox->addMenuItem("2048");
+                    bufferSizeComboBox->addMenuItem("4096");
+                    bufferSizeComboBox->addMenuItem("8192");
 
-                // todo advanced settings page
-                bufferSizeComboBox->hide();
+                    // todo advanced settings page
+                    bufferSizeComboBox->hide();
+                }
             }
         }
         else
@@ -491,10 +494,11 @@ protected:
             // text(micx, marginVertical/2, "Please enable Input...", nullptr);
             break;
         case kEnableInputEnabled:
-            text(micx, marginVertical/2, "Audio Input enabled", nullptr);
+            if (bufferSizeComboBox == nullptr)
+                text(micx, marginVertical/2, "Audio Input enabled", nullptr);
             break;
         case kEnableInputJACK:
-            text(micx, marginVertical/2, "Audio Input always enabled (using JACK)", nullptr);
+            // text(micx, marginVertical/2, "Audio Input always enabled (using JACK)", nullptr);
             break;
         }
        #endif
@@ -669,7 +673,13 @@ protected:
                 repaint();
 
                 if (enableInputState == kEnableInputEnabled)
+                {
                     enableInputButton->hide();
+
+                    // todo advanced settings page
+                    if (bufferSizeComboBox != nullptr)
+                        bufferSizeComboBox->show();
+                }
             }
         }
     }
