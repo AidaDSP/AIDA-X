@@ -13,6 +13,10 @@
 #include "Layout.hpp"
 #include "Widgets.hpp"
 
+#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+# include "Blendish.hpp"
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -39,6 +43,10 @@ enum MicInputState {
 class AidaDSPLoaderUI : public UI,
                         public ButtonEventHandler::Callback,
                         public KnobEventHandler::Callback
+                     #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+                      , public BlendishComboBox::Callback
+                      , public BlendishToolButton::Callback
+                     #endif
 {
     float parameters[kNumParameters];
 
@@ -85,7 +93,9 @@ class AidaDSPLoaderUI : public UI,
   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     MicInputState micInputState = kMicInputUnsupported;
-    ScopedPointer<AidaPushButton> micButton;
+    ScopedPointer<BlendishSubWidgetSharedContext> blendishParent;
+    ScopedPointer<BlendishToolButton> micButton;
+    ScopedPointer<BlendishComboBox> bufferSizeComboBox;
    #else
     ScopedPointer<AidaFileList> audioFileList;
    #endif
@@ -161,11 +171,24 @@ public:
         {
             if (supportsAudioInput())
             {
-                micButton = new AidaPushButton(this);
+                blendishParent = new BlendishSubWidgetSharedContext(this);
+
+                micButton = new BlendishToolButton(blendishParent);
                 micButton->setCallback(this);
                 micButton->setId(kButtonEnableMicInput);
                 micButton->setLabel("Enable Input");
                 micInputState = kMicInputSupported;
+
+                bufferSizeComboBox = new BlendishComboBox(blendishParent);
+                bufferSizeComboBox->setCallback(this);
+                bufferSizeComboBox->setDefaultLabel("Buffer Size: " + String(getBufferSize()));
+                bufferSizeComboBox->addMenuItem("128");
+                bufferSizeComboBox->addMenuItem("256");
+                bufferSizeComboBox->addMenuItem("512");
+                bufferSizeComboBox->addMenuItem("1024");
+                bufferSizeComboBox->addMenuItem("2048");
+                bufferSizeComboBox->addMenuItem("4096");
+                bufferSizeComboBox->addMenuItem("8192");
             }
         }
         else
@@ -433,7 +456,7 @@ protected:
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
 
-        const double micx = marginHorizontal + (micButton != nullptr ? 150 : 10) * scaleFactor;
+        const double micx = marginHorizontal + (micButton != nullptr ? micButton->getWidth() : 0) + 10 * scaleFactor;
         switch (micInputState)
         {
         case kMicInputUnsupported:
@@ -456,6 +479,10 @@ protected:
     {
         UI::onResize(event);
         repositionWidgets();
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+        if (blendishParent != nullptr)
+            blendishParent->setSize(event.size);
+       #endif
     }
 
     void repositionWidgets()
@@ -489,8 +516,13 @@ protected:
 
       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-        if (micButton != nullptr)
-            micButton->setAbsolutePos(marginHorizontal, marginTop/2 - micButton->getHeight()/2);
+        if (blendishParent != nullptr)
+        {
+            micButton->setAbsolutePos(marginHorizontal,
+                                      marginTop/2 - micButton->getHeight()/2);
+            bufferSizeComboBox->setAbsolutePos(getWidth() / 2 - bufferSizeComboBox->getWidth()/2,
+                                               marginTop/2 - bufferSizeComboBox->getHeight()/2);
+        }
        #else
         audioFileList->setAbsolutePos(loadersX, marginTop + margin * 3 / 2);
         audioFileList->setWidth(widthPedal / 3 - margin * 2);
@@ -581,6 +613,25 @@ protected:
     }
 
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+    void blendishComboBoxIndexChanged(BlendishComboBox* const comboBox, int) override
+    {
+        const String label(comboBox->getCurrentLabel());
+        comboBox->setCurrentIndex(-1, false);
+
+        if (requestBufferSizeChange(std::atoi(label)))
+            bufferSizeComboBox->setDefaultLabel("Buffer Size: " + label);
+    }
+
+    void blendishToolButtonClicked(BlendishToolButton* const widget, int button) override
+    {
+        if (button != kMouseButtonLeft)
+            return;
+
+        if (widget->getId() == kButtonEnableMicInput)
+            if (supportsAudioInput() && !isAudioInputEnabled())
+                requestAudioInput();
+    }
+
     void uiIdle() override
     {
         if (micButton != nullptr)

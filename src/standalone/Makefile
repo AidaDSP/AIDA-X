@@ -34,7 +34,8 @@ FILES_DSP = \
 
 FILES_UI  = \
 	aidadsp-ui.cpp \
-	Graphics.cpp
+	Graphics.cpp \
+	Blendish.cpp
 
 ifeq ($(WINDOWS),true)
 FILES_UI += ax.rc
@@ -53,10 +54,12 @@ include ../../modules/dpf/Makefile.plugins.mk
 
 BUILD_CXX_FLAGS += -std=gnu++17
 
+# BUILD_CXX_FLAGS += -DBLENDISH_NEW_TLW
 BUILD_CXX_FLAGS += -DRTNEURAL_DEFAULT_ALIGNMENT=16
 
 BUILD_CXX_FLAGS += -I..
 BUILD_CXX_FLAGS += -I../../build
+BUILD_CXX_FLAGS += -I../../modules/dpf-widgets/opengl
 BUILD_CXX_FLAGS += -I../../modules/FFTConvolver
 BUILD_CXX_FLAGS += -I../../modules/dr_libs
 BUILD_CXX_FLAGS += -I../../modules/r8brain
