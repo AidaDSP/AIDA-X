@@ -34,10 +34,20 @@ static constexpr float DB_CO(const float g) { return g > -90.f ? std::pow(10.f, 
 /* Define a constexpr to scale % to coeff */
 static constexpr float PC_CO(const float g) { return g < 100.f ? (g / 100.f) : 1.f; }
 
+/* Define a macro to re-maps a number from one range to another  */
+static constexpr float MAP(const float x, const float in_min, const float in_max, const float out_min, const float out_max)
+{
+    return ((x - in_min) * (out_max - out_min) / (in_max - in_min)) + out_min;
+}
+
 /* Defines for tone controls */
 static constexpr const float COMMON_Q = 0.707f;
 static constexpr const float DEPTH_FREQ = 75.f;
 static constexpr const float PRESENCE_FREQ = 900.f;
+
+/* Defines for antialiasing filter */
+static constexpr const float INLPF_MAX_CO = 0.99f * 0.5f; /* coeff * ((samplerate / 2) / samplerate) */
+static constexpr const float INLPF_MIN_CO = 0.25f * 0.5f; /* coeff * ((samplerate / 2) / samplerate) */
 
 /* Gain compensation for cabinet IR (-6dB) */
 static constexpr const float kCabinetMaxGain = 0.5f;
@@ -69,7 +79,7 @@ struct AidaToneControl {
     {
         dc_blocker.setFc(35.0f / sampleRate);
 
-        in_lpf.setFc(PC_CO(parameters[kParameterINLPF]) * 0.5f);
+        in_lpf.setFc(MAP(parameters[kParameterINLPF], 0.0f, 100.0f, INLPF_MAX_CO, INLPF_MIN_CO));
 
         bass.setBiquad(bq_type_lowshelf,
                        parameters[kParameterBASSFREQ] / sampleRate, COMMON_Q, parameters[kParameterBASSGAIN]);
@@ -426,7 +436,7 @@ protected:
         switch (static_cast<Parameters>(index))
         {
         case kParameterINLPF:
-            aida.in_lpf.setFc(PC_CO(value) * 0.5f);
+            aida.in_lpf.setFc(MAP(value, 0.0f, 100.0f, INLPF_MAX_CO, INLPF_MIN_CO));
             break;
         case kParameterPREGAIN:
             aida.pregain.setTarget(DB_CO(value));

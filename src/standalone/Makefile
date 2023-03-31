@@ -105,9 +105,11 @@ $(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.cpp
 $(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.cpp
 
 $(BUILD_DIR)/Files.cpp: $(wildcard ../../files/*.*)
+	-@mkdir -p $(BUILD_DIR)
 	$(DPF_PATH)/utils/res2c.py Files ../../files $(BUILD_DIR)
 
 $(BUILD_DIR)/Graphics.cpp: $(wildcard ../../graphics/png/*.*)
+	-@mkdir -p $(BUILD_DIR)
 	$(DPF_PATH)/utils/res2c.py Graphics ../../graphics/png $(BUILD_DIR)
 
 # ---------------------------------------------------------------------------------------------------------------------
