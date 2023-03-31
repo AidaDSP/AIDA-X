@@ -84,6 +84,10 @@ $(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.cpp
 
 $(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.cpp
 
+$(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.cpp
+
+$(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.cpp
+
 $(BUILD_DIR)/Files.cpp: $(wildcard ../../files/*.*)
 	$(DPF_PATH)/utils/res2c.py Files ../../files $(BUILD_DIR)
 

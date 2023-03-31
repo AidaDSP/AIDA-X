@@ -54,6 +54,28 @@ jobs:
           pawpaw: true
           target: ${{ matrix.target }}
 
+  wasm:
+    runs-on: ubuntu-22.04
+    env:
+      EMSCRIPTEN_VERSION: 3.1.27
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up cache
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/emsdk
+          key: emsdk
+      - name: Set up dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -yqq brotli
+          git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
+          cd ~/emsdk && ./emsdk install ${{ env.EMSCRIPTEN_VERSION }} && ./emsdk activate ${{ env.EMSCRIPTEN_VERSION }}
+
   pluginval:
     runs-on: ubuntu-22.04
     steps:
