@@ -36,6 +36,10 @@ The little icon on the left side allows to turn on/off the Amp Model and Cabinet
 
 ![screenshot](docs/Screenshot-files.png "Screenshot-files")
 
+A quick model pack can be downloaded from [our Google Drive folder](https://drive.google.com/drive/folders/18MwNhuo9fjK8hlne6SAdhpGtL4bWsVz-).
+
+Check out the [MOD Forum's Neural Modelling section](https://forum.mod.audio/c/neural/62) for an online place for discussion, sharing and all things related to Amp Models.
+
 #### Controls ####
 
 From left to right:
@@ -47,7 +51,7 @@ Integrates with the host provided bypass controls where possible.
 
 Pre-Gain attenuates the input signal before sending it to the Amp Model.
 
-![screenshot](docs/Screenshot-params-1.png "Screenshot-params-1")
+<img width="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-1.png">
 
 2. EQ tone controls (part 1)
 
