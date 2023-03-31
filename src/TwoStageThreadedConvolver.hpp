@@ -105,6 +105,8 @@ protected:
 #else
 class TwoStageThreadedConvolver : public fftconvolver::FFTConvolver
 {
+    static constexpr const size_t kHeadBlockSize = 128;
+
 public:
     TwoStageThreadedConvolver()
         : fftconvolver::FFTConvolver() {}
