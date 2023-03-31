@@ -8,16 +8,13 @@
 
 #ifndef DISTRHO_OS_WASM
 # include "Semaphore.hpp"
+# include "extra/ScopedPointer.hpp"
 # include "extra/Thread.hpp"
-# include "TwoStageFFTConvolver.h"
-#else
-# include "TwoStageFFTConvolver.h"
 #endif
 
-START_NAMESPACE_DISTRHO
+#include "TwoStageFFTConvolver.h"
 
-static constexpr const size_t headBlockSize = 128;
-static constexpr const size_t tailBlockSize = 1024;
+START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -25,6 +22,10 @@ static constexpr const size_t tailBlockSize = 1024;
 class TwoStageThreadedConvolver : public fftconvolver::TwoStageFFTConvolver,
                                   private Thread
 {
+    static constexpr const size_t kHeadBlockSize = 128;
+    static constexpr const size_t kTailBlockSize = 1024;
+
+    ScopedPointer<fftconvolver::FFTConvolver> nonThreadedConvolver;
     Semaphore semBgProcStart;
     Semaphore semBgProcFinished;
 
@@ -39,19 +40,38 @@ public:
 
     ~TwoStageThreadedConvolver() override
     {
-        stop();
-    }
+        if (nonThreadedConvolver != nullptr)
+        {
+            nonThreadedConvolver = nullptr;
+            return;
+        }
 
-    void start()
-    {
-        startThread(true);
-    }
-
-    void stop()
-    {
         signalThreadShouldExit();
         semBgProcStart.post();
         stopThread(5000);
+    }
+
+    bool init(const fftconvolver::Sample* const ir, const size_t irLen)
+    {
+        if (irLen > kTailBlockSize)
+        {
+            if (! fftconvolver::TwoStageFFTConvolver::init(kHeadBlockSize, kTailBlockSize, ir, irLen))
+                return false;
+
+            startThread(true);
+            return true;
+        }
+
+        nonThreadedConvolver = new fftconvolver::FFTConvolver();
+        return true;
+    }
+
+    void process(const fftconvolver::Sample* const input, fftconvolver::Sample* const output, const size_t len)
+    {
+        if (nonThreadedConvolver != nullptr)
+            nonThreadedConvolver->process(input, output, len);
+        else
+            fftconvolver::TwoStageFFTConvolver::process(input, output, len);
     }
 
 protected:
@@ -89,17 +109,9 @@ public:
     TwoStageThreadedConvolver()
         : fftconvolver::FFTConvolver() {}
 
-    bool init(const size_t headBlockSize, size_t, const fftconvolver::Sample* const ir, const size_t irLen)
+    bool init(const fftconvolver::Sample* const ir, const size_t irLen)
     {
-        return fftconvolver::FFTConvolver::init(headBlockSize, ir, irLen);
-    }
-
-    void start()
-    {
-    }
-
-    void stop()
-    {
+        return fftconvolver::FFTConvolver::init(kHeadBlockSize, ir, irLen);
     }
 };
 #endif

@@ -678,6 +678,9 @@ protected:
                 irBuf[i] = ir[j];
         }
 
+        d_stdout("Loading cabinet with %u channels, %u Hz sample rate and %lu frames",
+                 channels, sampleRate, (ulong)numFrames);
+
         const double hostSampleRate = getSampleRate();
 
         if (sampleRate != hostSampleRate)
@@ -694,8 +697,7 @@ protected:
         }
 
         TwoStageThreadedConvolver* const newConvolver = new TwoStageThreadedConvolver();
-        newConvolver->init(headBlockSize, tailBlockSize, irBuf, numFrames);
-        newConvolver->start();
+        newConvolver->init(irBuf, numFrames);
 
         if (irBuf != ir)
             delete[] irBuf;
