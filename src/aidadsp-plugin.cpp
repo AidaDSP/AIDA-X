@@ -665,23 +665,19 @@ protected:
 
     void loadCabinet(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
     {
-        float* irBuf;
-        if (channels == 1)
+        if (channels != 1)
         {
-            irBuf = ir;
-        }
-        else
-        {
-            irBuf = new float[numFrames];
-
             for (drwav_uint64 i = 0, j = 0; i < numFrames; ++i, j += channels)
-                irBuf[i] = ir[j];
+                ir[j] = ir[i];
+
+            numFrames /= channels;
         }
 
         d_stdout("Loading cabinet with %u channels, %u Hz sample rate and %lu frames",
                  channels, sampleRate, (ulong)numFrames);
 
         const double hostSampleRate = getSampleRate();
+        float* irBuf = ir;
 
         if (sampleRate != hostSampleRate)
         {
