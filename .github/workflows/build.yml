@@ -68,13 +68,43 @@ jobs:
         with:
           path: |
             ~/emsdk
-          key: emsdk
+          key: emsdk-v1
       - name: Set up dependencies
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yqq brotli
           git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
           cd ~/emsdk && ./emsdk install ${{ env.EMSCRIPTEN_VERSION }} && ./emsdk activate ${{ env.EMSCRIPTEN_VERSION }}
+      - name: Build simd-optimized
+        env:
+          AR: emar
+          CC: emcc
+          CXX: em++
+          NM: emnm
+          RANLIB: emranlib
+          STRIP: emstrip
+          CFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
+          CXXFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
+          LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
+        run: |
+          make -C src/standalone features
+          make -C src/standalone NOOPT=true -j $(nproc)
+          mv build/bin bin-opt
+          rm -rf build modules/dpf/build
+      - name: Build non-optimized
+        env:
+          AR: emar
+          CC: emcc
+          CXX: em++
+          NM: emnm
+          RANLIB: emranlib
+          STRIP: emstrip
+          CFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          CXXFLAGS: -Ofast -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
+        run: |
+          make -C src/standalone features
+          make -C src/standalone NOOPT=true -j $(nproc)
 
   pluginval:
     runs-on: ubuntu-22.04
