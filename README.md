@@ -44,33 +44,33 @@ Check out the [MOD Forum's Neural Modelling section](https://forum.mod.audio/c/n
 
 From left to right:
 
-1. Bypass and Pre-Gain
+1. **Bypass and Pre-Gain**
+
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-1.png">
 
 On/Off bypass switch, lets the audio pass-through when off.  
 Integrates with the host provided bypass controls where possible.
 
 Pre-Gain attenuates the input signal before sending it to the Amp Model.
 
-<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-1.png">
-
-2. EQ tone controls (part 1)
-
-Pre/Post switch changes the position of the tone controls, either running before or after the Amp Model.
+2. **EQ tone controls (part 1)**
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-2.png">
 
-3. EQ tone controls (part 2)
+Pre/Post switch changes the position of the tone controls, either running before or after the Amp Model.
+
+3. **EQ tone controls (part 2)**
+
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-3.png">
 
 Extra EQ related controls.  
 Note: These will eventually be used for dynamic Amp Models, where the 2 parameters directly map into the operation of Model (the so-called "conditioned models").  
 
-<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-3.png">
-
-4. Master Gain
-
-For a final gain compensation, does not apply to the bypassed signal.
+4. **Master Gain**
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-4.png">
+
+For a final gain compensation, does not apply to the bypassed signal.
 
 ### Technical Details ###
 
@@ -78,7 +78,7 @@ Behind the scenes AIDA-X uses [RTNeural](https://github.com/jatinchowdhury18/RTN
 
 The plugin format support together with the custom GUI is made with [DPF](https://github.com/DISTRHO/DPF), which allows a single codebase to export for many audio plugins at once (amongst other nice features).
 
-Impulse Response handling is done with the help of a custom fork of[FFTConvolver](https://github.com/falkTX/FFTConvolver.git), together with [r8brain-free-src](https://github.com/avaneev/r8brain-free-src.git) for runtime audio file resampling.
+Impulse Response handling is done with the help of a custom fork of [FFTConvolver](https://github.com/falkTX/FFTConvolver.git), together with [r8brain-free-src](https://github.com/avaneev/r8brain-free-src.git) for runtime audio file resampling.
 
 #### Generate json models ####
 
