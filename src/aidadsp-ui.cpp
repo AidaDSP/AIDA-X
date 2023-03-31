@@ -176,7 +176,7 @@ public:
                 micButton = new BlendishToolButton(blendishParent);
                 micButton->setCallback(this);
                 micButton->setId(kButtonEnableMicInput);
-                micButton->setLabel("Enable Input");
+                micButton->setLabel("Enable Audio Input");
                 micInputState = kMicInputSupported;
 
                 bufferSizeComboBox = new BlendishComboBox(blendishParent);
@@ -189,6 +189,9 @@ public:
                 bufferSizeComboBox->addMenuItem("2048");
                 bufferSizeComboBox->addMenuItem("4096");
                 bufferSizeComboBox->addMenuItem("8192");
+
+                // todo advanced settings page
+                bufferSizeComboBox->hide();
             }
         }
         else
@@ -463,22 +466,22 @@ protected:
         text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
-        textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
 
-        const double micx = marginHorizontal + (micButton != nullptr ? micButton->getWidth() : 0) + 10 * scaleFactor;
+        const double micx = getWidth() / 2;
         switch (micInputState)
         {
         case kMicInputUnsupported:
-            text(micx, marginVertical/2, "Input Unsupported", nullptr);
+            text(micx, marginVertical/2, "Audio Input unsupported", nullptr);
             break;
         case kMicInputSupported:
-            text(micx, marginVertical/2, "Please enable Input...", nullptr);
+            // text(micx, marginVertical/2, "Please enable Input...", nullptr);
             break;
         case kMicInputEnabled:
-            text(micx, marginVertical/2, "Input enabled", nullptr);
+            text(micx, marginVertical/2, "Audio Input enabled", nullptr);
             break;
         case kMicInputJACK:
-            text(micx, marginVertical/2, "Input always enabled (using JACK)", nullptr);
+            text(micx, marginVertical/2, "Audio Input always enabled (using JACK)", nullptr);
             break;
         }
        #endif
@@ -527,7 +530,7 @@ protected:
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (blendishParent != nullptr)
         {
-            micButton->setAbsolutePos(marginHorizontal,
+            micButton->setAbsolutePos(getWidth() / 2 - micButton->getWidth()/2,
                                       marginTop/2 - micButton->getHeight()/2);
             bufferSizeComboBox->setAbsolutePos(getWidth() / 2 - bufferSizeComboBox->getWidth()/2,
                                                marginTop/2 - bufferSizeComboBox->getHeight()/2);
@@ -651,6 +654,9 @@ protected:
             {
                 micInputState = newMicInputState;
                 repaint();
+
+                if (micInputState == kMicInputEnabled)
+                    micButton->hide();
             }
         }
     }
