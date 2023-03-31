@@ -83,13 +83,14 @@ jobs:
           NM: emnm
           RANLIB: emranlib
           STRIP: emstrip
+          PKG_CONFIG: false
           CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
           CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
-          make -C src/standalone NOOPT=true -j $(nproc)
+          make -C src/standalone NOOPT=true USE_GLES2=true -j $(nproc)
           mv build/bin bin-opt
           rm -rf build modules/dpf/build
       - name: Build non-optimized
@@ -100,13 +101,14 @@ jobs:
           NM: emnm
           RANLIB: emranlib
           STRIP: emstrip
+          PKG_CONFIG: false
           CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
-          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -DPFFFT_SIMD_DISABLE
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
-          make -C src/standalone NOOPT=true -j $(nproc)
+          make -C src/standalone NOOPT=true USE_GLES2=true -j $(nproc)
 
   pluginval:
     runs-on: ubuntu-22.04
