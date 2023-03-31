@@ -34,7 +34,7 @@ AIDA-X comes built-in with a single Amp Model and Cabinet IR.
 Click on the related filename to open a file browser and load a different file.  
 The little icon on the left side allows to turn on/off the Amp Model and Cabinet IR.
 
-![screenshot](docs/Screenshot-files.png "Screenshot-files")
+<img height="91" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-files.png">
 
 A quick model pack can be downloaded from [our Google Drive folder](https://drive.google.com/drive/folders/18MwNhuo9fjK8hlne6SAdhpGtL4bWsVz-).
 
@@ -51,26 +51,26 @@ Integrates with the host provided bypass controls where possible.
 
 Pre-Gain attenuates the input signal before sending it to the Amp Model.
 
-<img width="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-1.png">
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-1.png">
 
 2. EQ tone controls (part 1)
 
 Pre/Post switch changes the position of the tone controls, either running before or after the Amp Model.
 
-![screenshot](docs/Screenshot-params-2.png "Screenshot-params-2")
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-2.png">
 
 3. EQ tone controls (part 2)
 
 Extra EQ related controls.  
 Note: These will eventually be used for dynamic Amp Models, where the 2 parameters directly map into the operation of Model (the so-called "conditioned models").  
 
-![screenshot](docs/Screenshot-params-3.png "Screenshot-params-3")
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-3.png">
 
 4. Master Gain
 
 For a final gain compensation, does not apply to the bypassed signal.
 
-![screenshot](docs/Screenshot-params-4.png "Screenshot-params-4")
+<img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/aida-x/main/docs/Screenshot-params-4.png">
 
 ### Technical Details ###
 
