@@ -9,7 +9,7 @@
 
 NAME = AIDA-X
 
-ifeq ($(NO_SIMD),true)
+ifeq ($(NOSIMD),true)
 NAME = AIDA-X-NOSIMD
 endif
 
