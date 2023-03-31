@@ -9,6 +9,10 @@
 
 NAME = AIDA-X
 
+ifeq ($(NO_SIMD),true)
+NAME = AIDA-X-NOSIMD
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Do some magic (part 1)
 
@@ -44,6 +48,10 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Do some magic (part 2)
 
+ifeq ($(WASM),true)
+APP_EXT = .js
+endif
+
 DPF_PATH = ../../modules/dpf
 DPF_BUILD_DIR = ../../build
 DPF_TARGET_DIR = ../../build/bin
@@ -77,12 +85,16 @@ ifeq ($(CPU_I386),true)
 BUILD_CXX_FLAGS += -Di386
 endif
 
+ifeq ($(NO_SIMD),true)
+BUILD_CXX_FLAGS += -DNOSIMD -DPFFFT_SIMD_DISABLE
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for generating needed files
 
-$(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.cpp
+# $(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.cpp
 
-$(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.cpp
+# $(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.cpp
 
 $(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.cpp
 
@@ -116,8 +128,13 @@ LINK_FLAGS += -O3
 LINK_FLAGS += -sALLOW_MEMORY_GROWTH
 LINK_FLAGS += -sINITIAL_MEMORY=64Mb
 LINK_FLAGS += -sLZ4=1
-LINK_FLAGS += --shell-file=../../utils/ax.html
-# LINK_FLAGS += --preload-file=../../resources@/resources
+LINK_FLAGS += --preload-file=../../resources@/resources
+
+WASM_RESOURCES = $(TARGET_DIR)/AIDA-X.html
+
+$(TARGET_DIR)/AIDA-X.html: ../../utils/ax.html
+	-@mkdir -p $(shell dirname $@)
+	cp $< $@
 
 endif
 
@@ -140,6 +157,6 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Standalone build only
 
-all: jack
+all: jack $(WASM_RESOURCES)
 
 # ---------------------------------------------------------------------------------------------------------------------

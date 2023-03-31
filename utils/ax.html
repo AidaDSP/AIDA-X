@@ -185,8 +185,19 @@
             if (text) console.error('[post-exception status] ' + text);
           };
         };
+
+        var jsModuleName;
+        if (!WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11]))) {
+          jsModuleName = "AIDA-X-NOSIMD.js";
+        } else {
+          jsModuleName = "AIDA-X.js";
+        }
+        var jsModuleScript = document.createElement('script');
+        jsModuleScript.setAttribute('async', true);
+        jsModuleScript.setAttribute('src', jsModuleName);
+        jsModuleScript.setAttribute('type','text/javascript');
+        document.head.appendChild(jsModuleScript);
       }
     </script>
-    {{{ SCRIPT }}}
   </body>
 </html>

@@ -91,7 +91,7 @@ jobs:
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
           make -C src/standalone NOOPT=true USE_GLES2=true -j $(nproc)
-          mv build/bin bin-opt
+          mv build/bin bin
           rm -rf build modules/dpf/build
       - name: Build non-optimized
         env:
@@ -103,12 +103,23 @@ jobs:
           STRIP: emstrip
           PKG_CONFIG: false
           CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
-          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -DPFFFT_SIMD_DISABLE
+          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
-          make -C src/standalone NOOPT=true USE_GLES2=true -j $(nproc)
+          make -C src/standalone NOOPT=true NO_SIMD=true USE_GLES2=true -j $(nproc)
+          mv build/bin/*.* bin/
+      - name: Pack binaries
+        run: |
+          cd bin
+          brotli -k -q 11 *.*
+          zip -r -9 ../${{ github.event.repository.name }}-wasm.zip $(ls *.*)
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}-wasm
+          path: |
+            *.zip
 
   pluginval:
     runs-on: ubuntu-22.04

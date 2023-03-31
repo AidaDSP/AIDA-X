@@ -245,6 +245,9 @@ public:
         aboutLabel += getPluginFormatName();
         aboutLabel += " ";
         aboutLabel += kVersionString;
+       #ifdef NOSIMD
+        aboutLabel += " (no simd)";
+       #endif
     }
 
 protected:
