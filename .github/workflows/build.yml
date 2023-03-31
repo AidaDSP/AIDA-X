@@ -88,7 +88,7 @@ jobs:
           STRIP: emstrip
           PKG_CONFIG: false
           CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
-          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128
+          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -msse -msse2 -msse3 -msimd128 -DPUGL_WASM_NO_KEYBOARD_INPUT -DPUGL_WASM_NO_MOUSEWHEEL_INPUT
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
@@ -106,7 +106,7 @@ jobs:
           STRIP: emstrip
           PKG_CONFIG: false
           CFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
-          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto
+          CXXFLAGS: -O3 -ffast-math -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -DPUGL_WASM_NO_KEYBOARD_INPUT -DPUGL_WASM_NO_MOUSEWHEEL_INPUT
           LDFLAGS: -O3 -fdata-sections -ffunction-sections -fno-strict-aliasing -flto -Wl,--gc-sections -sAGGRESSIVE_VARIABLE_ELIMINATION=1 -Werror=lto-type-mismatch
         run: |
           source ~/emsdk/emsdk_env.sh
