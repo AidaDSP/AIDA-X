@@ -219,6 +219,15 @@ public:
         subwidgetsLayout.widgets.push_back({ knobs.master, Fixed });
         repositionWidgets();
 
+        // give event priority to knob dragging
+        knobs.pregain->toFront();
+        knobs.bass->toFront();
+        knobs.middle->toFront();
+        knobs.treble->toFront();
+        knobs.depth->toFront();
+        knobs.presence->toFront();
+        knobs.master->toFront();
+
         // adjust size
         const double scaleFactor = getScaleFactor();
         setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH * scaleFactor,
