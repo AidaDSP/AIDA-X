@@ -1,5 +1,3 @@
-#include "..\..\build\version.iss"
-
 [Setup]
 ArchitecturesInstallIn64BitMode=x64
 AppName=AIDA-X
@@ -7,25 +5,24 @@ AppPublisher=Aida DSP
 AppPublisherURL=https://github.com/AidaDSP/aida-x/
 AppSupportURL=https://github.com/AidaDSP/aida-x/issues/
 AppUpdatesURL=https://github.com/AidaDSP/aida-x/releases/
-AppVerName=AIDA-X {#VERSION}
-AppVersion={#VERSION}
+AppVerName=AIDA-X @VERSION@
+AppVersion=@VERSION@
 DefaultDirName={commonpf64}\AIDA-X
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 ; DisableReadyPage=true
 ; DisableWelcomePage=no
-InfoBeforeFile=..\windows-installer-welcome.rtf
-; LicenseFile=..\..\LICENSE
-OutputBaseFilename=AIDA-X-win64-{#VERSION}-installer
+InfoBeforeFile=@UTILSDIR@\windows-installer-welcome.rtf
+OutputBaseFilename=AIDA-X-win64-@VERSION@-installer
 OutputDir=.
-SetupIconFile=..\ax.ico
+SetupIconFile=@UTILSDIR@\ax.ico
 UsePreviousAppDir=no
 VersionInfoCompany=Aida DSP
 VersionInfoCopyright=Aida DSP
 VersionInfoDescription=Simple loader for neural models using RTNeural inference engine
 VersionInfoProductName=AIDA-X
-VersionInfoProductVersion={#VERSION}
-VersionInfoVersion={#VERSION}
+VersionInfoProductVersion=@VERSION@
+VersionInfoVersion=@VERSION@
 ; WizardImageFile=WizModernImage.bmp
 ; WizardImageStretch=false
 ; WizardSmallImageFile=WizSmall.bmp
@@ -42,11 +39,11 @@ Name: vst2; Description: "VST2 plugin"; Types: normal;
 Name: vst3; Description: "VST3 plugin"; Types: normal;
 
 [Files]
-Source: "..\..\build\bin\AIDA-X.exe"; DestDir: "{app}"; Components: standalone; Flags: ignoreversion;
-Source: "..\..\build\bin\AIDA-X.clap"; DestDir: "{commoncf64}\CLAP"; Components: clap; Flags: ignoreversion;
-Source: "..\..\build\bin\AIDA-X.lv2\*.*"; DestDir: "{commoncf64}\LV2\AIDA-X.lv2"; Components: lv2; Flags: ignoreversion recursesubdirs;
-Source: "..\..\build\bin\AIDA-X-vst2.dll"; DestDir: "{code:GetVST2Dir}"; Components: vst2; Flags: ignoreversion;
-Source: "..\..\build\bin\AIDA-X.vst3"; DestDir: "{commoncf64}\VST3"; Components: vst3; Flags: ignoreversion recursesubdirs;
+Source: "@BINDIR@/AIDA-X.exe"; DestDir: "{app}"; Components: standalone; Flags: ignoreversion;
+Source: "@BINDIR@/AIDA-X.clap"; DestDir: "{commoncf64}\CLAP"; Components: clap; Flags: ignoreversion;
+Source: "@BINDIR@/AIDA-X.lv2/*.*"; DestDir: "{commoncf64}\LV2\AIDA-X.lv2"; Components: lv2; Flags: ignoreversion recursesubdirs;
+Source: "@BINDIR@/AIDA-X-vst2.dll"; DestDir: "{code:GetVST2Dir}"; Components: vst2; Flags: ignoreversion;
+Source: "@BINDIR@/AIDA-X.vst3"; DestDir: "{commoncf64}\VST3"; Components: vst3; Flags: ignoreversion recursesubdirs;
 
 [Icons]
 Name: "{commonpf64}\AIDA-X"; Filename: "{app}\AIDA-X.exe"; Components: standalone;

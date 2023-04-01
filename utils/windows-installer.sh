@@ -6,19 +6,25 @@ cd $(dirname ${0})
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-VERSION="${1}"
+BUILDDIR="${1}"
+VERSION="${2}"
 
-if [ -z "${VERSION}" ]; then
-    echo "usage: ${0} <VERSION>"
+if [ -z "${BUILDDIR}" ] || [ -z "${VERSION}" ]; then
+    echo "usage: ${0} <BUILDDIR> <VERSION>"
+    exit 1
+fi
+
+if [ ! -d "${BUILDDIR}" ]; then
+    echo "BUILDDIR does not exist"
     exit 1
 fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-mkdir -p ../build/innosetup-6.0.5
+mkdir -p "${BUILDDIR}/innosetup-6.0.5"
 
-dlfile="../build/innosetup-6.0.5.exe"
-pkgdir="$(realpath ../build/innosetup-6.0.5)"
+dlfile="${BUILDDIR}/innosetup-6.0.5.exe"
+pkgdir="$(realpath ${BUILDDIR}/innosetup-6.0.5)"
 drivec="${pkgdir}/drive_c"
 iscc="${drivec}/InnoSetup/ISCC.exe"
 
@@ -45,9 +51,14 @@ fi
 # ---------------------------------------------------------------------------------------------------------------------
 # create innosetup installer
 
-ls -al ../build/bin/
+ls -al "${BUILDDIR}/bin"
 
-echo "#define VERSION \"${VERSION}\"" > ../build/version.iss
-xvfb-run wine "${iscc}" "inno/win64.iss"
+sed \
+    -e "s|@VERSION@|${VERSION}|g" \
+    -e "s|@BINDIR@|Z:${BUILDDIR}/bin|g" \
+    -e "s|@UTILSDIR@|Z:${PWD}|g" \
+    inno/win64.iss > "${BUILDDIR}/win64.iss"
+
+xvfb-run wine "${iscc}" "Z:${BUILDDIR}/win64.iss"
 
 # ---------------------------------------------------------------------------------------------------------------------
