@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>ax.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>Aida-X</string>
+	<string>cc.aidadsp.rt-neural-loader</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSRequiresAquaSystemAppearance</key>

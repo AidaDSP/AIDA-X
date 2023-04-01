@@ -37,7 +37,28 @@ dpf_add_plugin(AIDA-X
     Graphics.cpp
     src/aidadsp-ui.cpp)
 
+dpf_add_plugin(AIDA-X-Standalone
+  TARGETS jack
+  #NO_SHARED_RESOURCES
+  UI_TYPE opengl
+  FILES_DSP
+    Files.cpp
+    modules/FFTConvolver/AudioFFT.cpp
+    modules/FFTConvolver/FFTConvolver.cpp
+    modules/FFTConvolver/TwoStageFFTConvolver.cpp
+    modules/FFTConvolver/Utilities.cpp
+    modules/r8brain/pffft.cpp
+    modules/r8brain/r8bbase.cpp
+    src/aidadsp-plugin.cpp
+    src/Biquad.cpp
+    src/3rd-party.cpp
+  FILES_UI
+    Graphics.cpp
+    modules/dpf-widgets/opengl/Blendish.cpp
+    src/aidadsp-ui.cpp)
+
 target_compile_definitions(dgl-opengl PUBLIC
+  DGL_WINDOWS_ICON_ID=401
   NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
 )
 
@@ -51,9 +72,21 @@ target_include_directories(AIDA-X PUBLIC
   ${CMAKE_BINARY_DIR}
 )
 
+target_include_directories(AIDA-X-Standalone PUBLIC
+  src
+  src/standalone
+  modules/dpf-widgets/opengl
+  modules/dr_libs
+  modules/FFTConvolver
+  modules/r8brain
+  modules/rtneural
+  ${CMAKE_BINARY_DIR}
+)
+
 # needed for enabling SSE in pffft
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
   target_compile_definitions(AIDA-X PUBLIC i386)
+  target_compile_definitions(AIDA-X-Standalone PUBLIC i386)
 endif()
 
 # needed for RISC-V
@@ -62,6 +95,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
 endif()
 
 target_link_libraries(AIDA-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_OPTIONAL_LIBATOMIC})
+target_link_libraries(AIDA-X-Standalone PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_OPTIONAL_LIBATOMIC})
 
 # convert data into code
 add_custom_command(
@@ -79,3 +113,29 @@ add_custom_command(
   OUTPUT Graphics.cpp
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 )
+
+# set up extra standalone details
+if(MACOS)
+set_target_properties(AIDA-X-Standalone PROPERTIES
+  MACOSX_BUNDLE TRUE
+  MACOSX_FRAMEWORK_IDENTIFIER cc.aidadsp.rt-neural-loader
+  RESOURCE utils/ax.icns)
+# TODO
+#<key>CFBundleDevelopmentRegion</key>
+#<string>English</string>
+#<key>CFBundleExecutable</key>
+#<string>Aida-X</string>
+#<key>CFBundleIconFile</key>
+#<string>ax.icns</string>
+#<key>CFBundleIdentifier</key>
+#<string>cc.aidadsp.rt-neural-loader</string>
+#<key>NSHighResolutionCapable</key>
+#<true/>
+#<key>NSRequiresAquaSystemAppearance</key>
+#<false/>
+#<key>NSMicrophoneUsageDescription</key>
+#<string>Aida-X requires microphone permissions for audio input.</string>
+elseif(WIN32)
+set_target_properties(AIDA-X-Standalone PROPERTIES WIN32 TRUE)
+target_sources(AIDA-X-Standalone PUBLIC utils/ax.rc)
+endif()
