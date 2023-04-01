@@ -1,2 +1,6 @@
-Aida-X is an audio plugin for loading neural models, using RTNeural inference engine.
-It is free and open-source, compatible with CLAP, LV2, VST2 and VST3 hosts.
+AIDA-X is an Amp Model Player, allowing it to load models of AI trained music gear, which you can then play through!
+
+Its main intended use is to provide high fidelity simulations of amplifiers.  
+However, it is also possible to run entire signal chains consisting of any combination of amp, cab, dist, drive, fuzz, boost and eq.
+
+This installer contains the CLAP, LV2, VST2 and VST3 plugin formats.

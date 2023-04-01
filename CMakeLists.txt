@@ -118,25 +118,19 @@ add_custom_command(
 set_target_properties(AIDA-X-Standalone-jack PROPERTIES OUTPUT_NAME "AIDA-X")
 
 if(APPLE)
-set_target_properties(AIDA-X-Standalone PROPERTIES
+set_target_properties(AIDA-X-Standalone-jack PROPERTIES
   MACOSX_BUNDLE TRUE
-  MACOSX_FRAMEWORK_IDENTIFIER cc.aidadsp.rt-neural-loader
-  RESOURCE utils/ax.icns)
-# TODO
-#<key>CFBundleDevelopmentRegion</key>
-#<string>English</string>
-#<key>CFBundleExecutable</key>
-#<string>Aida-X</string>
-#<key>CFBundleIconFile</key>
-#<string>ax.icns</string>
-#<key>CFBundleIdentifier</key>
-#<string>cc.aidadsp.rt-neural-loader</string>
-#<key>NSHighResolutionCapable</key>
-#<true/>
-#<key>NSRequiresAquaSystemAppearance</key>
-#<false/>
-#<key>NSMicrophoneUsageDescription</key>
-#<string>Aida-X requires microphone permissions for audio input.</string>
+  MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/utils/Info.plist"
+)
+add_custom_command(
+  POST_BUILD
+  COMMAND cmake -E copy "${CMAKE_SOURCE_DIR}/utils/ax.icns" "${CMAKE_BINARY_DIR}/bin/AIDA-X.app/Contents/Resources/ax.icns"
+  DEPENDS AIDA-X-Standalone-jack
+  OUTPUT "${CMAKE_BINARY_DIR}/bin/AIDA-X.app/Contents/Resources/ax.icns"
+)
+add_custom_target(AIDA-X-App ALL
+  DEPENDS "${CMAKE_BINARY_DIR}/bin/AIDA-X.app/Contents/Resources/ax.icns"
+)
 elseif(WIN32)
 set_target_properties(AIDA-X-Standalone-jack PROPERTIES WIN32 TRUE)
 target_sources(AIDA-X-Standalone-jack PUBLIC utils/ax.rc)
