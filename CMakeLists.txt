@@ -56,7 +56,12 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
   target_compile_definitions(AIDA-X PUBLIC i386)
 endif()
 
-target_link_libraries(AIDA-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT})
+# needed for RISC-V
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
+  set(CMAKE_OPTIONAL_LIBATOMIC "-latomic")
+endif()
+
+target_link_libraries(AIDA-X PUBLIC RTNeural ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_OPTIONAL_LIBATOMIC})
 
 # convert data into code
 add_custom_command(
