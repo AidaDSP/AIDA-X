@@ -50,8 +50,8 @@ static constexpr const float PRESENCE_FREQ = 900.f;
 static constexpr const float INLPF_MAX_CO = 0.99f * 0.5f; /* coeff * ((samplerate / 2) / samplerate) */
 static constexpr const float INLPF_MIN_CO = 0.25f * 0.5f; /* coeff * ((samplerate / 2) / samplerate) */
 
-/* Gain compensation for cabinet IR (-6dB) */
-static constexpr const float kCabinetMaxGain = 0.5f;
+/* Gain compensation for cabinet IR (-12dB) */
+static constexpr const float kCabinetMaxGain = 0.251f;
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -236,8 +236,7 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
-    std::atomic<bool> resetMeterIn { false };
-    std::atomic<bool> resetMeterOut { false };
+    std::atomic<bool> resetMeters { false };
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
     AudioFile* audiofile = nullptr;
     std::atomic<bool> activeAudiofile { false };
@@ -502,12 +501,9 @@ protected:
 
     void setState(const char* const key, const char* const value) override
     {
-        if (std::strncmp(key, "reset-meter-", 12) == 0)
+        if (std::strcmp(key, "reset-meters") == 0)
         {
-            if (key[12] == 'i')
-                resetMeterIn.store(true);
-            else
-                resetMeterOut.store(true);
+            resetMeters.store(true);
             return;
         }
 
@@ -797,8 +793,7 @@ protected:
         aida.mastergain.clearToTarget();
         bypassGain.clearToTarget();
         cabsimGain.clearToTarget();
-        resetMeterIn.store(true);
-        resetMeterOut.store(true);
+        resetMeters.store(true);
 
         if (model != nullptr)
         {
@@ -879,15 +874,15 @@ protected:
         // peak meters
         float meterIn, meterOut;
 
-        if (resetMeterIn.exchange(false))
-            meterIn = DB_CO(kMinimumMeterDb);
+        if (resetMeters.exchange(false))
+        {
+            meterIn = meterOut = DB_CO(kMinimumMeterDb);
+        }
         else
+        {
             meterIn = parameters[kParameterMeterIn];
-
-        if (resetMeterOut.exchange(false))
-            meterOut = DB_CO(kMinimumMeterDb);
-        else
             meterOut = parameters[kParameterMeterOut];
+        }
 
         for (uint32_t i = 0; i < numSamples; ++i)
             meterIn = std::max(meterIn, std::abs(bypassInplaceBuffer[i]));

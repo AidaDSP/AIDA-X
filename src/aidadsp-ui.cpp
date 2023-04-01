@@ -93,6 +93,7 @@ class AidaDSPLoaderUI : public UI,
     struct {
         ScopedPointer<AidaMeter> in;
         ScopedPointer<AidaMeter> out;
+        bool resetOnNextIdle = false;
     } meters;
 
   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
@@ -323,11 +324,11 @@ protected:
             break;
         case kParameterMeterIn:
             meters.in->setValue(value);
-            setState("reset-meter-in", "");
+            meters.resetOnNextIdle = true;
             break;
         case kParameterMeterOut:
             meters.out->setValue(value);
-            setState("reset-meter-out", "");
+            meters.resetOnNextIdle = true;
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:
@@ -682,9 +683,17 @@ protected:
             if (supportsAudioInput() && !isAudioInputEnabled())
                 requestAudioInput();
     }
+   #endif
 
     void uiIdle() override
     {
+        if (meters.resetOnNextIdle)
+        {
+            meters.resetOnNextIdle = false;
+            setState("reset-meters", "");
+        }
+
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (enableInputButton != nullptr)
         {
             const EnableInputState newInputState = isAudioInputEnabled() ? kEnableInputEnabled : kEnableInputSupported;
@@ -704,8 +713,8 @@ protected:
                 }
             }
         }
+       #endif
     }
-   #endif
 
    /**
       Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().

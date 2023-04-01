@@ -23,6 +23,7 @@ drivec="${pkgdir}/drive_c"
 iscc="${drivec}/InnoSetup/ISCC.exe"
 
 export WINEARCH=win64
+export WINEDLLOVERRIDES="mscoree,mshtml="
 export WINEPREFIX="${pkgdir}"
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -34,17 +35,17 @@ if [ ! -f "${dlfile}" ]; then
 fi
 
 if [ ! -d "${drivec}" ]; then
-    wineboot -u
+    xvfb-run wineboot -u
 fi
 
 if [ ! -f "${drivec}/InnoSetup/ISCC.exe" ]; then
-    wine "${dlfile}" /allusers /dir=C:\\InnoSetup /nocancel /norestart /verysilent
+    xvfb-run wine "${dlfile}" /allusers /dir=C:\\InnoSetup /nocancel /norestart /verysilent
 fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 # create innosetup installer
 
 echo "#define VERSION \"${VERSION}\"" > ../build/version.iss
-wine "${iscc}" "inno/win64.iss"
+xvfb-run wine "${iscc}" "inno/win64.iss"
 
 # ---------------------------------------------------------------------------------------------------------------------
