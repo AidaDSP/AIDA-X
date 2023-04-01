@@ -15,6 +15,8 @@ fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+mkdir -p ../build/innosetup-6.0.5
+
 dlfile="../build/innosetup-6.0.5.exe"
 pkgdir="$(realpath ../build/innosetup-6.0.5)"
 drivec="${pkgdir}/drive_c"
