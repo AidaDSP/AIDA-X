@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(aidadsp-loader VERSION 1.0.0)
+project(aidadsp-loader VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -117,7 +117,7 @@ add_custom_command(
 # set up extra standalone details
 set_target_properties(AIDA-X-Standalone-jack PROPERTIES OUTPUT_NAME "AIDA-X")
 
-if(MACOS)
+if(APPLE)
 set_target_properties(AIDA-X-Standalone PROPERTIES
   MACOSX_BUNDLE TRUE
   MACOSX_FRAMEWORK_IDENTIFIER cc.aidadsp.rt-neural-loader
@@ -140,4 +140,14 @@ set_target_properties(AIDA-X-Standalone PROPERTIES
 elseif(WIN32)
 set_target_properties(AIDA-X-Standalone PROPERTIES WIN32 TRUE)
 target_sources(AIDA-X-Standalone PUBLIC utils/ax.rc)
+endif()
+
+# set up windows installer
+if(WIN32)
+add_custom_command(
+  POST_BUILD
+  COMMAND utils/windows-installer.sh "${VERSION}"
+  OUTPUT utils/inno/AIDA-X-win64-${VERSION}-installer.exe
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+)
 endif()
