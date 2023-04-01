@@ -236,6 +236,8 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
+    std::atomic<bool> resetMeterIn { false };
+    std::atomic<bool> resetMeterOut { false };
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
     AudioFile* audiofile = nullptr;
     std::atomic<bool> activeAudiofile { false };
@@ -491,6 +493,8 @@ protected:
         case kParameterGLOBALBYPASS:
             bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
             break;
+        case kParameterMeterIn:
+        case kParameterMeterOut:
         case kParameterCount:
             break;
         }
@@ -498,6 +502,15 @@ protected:
 
     void setState(const char* const key, const char* const value) override
     {
+        if (std::strncmp(key, "reset-meter-", 12) == 0)
+        {
+            if (key[12] == 'i')
+                resetMeterIn.store(true);
+            else
+                resetMeterOut.store(true);
+            return;
+        }
+
         const bool isDefault = value == nullptr || value[0] == '\0' || std::strcmp(value, "default") == 0;
 
         if (std::strcmp(key, "json") == 0)
@@ -784,6 +797,8 @@ protected:
         aida.mastergain.clearToTarget();
         bypassGain.clearToTarget();
         cabsimGain.clearToTarget();
+        resetMeterIn.store(true);
+        resetMeterOut.store(true);
 
         if (model != nullptr)
         {
@@ -856,6 +871,22 @@ protected:
            #endif
         }
 
+        // peak meters
+        float meterIn, meterOut;
+
+        if (resetMeterIn.exchange(false))
+            meterIn = DB_CO(kMinimumMeterDb);
+        else
+            meterIn = parameters[kParameterMeterIn];
+
+        if (resetMeterOut.exchange(false))
+            meterOut = DB_CO(kMinimumMeterDb);
+        else
+            meterOut = parameters[kParameterMeterOut];
+
+        for (uint32_t i = 0; i < numSamples; ++i)
+            meterIn = std::max(meterIn, std::abs(bypassInplaceBuffer[i]));
+
         // High frequencies roll-off (lowpass)
         applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
 
@@ -900,12 +931,16 @@ protected:
         // Master volume
         applyGainRamp(aida.mastergain, out, numSamples);
 
-        // Bypass
+        // Bypass and output meter
         for (uint32_t i = 0; i < numSamples; ++i)
         {
             const float b = bypassGain.next();
             out[i] = out[i] * b + bypassInplaceBuffer[i] * (1.f - b);
+            meterOut = std::max(meterOut, std::abs(out[i]));
         }
+
+        parameters[kParameterMeterIn] = meterIn;
+        parameters[kParameterMeterOut] = meterOut;
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         std::memcpy(outputs[1], out, sizeof(float)*numSamples);

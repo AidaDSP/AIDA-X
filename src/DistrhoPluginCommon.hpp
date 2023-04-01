@@ -43,6 +43,8 @@ static constexpr const uint kPedalMarginTop = 0;
 static constexpr const char* const kDefaultModelName = "US-Double-Nrm-Model.json";
 static constexpr const char* const kDefaultCabinetName = "US-Double-Nrm-Cab.wav";
 
+static constexpr const float kMinimumMeterDb = -60.f;
+
 enum Parameters {
     kParameterINLPF,
     kParameterPREGAIN,
@@ -62,6 +64,8 @@ enum Parameters {
     kParameterMASTER,
     kParameterCABSIMBYPASS,
     kParameterGLOBALBYPASS,
+    kParameterMeterIn,
+    kParameterMeterOut,
     kParameterCount
 };
 
@@ -118,6 +122,8 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CABSIMBYPASS", "CABSIMBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
+    { kParameterIsOutput, "MeterIn", "MeterIn", "dB", 0.f, 0.f, 2.f, },
+    { kParameterIsOutput, "MeterOut", "MeterOut", "dB", 0.f, 0.f, 2.f, },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);

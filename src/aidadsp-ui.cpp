@@ -90,6 +90,11 @@ class AidaDSPLoaderUI : public UI,
         ScopedPointer<AidaFilenameButton> cabsim;
     } loaders;
 
+    struct {
+        ScopedPointer<AidaMeter> in;
+        ScopedPointer<AidaMeter> out;
+    } meters;
+
   #if DISTRHO_PLUGIN_VARIANT_STANDALONE
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     EnableInputState enableInputState = kEnableInputUnsupported;
@@ -166,6 +171,9 @@ public:
 
         loaders.cabsim = new AidaFilenameButton(this, this, kParameterCABSIMBYPASS, kButtonLoadCabinet, "cabinet IR", icons.cab, icons.cabOn);
         loaders.cabsim->setFilename(kDefaultCabinetName);
+
+        meters.in = new AidaMeter(this, "INPUT");
+        meters.out = new AidaMeter(this, "OUTPUT");
 
       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
@@ -312,6 +320,14 @@ protected:
             break;
         case kParameterGLOBALBYPASS:
             switches.bypass->setChecked(value < 0.5f, false);
+            break;
+        case kParameterMeterIn:
+            meters.in->setValue(value);
+            setState("reset-meter-in", "");
+            break;
+        case kParameterMeterOut:
+            meters.out->setValue(value);
+            setState("reset-meter-out", "");
             break;
         case kParameterBASSFREQ:
         case kParameterMIDFREQ:
@@ -542,6 +558,12 @@ protected:
 
         loaders.cabsim->setAbsolutePos(loadersX, loadersY);
         loaders.cabsim->setWidth(widthPedal / 3 - margin * 2);
+
+        const double metersX = marginHorizontal + margin / 2;
+        const double metersY = marginTop / 2 - meters.in->getHeight() / 2;
+
+        meters.in->setAbsolutePos(metersX, metersY);
+        meters.out->setAbsolutePos(metersX + meters.in->getWidth() + margin / 2, metersY);
 
       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0

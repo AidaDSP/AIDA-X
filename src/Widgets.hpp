@@ -18,6 +18,21 @@ static constexpr const uint kSubWidgetsFontSize = 14;
 static constexpr const uint kSubWidgetsFullHeight = 90;
 static constexpr const uint kSubWidgetsPadding = 8;
 
+static inline constexpr
+float normalizedLevelMeterValue(const float db)
+{
+	return (
+        db < -70.f ? 0.f :
+        db < -60.f ? (db + 70.f) * 0.25f :
+        db < -50.f ? (db + 60.f) * 0.50f +  2.5f :
+        db < -40.f ? (db + 50.f) * 0.75f +  7.5f :
+        db < -30.f ? (db + 40.f) * 1.50f + 15.0f :
+        db < -20.f ? (db + 30.f) * 2.00f + 30.0f :
+        db <   0.f ? (db + 20.f) * 2.50f + 50.0f :
+        100.f
+    ) / 100.f;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // good old knob with tick markers, rotating image and on-actived value display, follows modgui style
 
@@ -210,6 +225,107 @@ protected:
     bool onMotion(const MotionEvent& event) override
     {
         return ButtonEventHandler::motionEvent(event);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+// simple vertical meter
+
+class AidaMeter : public NanoSubWidget
+{
+    NanoTopLevelWidget* const parent;
+    Application& app;
+    const String label;
+
+    float value = 0.f;
+    float valueDb = kMinimumMeterDb;
+
+public:
+    static constexpr const uint kMeterWidth = 150;
+    static constexpr const uint kMeterHeight = kSubWidgetsFontSize + kSubWidgetsPadding / 2;
+    static constexpr const uint kMeterRadius = kSubWidgetsPadding / 2;
+
+    AidaMeter(NanoTopLevelWidget* const p, const char* const lbl)
+        : NanoSubWidget(p),
+          parent(p),
+          app(parent->getApp()),
+          label(lbl)
+    {
+        const double scaleFactor = p->getScaleFactor();
+        setSize(kMeterWidth * scaleFactor, kMeterHeight * scaleFactor);
+    }
+
+    void setValue(const float v)
+    {
+        if (d_isEqual(value, v))
+            return;
+
+        value = v;
+        valueDb = 20.f * std::log10(v);
+
+        repaint();
+    }
+
+protected:
+    void onNanoDisplay() override
+    {
+        const uint width = getWidth();
+        const uint height = getHeight();
+
+        const double scaleFactor = parent->getScaleFactor();
+        const double meterRadius = kMeterRadius * scaleFactor;
+        const double meterPadding = kSubWidgetsPadding * scaleFactor;
+        const double wfontSize = kSubWidgetsFontSize * scaleFactor;
+
+        fontSize(wfontSize);
+
+        beginPath();
+        roundedRect(0, 0, width, height, meterRadius);
+        fillColor(Color(0x38,0x37,0x5c));
+        fill();
+
+        char valuestr[32] = {};
+
+        if (valueDb > kMinimumMeterDb)
+            std::snprintf(valuestr, sizeof(valuestr)-1, "%.1f dB", valueDb);
+        else
+            std::strncpy(valuestr, "-inf dB", sizeof(valuestr)-1);
+
+        // draw text using active color
+        fillColor(Color(0xa4,0xf4,0x4d));
+
+        textAlign(ALIGN_LEFT|ALIGN_MIDDLE);
+        text(meterPadding, height/2, label, nullptr);
+
+        textAlign(ALIGN_RIGHT|ALIGN_MIDDLE);
+        text(width - meterPadding, height/2, valuestr, nullptr);
+
+        if (valueDb > kMinimumMeterDb)
+        {
+            const float vnormal = normalizedLevelMeterValue(valueDb);
+
+            // draw active background
+            beginPath();
+            roundedRect(scaleFactor, scaleFactor,
+                        vnormal * (width - scaleFactor * 2),
+                        height - scaleFactor * 2,
+                        meterRadius);
+            fill();
+
+            // draw text on top of active color using background color
+            fillColor(Color(0x38,0x37,0x5c));
+
+            save();
+            scissor(0, 0, vnormal * width, height);
+
+            textAlign(ALIGN_LEFT|ALIGN_MIDDLE);
+            text(meterPadding, height/2, label, nullptr);
+
+            textAlign(ALIGN_RIGHT|ALIGN_MIDDLE);
+            text(width - meterPadding, height/2, valuestr, nullptr);
+
+            restore();
+        }
     }
 };
 
