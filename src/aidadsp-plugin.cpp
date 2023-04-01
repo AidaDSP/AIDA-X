@@ -259,10 +259,11 @@ public:
         bufferSizeChanged(getBufferSize());
         sampleRateChanged(getSampleRate());
 
-        // load default files
-        loadDefaultCabinet();
+        // load default model
         loadDefaultModel();
+
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+        // and audio file
         loadAudioFile(kAudioLoopFilenames[0]);
        #endif
     }
