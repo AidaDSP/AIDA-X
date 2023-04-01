@@ -1,4 +1,5 @@
 *~
+*.exe
 *.kdev4
 *.json
 .DS_Store
