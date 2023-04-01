@@ -115,6 +115,8 @@ add_custom_command(
 )
 
 # set up extra standalone details
+set_target_properties(AIDA-X-Standalone-jack PROPERTIES OUTPUT_NAME "AIDA-X")
+
 if(MACOS)
 set_target_properties(AIDA-X-Standalone PROPERTIES
   MACOSX_BUNDLE TRUE
