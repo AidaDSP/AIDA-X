@@ -53,6 +53,20 @@ jobs:
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.RELEASE_BASENAME }}-installer
+          path: |
+            utils/inno/*.exe
+      - uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            utils/inno/*.exe
 
   wasm:
     strategy:
