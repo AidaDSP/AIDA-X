@@ -54,7 +54,7 @@ jobs:
           target: ${{ matrix.target }}
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.RELEASE_BASENAME }}-installer
+          name: ${{ env.ARTIFACT_BASENAME }}-installer
           path: |
             utils/inno/*.exe
       - uses: softprops/action-gh-release@v1
