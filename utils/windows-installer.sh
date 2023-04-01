@@ -35,17 +35,17 @@ if [ ! -f "${dlfile}" ]; then
 fi
 
 if [ ! -d "${drivec}" ]; then
-    xvfb-run wineboot -u
+    xvfb-run wineboot -u || true
 fi
 
 if [ ! -f "${drivec}/InnoSetup/ISCC.exe" ]; then
-    xvfb-run wine "${dlfile}" /allusers /dir=C:\\InnoSetup /nocancel /norestart /verysilent
+    xvfb-run wine "${dlfile}" /allusers /dir=C:\\InnoSetup /nocancel /norestart /verysilent || true
 fi
 
 # ---------------------------------------------------------------------------------------------------------------------
 # create innosetup installer
 
 echo "#define VERSION \"${VERSION}\"" > ../build/version.iss
-xvfb-run wine "${iscc}" "inno/win64.iss"
+xvfb-run wine "${iscc}" "inno/win64.iss" || true
 
 # ---------------------------------------------------------------------------------------------------------------------
