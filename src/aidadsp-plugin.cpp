@@ -624,7 +624,7 @@ protected:
 
         // Pre-buffer to avoid "clicks" during initialization
         float out[2048] = {};
-        applyModel(newmodel.get(), out, 2048);
+        applyModel(newmodel.get(), out, ARRAY_SIZE(out));
 
         // swap active model
         DynamicModel* const oldmodel = model;
@@ -802,6 +802,9 @@ protected:
 
         if (model != nullptr)
         {
+            // Pre-buffer to avoid "clicks" during initialization
+            float out[2048] = {};
+
             activeModel.store(true);
 
             std::visit (
@@ -814,6 +817,8 @@ protected:
                     }
                 },
                 model->variant);
+
+            applyModel(model, out, ARRAY_SIZE(out));
 
             activeModel.store(false);
         }
