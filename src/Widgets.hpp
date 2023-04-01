@@ -16,6 +16,7 @@ START_NAMESPACE_DISTRHO
 
 static constexpr const uint kSubWidgetsFontSize = 14;
 static constexpr const uint kSubWidgetsFullHeight = 90;
+static constexpr const uint kSubWidgetsPadding = 8;
 
 // --------------------------------------------------------------------------------------------------------------------
 // good old knob with tick markers, rotating image and on-actived value display, follows modgui style
@@ -141,9 +142,8 @@ class AidaPluginSwitch : public NanoSubWidget,
 public:
     static constexpr const uint kSwitchWidth = 25;
     static constexpr const uint kSwitchHeight = 60;
-    static constexpr const uint kSwitchPadding = 8;
     static constexpr const uint kSwitchRadius = kSwitchWidth / 2;
-    static constexpr const uint kFullWidth = kSwitchWidth + kSwitchPadding * 2;
+    static constexpr const uint kFullWidth = kSwitchWidth + kSubWidgetsPadding * 2;
 
     AidaPluginSwitch(NanoTopLevelWidget* const p, ButtonEventHandler::Callback* const cb, const Parameters paramId)
         : NanoSubWidget(p),
@@ -171,7 +171,7 @@ protected:
         const double scaleFactor = parent->getScaleFactor();
         const double switchWidth = kSwitchWidth * scaleFactor;
         const double switchHeight = kSwitchHeight * scaleFactor;
-        const double switchPadding = kSwitchPadding * scaleFactor;
+        const double switchPadding = kSubWidgetsPadding * scaleFactor;
         const double switchRadius = kSwitchRadius * scaleFactor;
 
         const bool checked = isInverted ? !isChecked() : isChecked();
@@ -339,7 +339,6 @@ class AidaFileList : public NanoSubWidget,
 {
     static constexpr const uint kCommonRadius = 10;
     static constexpr const uint kSingleHeight = 24;
-    static constexpr const uint kSingleMargin = 8;
     static constexpr const uint kInitialWidth = 100;
 
     struct AidaFileButton : NanoSubWidget,
@@ -374,7 +373,7 @@ class AidaFileList : public NanoSubWidget,
 
             const double scaleFactor = parent->getScaleFactor();
             const double wfontSize = kSubWidgetsFontSize * scaleFactor;
-            const double margin = kSingleMargin * scaleFactor;
+            const double margin = kSubWidgetsPadding * scaleFactor;
             const double radius = kCommonRadius * scaleFactor;
 
             uint state = getState();
@@ -546,7 +545,6 @@ class AidaFilenameButton : public NanoSubWidget
 {
     static constexpr const uint kCommonHeight = 32;
     static constexpr const uint kCommonRadius = 10;
-    static constexpr const uint kButtonMargin = 8;
     static constexpr const uint kIconSize     = 20;
     static constexpr const uint kInitialWidth = 100;
 
@@ -565,7 +563,7 @@ class AidaFilenameButton : public NanoSubWidget
               imageOn(imgOn)
         {
             const double scaleFactor = p->getScaleFactor();
-            setSize((kCommonHeight + kButtonMargin) * scaleFactor, kCommonHeight * scaleFactor);
+            setSize((kCommonHeight + kSubWidgetsPadding) * scaleFactor, kCommonHeight * scaleFactor);
 
             setCheckable(true);
             setChecked(true, false);
@@ -666,7 +664,7 @@ class AidaFilenameButton : public NanoSubWidget
             const uint height = getHeight();
 
             const double scaleFactor = parent->getScaleFactor();
-            const double buttonMargin = (kCommonHeight + kButtonMargin * 2) * scaleFactor;
+            const double buttonMargin = (kCommonHeight + kSubWidgetsPadding * 2) * scaleFactor;
             const double buttonRadius = kCommonRadius * scaleFactor;
 
             beginPath();
