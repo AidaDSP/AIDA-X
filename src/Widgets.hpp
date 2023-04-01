@@ -8,6 +8,7 @@
 
 #include "EventHandlers.hpp"
 #include "ImageWidgets.hpp"
+#include "NanoVG.hpp"
 
 #include "DistrhoPluginInfo.h"
 

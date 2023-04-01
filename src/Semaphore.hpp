@@ -92,6 +92,7 @@ public:
         return ::sem_timedwait(&sem, &timeout) == 0;
        #endif
     }
+
 private:
    #if defined(DISTRHO_OS_MAC)
     ::semaphore_t sem;

@@ -14,4 +14,4 @@
 #define DISTRHO_PLUGIN_VARIANT_PLUGIN     1
 #define DISTRHO_PLUGIN_VARIANT_STANDALONE 0
 
-#include "DistrhoPluginCommon.hpp"
+#include "../DistrhoPluginCommon.hpp"

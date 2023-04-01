@@ -20,7 +20,7 @@
 #define DISTRHO_PLUGIN_VARIANT_PLUGIN     0
 #define DISTRHO_PLUGIN_VARIANT_STANDALONE 1
 
-#include "DistrhoPluginCommon.hpp"
+#include "../DistrhoPluginCommon.hpp"
 
 #ifdef DISTRHO_OS_WASM
 static constexpr const char* const kAudioLoopFilenames[3] = {

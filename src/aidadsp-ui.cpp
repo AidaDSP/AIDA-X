@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
+#include "DistrhoPluginCommon.hpp"
+#include "DistrhoPluginUtils.hpp"
 #include "DistrhoStandaloneUtils.hpp"
 
 #include "Graphics.hpp"
-
 #include "Layout.hpp"
 #include "Widgets.hpp"
 
