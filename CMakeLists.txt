@@ -146,8 +146,12 @@ endif()
 if(WIN32)
 add_custom_command(
   POST_BUILD
-  COMMAND utils/windows-installer.sh "${VERSION}"
-  OUTPUT utils/inno/AIDA-X-win64-${VERSION}-installer.exe
-  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND utils/windows-installer.sh "${CMAKE_PROJECT_VERSION}"
+  DEPENDS AIDA-X-Standalone
+  OUTPUT "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-win64-${CMAKE_PROJECT_VERSION}-installer.exe"
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+add_custom_target(AIDA-X-Installer ALL
+  DEPENDS "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-win64-${CMAKE_PROJECT_VERSION}-installer.exe"
 )
 endif()
