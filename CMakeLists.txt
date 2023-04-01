@@ -138,8 +138,8 @@ set_target_properties(AIDA-X-Standalone PROPERTIES
 #<key>NSMicrophoneUsageDescription</key>
 #<string>Aida-X requires microphone permissions for audio input.</string>
 elseif(WIN32)
-set_target_properties(AIDA-X-Standalone PROPERTIES WIN32 TRUE)
-target_sources(AIDA-X-Standalone PUBLIC utils/ax.rc)
+set_target_properties(AIDA-X-Standalone-jack PROPERTIES WIN32 TRUE)
+target_sources(AIDA-X-Standalone-jack PUBLIC utils/ax.rc)
 endif()
 
 # set up windows installer
@@ -147,7 +147,7 @@ if(WIN32)
 add_custom_command(
   POST_BUILD
   COMMAND utils/windows-installer.sh "${CMAKE_PROJECT_VERSION}"
-  DEPENDS AIDA-X-Standalone-jack
+  DEPENDS AIDA-X AIDA-X-Standalone
   OUTPUT "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-win64-${CMAKE_PROJECT_VERSION}-installer.exe"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
