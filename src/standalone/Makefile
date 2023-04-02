@@ -151,8 +151,6 @@ ifeq ($(WINDOWS),true)
 
 WINDRES ?= $(subst gcc,windres,$(CC))
 
-LINK_FLAGS += -Wl,-subsystem,windows
-
 $(BUILD_DIR)/ax.rc.o: ax.rc ../../utils/ax.ico
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling ax.rc"

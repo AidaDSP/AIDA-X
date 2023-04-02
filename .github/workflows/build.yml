@@ -106,7 +106,7 @@ jobs:
         run: |
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
-          make -C src/standalone NOOPT=true USE_GLES2=true MOD_BUILD=${{ matrix.target == 'mod' }} -j $(nproc)
+          make -C src/standalone NOOPT=true MOD_BUILD=${{ matrix.target == 'mod' }} -j $(nproc)
           mv build/bin bin
           rm -rf build modules/dpf/build
       - name: Build non-optimized
@@ -124,7 +124,7 @@ jobs:
         run: |
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
-          make -C src/standalone NOOPT=true NOSIMD=true USE_GLES2=true MOD_BUILD=${{ matrix.target == 'mod' }} -j $(nproc)
+          make -C src/standalone NOOPT=true NOSIMD=true MOD_BUILD=${{ matrix.target == 'mod' }} -j $(nproc)
           mv build/bin/*.* bin/
       - name: Pack binaries
         run: |
