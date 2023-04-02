@@ -132,12 +132,11 @@ add_custom_target(AIDA-X-App ALL
   DEPENDS "${CMAKE_BINARY_DIR}/bin/AIDA-X.app/Contents/Resources/ax.icns"
 )
 elseif(WIN32)
-set_target_properties(AIDA-X-Standalone-jack PROPERTIES WIN32 TRUE)
 target_sources(AIDA-X-Standalone-jack PUBLIC utils/ax.rc)
 endif()
 
 # set up windows installer
-if(WIN32)
+if(WIN32 AND MINGW)
 add_custom_command(
   POST_BUILD
   COMMAND utils/windows-installer.sh "${CMAKE_BINARY_DIR}" "${CMAKE_PROJECT_VERSION}"
