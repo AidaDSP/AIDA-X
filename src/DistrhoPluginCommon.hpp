@@ -12,7 +12,7 @@
 static constexpr const char* const kVersionString = "v0.1.0";
 static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
 
-#define DISTRHO_PLUGIN_BRAND   "Aida DSP"
+#define DISTRHO_PLUGIN_BRAND   "AIDA DSP"
 #define DISTRHO_PLUGIN_NAME    "AIDA-X"
 #define DISTRHO_PLUGIN_URI     "http://aidadsp.cc/plugins/aidadsp-bundle/rt-neural-loader"
 #define DISTRHO_PLUGIN_CLAP_ID "cc.aidadsp.rt-neural-loader"

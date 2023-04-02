@@ -1,7 +1,7 @@
 [Setup]
 ArchitecturesInstallIn64BitMode=x64
 AppName=AIDA-X
-AppPublisher=Aida DSP
+AppPublisher=AIDA DSP
 AppPublisherURL=https://github.com/AidaDSP/aida-x/
 AppSupportURL=https://github.com/AidaDSP/aida-x/issues/
 AppUpdatesURL=https://github.com/AidaDSP/aida-x/releases/
@@ -17,8 +17,8 @@ OutputBaseFilename=AIDA-X-win64-@VERSION@-installer
 OutputDir=.
 SetupIconFile=@UTILSDIR@\ax.ico
 UsePreviousAppDir=no
-VersionInfoCompany=Aida DSP
-VersionInfoCopyright=Aida DSP
+VersionInfoCompany=AIDA DSP
+VersionInfoCopyright=AIDA DSP
 VersionInfoDescription=AIDA-X Installer
 VersionInfoProductName=AIDA-X
 VersionInfoProductVersion=@VERSION@
