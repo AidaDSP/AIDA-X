@@ -89,6 +89,11 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(i.86|x86|X86)$")
   target_compile_definitions(AIDA-X-Standalone PUBLIC i386)
 endif()
 
+# needed for emscripten
+if(EMSCRIPTEN)
+  target_compile_definitions(RTNeural PUBLIC EIGEN_DONT_VECTORIZE=1)
+endif()
+
 # needed for RISC-V
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
   set(CMAKE_OPTIONAL_LIBATOMIC "-latomic")
