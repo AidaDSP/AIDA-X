@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Aida-X</string>
+	<string>AIDA-X</string>
 	<key>CFBundleIconFile</key>
 	<string>ax.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -15,6 +15,6 @@
 	<key>NSRequiresAquaSystemAppearance</key>
 	<false/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Aida-X requires microphone permissions for audio input.</string>
+	<string>AIDA-X requires microphone permissions for audio input.</string>
 </dict>
 </plist>

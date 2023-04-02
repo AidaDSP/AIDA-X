@@ -1,5 +1,5 @@
 /*
- * Aida-X DPF plugin
+ * AIDA-X DPF plugin
  * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
  */

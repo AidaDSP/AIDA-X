@@ -52,7 +52,7 @@ Name: "{commondesktop}\AIDA-X"; Filename: "{app}\AIDA-X.exe"; Components: standa
 [Tasks]
 Name: desktopicon; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
-# based on https://www.kvraudio.com/forum/viewtopic.php?t=501615
+; based on https://www.kvraudio.com/forum/viewtopic.php?t=501615
 [Code]
 var
   VST2DirPage: TInputDirWizardPage;
