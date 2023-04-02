@@ -76,6 +76,11 @@ public:
         mem = target;
     }
 
+    float peek() noexcept
+    {
+        return mem * coef + target * (1.0f - coef);
+    }
+
     float next() noexcept
     {
         return (mem = mem * coef + target * (1.0f - coef));

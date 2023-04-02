@@ -32,9 +32,6 @@ START_NAMESPACE_DISTRHO
 /* Define a constexpr for converting a gain in dB to a coefficient */
 static constexpr float DB_CO(const float g) { return g > -90.f ? std::pow(10.f, g * 0.05f) : 0.f; }
 
-/* Define a constexpr to scale % to coeff */
-static constexpr float PC_CO(const float g) { return g < 100.f ? (g / 100.f) : 1.f; }
-
 /* Define a macro to re-maps a number from one range to another  */
 static constexpr float MAP(const float x, const float in_min, const float in_max, const float out_min, const float out_max)
 {
@@ -896,6 +893,21 @@ protected:
         for (uint32_t i = 0; i < numSamples; ++i)
             meterIn = std::max(meterIn, std::abs(bypassInplaceBuffer[i]));
 
+       #ifdef DISTRHO_OS_WASM
+        // Special handling for web version: stop further audio processing on bypass
+        if (bypassGain.peek() < 0.001f)
+        {
+            bypassGain.clearToTarget();
+            parameters[kParameterMeterIn] = meterIn;
+            parameters[kParameterMeterOut] = 0.f;
+            std::memset(outputs[0], 0, sizeof(float)*numSamples);
+           #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+            std::memset(outputs[1], 0, sizeof(float)*numSamples);
+           #endif
+            return;
+        }
+       #endif
+
         // High frequencies roll-off (lowpass)
         applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
 
@@ -943,8 +955,12 @@ protected:
         // Bypass and output meter
         for (uint32_t i = 0; i < numSamples; ++i)
         {
+           #ifndef DISTRHO_OS_WASM
             const float b = bypassGain.next();
             out[i] = out[i] * b + bypassInplaceBuffer[i] * (1.f - b);
+           #else
+            out[i] *= bypassGain.next();
+           #endif
             meterOut = std::max(meterOut, std::abs(out[i]));
         }
 
