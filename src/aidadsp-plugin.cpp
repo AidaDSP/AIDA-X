@@ -368,7 +368,16 @@ protected:
         parameter = kParameters[index];
 
         if (index == kParameterGLOBALBYPASS)
+        {
             parameter.designation = kParameterDesignationBypass;
+            {
+                static const ParameterEnumerationValue values[2] = {
+                    { 0, "PROCESSING" },
+                    { 1, "BYPASSED" }
+                };
+                parameter.enumValues.values = values;
+            }
+        }
     }
 
    /**
