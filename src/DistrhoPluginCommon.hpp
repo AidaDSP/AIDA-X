@@ -24,7 +24,9 @@ static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
 #define DISTRHO_UI_FILE_BROWSER        1
 #define DISTRHO_UI_USE_NANOVG          1
 
-#define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:SimulatorPlugin"
+#define DISTRHO_PLUGIN_CLAP_FEATURES   "audio-effect", "multi-effects", "mono"
+#define DISTRHO_PLUGIN_LV2_CATEGORY    "lv2:SimulatorPlugin"
+#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Dynamics|Mono"
 
 // known and defined in advance
 static constexpr const uint kPedalWidth = 900;
