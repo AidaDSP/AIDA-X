@@ -19,7 +19,7 @@ SetupIconFile=@UTILSDIR@\ax.ico
 UsePreviousAppDir=no
 VersionInfoCompany=Aida DSP
 VersionInfoCopyright=Aida DSP
-VersionInfoDescription=Simple loader for neural models using RTNeural inference engine
+VersionInfoDescription=AIDA-X Installer
 VersionInfoProductName=AIDA-X
 VersionInfoProductVersion=@VERSION@
 VersionInfoVersion=@VERSION@
@@ -46,12 +46,13 @@ Source: "@BINDIR@/AIDA-X-vst2.dll"; DestDir: "{code:GetVST2Dir}"; Components: vs
 Source: "@BINDIR@/AIDA-X.vst3"; DestDir: "{commoncf64}\VST3"; Components: vst3; Flags: ignoreversion recursesubdirs;
 
 [Icons]
-Name: "{commonpf64}\AIDA-X"; Filename: "{app}\AIDA-X.exe"; Components: standalone;
+Name: "{commonprograms}\AIDA-X"; Filename: "{app}\AIDA-X.exe"; Components: standalone; Comment: "AIDA-X Standalone";
 Name: "{commondesktop}\AIDA-X"; Filename: "{app}\AIDA-X.exe"; Components: standalone; Tasks: desktopicon;
 
 [Tasks]
 Name: desktopicon; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
+# based on https://www.kvraudio.com/forum/viewtopic.php?t=501615
 [Code]
 var
   VST2DirPage: TInputDirWizardPage;
