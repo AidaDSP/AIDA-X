@@ -4,13 +4,16 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="description" content="AIDA-X" />
-    <meta name="theme-color" content="#111111">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0" user-scalable="no">
     <title>AIDA-X</title>
     <style>
       html {
-        background-color: #111111;
+        background: url("/background-p2.png"), linear-gradient(rgb(100, 50, 255), rgb(166, 58, 255));
+        background-size: 256px auto;
+        border: 2px solid black;
+        box-shadow: inset black 0px 0px 1px 1px;
         color: #eee;
+        height: 100vh;
         overflow: hidden;
       }
       body, canvas {
@@ -86,6 +89,13 @@
         to {transform: rotate(360deg);}
       }
 
+      #audiofilelist {
+        display: none;
+        position: absolute;
+        top: 7px;
+        left: calc(50vw - 100px);
+        z-index: 2;
+      }
     </style>
   </head>
   <body>
@@ -102,6 +112,36 @@
       <input type="file" id="canvas_file_open" ></input>
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
     </div>
+    <select id="audiofilelist" onchange="loadFile(); return false;">
+      <option disabled selected value> -- select a recording to begin playing -- </option>
+      <option class="audiofileoption" value="1">Bram Fast 01</option>
+      <option class="audiofileoption" value="2">Bram Fast 02</option>
+      <option class="audiofileoption" value="3">Bram Mid 01</option>
+      <option class="audiofileoption" value="4">Bram Mid 02</option>
+      <option class="audiofileoption" value="5">Bram Mid 03</option>
+      <option class="audiofileoption" value="6">Bram Riff 01</option>
+      <option class="audiofileoption" value="7">Bram Rock 01</option>
+      <option class="audiofileoption" value="8">Bram Tap 01</option>
+      <option class="audiofileoption" value="9">Gian Funky Rock 01</option>
+      <option class="audiofileoption" value="10">Gian Funky Rock 02</option>
+      <option class="audiofileoption" value="11">Gian Funky</option>
+      <option class="audiofileoption" value="12">Gian Heavy Rock</option>
+      <option class="audiofileoption" value="13">Gian Heavy</option>
+      <option class="audiofileoption" value="14">Gian Rock 01</option>
+      <option class="audiofileoption" value="15">Gian Rock 02</option>
+      <option class="audiofileoption" value="16">James Amsterdam Chorus</option>
+      <option class="audiofileoption" value="17">James Amsterdam Verse</option>
+      <option class="audiofileoption" value="18">Jesse Alt Rock</option>
+      <option class="audiofileoption" value="19">Jesse Calm Chords</option>
+      <option class="audiofileoption" value="20">Jesse Calm Lead</option>
+      <option class="audiofileoption" value="21">Jesse Descending Chords</option>
+      <option class="audiofileoption" value="22">Jesse Dramatic Chords</option>
+      <option class="audiofileoption" value="23">Jesse Happy Groove Riff</option>
+      <option class="audiofileoption" value="24">Jesse Happy Rock</option>
+      <option class="audiofileoption" value="25">Jesse Heavy Groove Riff</option>
+      <option class="audiofileoption" value="26">Jesse Optimistic Funky</option>
+      <option class="audiofileoption" value="27">Jesse Slow Heavy</option>
+    </select>
 
     <script type='text/javascript'>
       'use strict';
@@ -111,6 +151,16 @@
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
+      var filelistElement = document.getElementById('audiofilelist');
+      var ready = false;
+
+      function loadFile() {
+        if (!ready) {
+          return;
+        }
+        var filename = "/resources/1. Direct Guitar " + filelistElement.selectedOptions[0].textContent + ".wav";
+        Module.ccall('load_file', null, ['string'], [filename]);
+      }
 
       if (typeof(WebAssembly) === "undefined") {
         wasmErrors.push('WebAssembly unsupported');
@@ -132,11 +182,17 @@
         var Module = {
           preRun: [],
           postRun: function() {
+            ready = true;
             statusElement.style.display = 'none';
             progressElement.style.display = 'none';
             spinnerElement.style.display = 'none';
             canvasWrapper.style.display = 'block';
+            filelistElement.style.display = 'block';
             window.dispatchEvent(new Event('resize'));
+
+            if (filelistElement.selectedIndex > 0) {
+              loadFile();
+            }
           },
           canvas: (function() {
             var canvas = document.getElementById('canvas');
@@ -197,10 +253,6 @@
         jsModuleScript.setAttribute('src', jsModuleName);
         jsModuleScript.setAttribute('type','text/javascript');
         document.head.appendChild(jsModuleScript);
-      }
-
-      function loadFile(filename) {
-        Module.ccall('load_file', null, ['string'], [filename]);
       }
     </script>
   </body>
