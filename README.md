@@ -22,7 +22,7 @@ Do note these builds are not signed, so expect warnings saying they are from an 
 
 So-called "nightly builds" are available through [GitHub actions](https://github.com/AidaDSP/AIDA-X/actions/workflows/build.yml).
 
-Alternatively an experimental online version is available at [mod.audio/neural-modelling](https://mod.audio/neural-modelling/).  
+Alternatively an experimental online version is available at [mod.audio/aida-x-online](https://mod.audio/aida-x-online/).  
 There is no audio input, instead a pre-selected list of guitar audio loops is used.  
 This online version is otherwise fully functional and identical to the desktop version you can install and run on your machine.
 
