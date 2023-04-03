@@ -198,6 +198,10 @@
         jsModuleScript.setAttribute('type','text/javascript');
         document.head.appendChild(jsModuleScript);
       }
+
+      function loadFile(filename) {
+        Module.ccall('load_file', null, ['string'], [filename]);
+      }
     </script>
   </body>
 </html>

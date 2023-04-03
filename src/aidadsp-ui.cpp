@@ -24,13 +24,9 @@ START_NAMESPACE_DISTRHO
 enum ButtonIds {
     kButtonLoadModel = 1001,
     kButtonLoadCabinet,
-  #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
     kButtonEnableMicInput,
-   #else
-    kButtonAudioFileStartId = 2001,
    #endif
-  #endif
 };
 
 enum EnableInputState {
@@ -96,16 +92,12 @@ class AidaDSPLoaderUI : public UI,
         bool resetOnNextIdle = false;
     } meters;
 
-  #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
     EnableInputState enableInputState = kEnableInputUnsupported;
     ScopedPointer<BlendishSubWidgetSharedContext> blendishParent;
     ScopedPointer<BlendishToolButton> enableInputButton;
     ScopedPointer<BlendishComboBox> bufferSizeComboBox;
-   #else
-    ScopedPointer<AidaFileList> audioFileList;
    #endif
-  #endif
 
     HorizontalLayout subwidgetsLayout;
 
@@ -176,8 +168,7 @@ public:
         meters.in = new AidaMeter(this, "INPUT");
         meters.out = new AidaMeter(this, "OUTPUT");
 
-      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (isUsingNativeAudio())
         {
             if (supportsAudioInput())
@@ -213,13 +204,7 @@ public:
         {
             enableInputState = kEnableInputJACK;
         }
-       #else
-        audioFileList = new AidaFileList(this, this, kButtonAudioFileStartId);
-        audioFileList->setFilename(0, kAudioLoopFilenames[0], true);
-        audioFileList->setFilename(1, kAudioLoopFilenames[1]);
-        audioFileList->setFilename(2, kAudioLoopFilenames[2]);
        #endif
-      #endif
 
         // Setup subwidgets layout
         subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
@@ -566,8 +551,7 @@ protected:
         meters.in->setAbsolutePos(metersX, metersY);
         meters.out->setAbsolutePos(metersX + meters.in->getWidth() + margin / 2, metersY);
 
-      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (blendishParent != nullptr)
         {
             enableInputButton->setAbsolutePos(getWidth() / 2 - enableInputButton->getWidth()/2,
@@ -575,11 +559,7 @@ protected:
             bufferSizeComboBox->setAbsolutePos(getWidth() / 2 - bufferSizeComboBox->getWidth()/2,
                                                marginTop/2 - bufferSizeComboBox->getHeight()/2);
         }
-       #else
-        audioFileList->setAbsolutePos(loadersX, marginTop + margin * 3 / 2);
-        audioFileList->setWidth(widthPedal / 3 - margin * 2);
        #endif
-      #endif
     }
 
     void buttonClicked(SubWidget* const widget, int button) override
@@ -612,20 +592,12 @@ protected:
             fileLoaderMode = kFileLoaderImpulse;
             requestStateFile("cabinet", lastDirCabinet, "Open Cabinet Simulator IR");
             break;
-      #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
                 requestAudioInput();
             break;
-       #else
-        case kButtonAudioFileStartId:
-        case kButtonAudioFileStartId+1:
-        case kButtonAudioFileStartId+2:
-            setState("audiofile", kAudioLoopFilenames[id - kButtonAudioFileStartId]);
-            break;
        #endif
-      #endif
         }
     }
 

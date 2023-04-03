@@ -259,11 +259,6 @@ public:
 
         // load default model
         loadDefaultModel();
-
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
-        // and audio file
-        loadAudioFile(kAudioLoopFilenames[0]);
-       #endif
     }
 
     ~AidaDSPLoaderPlugin()
@@ -732,8 +727,11 @@ protected:
    /* -----------------------------------------------------------------------------------------------------------------
     * Audio file loader */
 
+public:
     void loadAudioFile(const char* const filename)
     {
+        d_stdout("Loading filename %s", filename);
+
         uint channels;
         uint sampleRate;
         drwav_uint64 numFrames;
@@ -785,6 +783,8 @@ protected:
 
         delete oldaudiofile;
     }
+
+protected:
    #endif
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -1012,13 +1012,36 @@ protected:
 };
 
 /* --------------------------------------------------------------------------------------------------------------------
+ * Global instance for wasm. */
+
+#ifdef DISTRHO_OS_WASM
+static AidaDSPLoaderPlugin* gPlugin = nullptr;
+#endif
+
+/* --------------------------------------------------------------------------------------------------------------------
  * Plugin entry point, called by DPF to create a new plugin instance. */
 
 Plugin* createPlugin()
 {
-    return new AidaDSPLoaderPlugin();
+    AidaDSPLoaderPlugin* const plugin = new AidaDSPLoaderPlugin();
+   #ifdef DISTRHO_OS_WASM
+    gPlugin = plugin;
+   #endif
+    return plugin;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#ifdef DISTRHO_OS_WASM
+#include <emscripten.h>
+extern "C" EMSCRIPTEN_KEEPALIVE
+void load_file(const char* const filename)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(gPlugin != nullptr,);
+    gPlugin->loadAudioFile(filename);
+}
+#endif
