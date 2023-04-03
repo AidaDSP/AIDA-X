@@ -247,10 +247,10 @@ public:
         for (uint i=0; i<kNumParameters; ++i)
             parameters[i] = kParameters[i].ranges.def;
 
-        bypassGain.setTimeConstant(0.5f);
+        bypassGain.setTimeConstant(0.25f);
         bypassGain.setTarget(1.f);
 
-        cabsimGain.setTimeConstant(0.25f);
+        cabsimGain.setTimeConstant(0.1f);
         cabsimGain.setTarget(kCabinetMaxGain);
 
         // initialize
