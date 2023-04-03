@@ -124,8 +124,12 @@
   <script type="text/javascript">
     'use strict';
 
+    var ready = false;
     var opts = document.getElementById('audiofilelist');
     function loadFile() {
+      if (!ready) {
+        return;
+      }
       var filename = "/resources/1. Direct Guitar " + opts.selectedOptions[0].textContent + ".wav";
       Module.ccall('load_file', null, ['string'], [filename]);
     }
@@ -154,6 +158,7 @@
         locateFile: function(p,_) { return 'https://aida.mod.audio/' + p; },
         preRun: [],
         postRun: function() {
+          ready = true;
           statusElement.style.display = 'none';
           progressElement.style.display = 'none';
           spinnerElement.style.display = 'none';
