@@ -19,6 +19,7 @@ endif
 export NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
 export WASM_EXCEPTIONS = true
 export WINDOWS_ICON_ID = 401
+export CXXFLAGS += -DPUGL_WASM_NO_KEYBOARD_INPUT -DPUGL_WASM_NO_MOUSEWHEEL_INPUT
 include ../../modules/dpf/Makefile.base.mk
 
 # ---------------------------------------------------------------------------------------------------------------------
