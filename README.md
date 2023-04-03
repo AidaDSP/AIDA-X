@@ -42,6 +42,10 @@ Check out the [MOD Forum's Neural Modelling section](https://forum.mod.audio/c/n
 
 #### Controls ####
 
+In AIDA-X knobs will move slowly when holding down the Ctrl key.  
+Holding down the Shift key or double-clicking a knob will reset it to its default value.  
+Please note not all hosts and formats support sending these modifier keys to plugins.
+
 From left to right:
 
 1. **Bypass and Pre-Gain**

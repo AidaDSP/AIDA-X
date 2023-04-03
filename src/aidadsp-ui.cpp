@@ -642,6 +642,11 @@ protected:
         setParameterValue(widget->getId(), value);
     }
 
+    void knobDoubleClicked(SubWidget* const widget) override
+    {
+        static_cast<AidaKnob*>(widget)->setValue(kParameters[widget->getId()].ranges.def, true);
+    }
+
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
     void blendishComboBoxIndexChanged(BlendishComboBox* const comboBox, int) override
     {
