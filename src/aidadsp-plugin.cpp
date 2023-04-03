@@ -247,10 +247,10 @@ public:
         for (uint i=0; i<kNumParameters; ++i)
             parameters[i] = kParameters[i].ranges.def;
 
-        bypassGain.setTimeConstant(1);
+        bypassGain.setTimeConstant(0.5f);
         bypassGain.setTarget(1.f);
 
-        cabsimGain.setTimeConstant(1);
+        cabsimGain.setTimeConstant(0.25f);
         cabsimGain.setTarget(kCabinetMaxGain);
 
         // initialize
@@ -893,8 +893,8 @@ protected:
         for (uint32_t i = 0; i < numSamples; ++i)
             meterIn = std::max(meterIn, std::abs(bypassInplaceBuffer[i]));
 
-       #ifdef DISTRHO_OS_WASM
-        // Special handling for web version: stop further audio processing on bypass
+       #ifdef MOD_BUILD
+        // Special handling for MOD web version: stop further audio processing on bypass
         if (bypassGain.peek() < 0.001f)
         {
             bypassGain.clearToTarget();
@@ -941,7 +941,7 @@ protected:
             for (uint32_t i = 0; i < numSamples; ++i)
             {
                 const float b = cabsimGain.next();
-                out[i] = out[i] * b + cabsimInplaceBuffer[i] * (kCabinetMaxGain - b);
+                out[i] = out[i] * b + cabsimInplaceBuffer[i] * ((kCabinetMaxGain - b) / kCabinetMaxGain);
             }
         }
 
@@ -955,7 +955,7 @@ protected:
         // Bypass and output meter
         for (uint32_t i = 0; i < numSamples; ++i)
         {
-           #ifndef DISTRHO_OS_WASM
+           #ifndef MOD_BUILD
             const float b = bypassGain.next();
             out[i] = out[i] * b + bypassInplaceBuffer[i] * (1.f - b);
            #else

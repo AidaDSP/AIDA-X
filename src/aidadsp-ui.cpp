@@ -570,9 +570,6 @@ protected:
 
     void buttonClicked(SubWidget* const widget, int button) override
     {
-        if (button != kMouseButtonLeft)
-            return;
-
         const uint id = widget->getId();
 
         switch (id)
