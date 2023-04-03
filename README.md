@@ -19,7 +19,7 @@ CLAP, LV2, VST2 and VST3 plugin formats are supported, plus a standalone.
 
 Installers are provided for both macOS and Windows, plus regular binary tarballs for Linux.
 
-Do note these builds are not signed, so expect warnings saying they are from an "untrusted developer".  
+Do note **these builds are not signed**, so expect warnings saying they are from an "untrusted developer".  
 This is particularly striking on macOS, where the plugin installer can only be opened with mouse right-click and the standalone app must be opened via right-click twice.
 
 So-called "nightly builds" are available through [GitHub actions](https://github.com/AidaDSP/AIDA-X/actions/workflows/build.yml).
