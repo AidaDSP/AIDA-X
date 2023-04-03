@@ -545,11 +545,19 @@ protected:
         loaders.cabsim->setAbsolutePos(loadersX, loadersY);
         loaders.cabsim->setWidth(widthPedal / 3 - margin * 2);
 
+       #ifndef MOD_BUILD
         const double metersX = marginHorizontal + margin / 2;
         const double metersY = marginTop / 2 - meters.in->getHeight() / 2;
 
         meters.in->setAbsolutePos(metersX, metersY);
         meters.out->setAbsolutePos(metersX + meters.in->getWidth() + margin / 2, metersY);
+       #else
+        const double metersX = marginHorizontal + margin * 3 / 2;
+        const double metersY = margin * 3 / 2;
+
+        meters.in->setAbsolutePos(metersX, metersY);
+        meters.out->setAbsolutePos(metersX, metersY + meters.in->getHeight() + margin / 4);
+       #endif
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
         if (blendishParent != nullptr)
