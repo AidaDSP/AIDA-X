@@ -192,8 +192,6 @@ public:
                     bufferSizeComboBox->addMenuItem("256");
                     bufferSizeComboBox->addMenuItem("512");
                     bufferSizeComboBox->addMenuItem("1024");
-                    bufferSizeComboBox->addMenuItem("2048");
-                    bufferSizeComboBox->addMenuItem("4096");
 
                     // todo advanced settings page
                     bufferSizeComboBox->hide();
