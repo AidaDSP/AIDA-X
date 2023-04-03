@@ -5,7 +5,7 @@ AIDA-X is an Amp Model Player, allowing it to load models of AI trained music ge
 Its main intended use is to provide high fidelity simulations of amplifiers.  
 However, it is also possible to run entire signal chains consisting of any combination of amp, cab, dist, drive, fuzz, boost and eq.
 
-This repository contains the source code for the [DPF-based](https://github.com/DISTRHO/DPF) plugin variant, see [aidadsp-lv2](https://github.com/AidaDSP/aidadsp-lv2) for the LV2 headless version of the same engine optimized to run on embedded systems such as Mod Dwarf, RPi, Portenta-X8, Aida DSP OS and so on.
+This repository contains the source code for the [DPF-based](https://github.com/DISTRHO/DPF) plugin variant, see [aidadsp-lv2](https://github.com/AidaDSP/aidadsp-lv2) for the LV2 headless version of the same engine optimized to run on embedded systems such as MOD Dwarf, RPi, Portenta-X8, Aida DSP OS and so on.
 
 For ease of use, this plugin also contains a cabinet simulator via impulse response files, which runs after the Amp Model.
 
