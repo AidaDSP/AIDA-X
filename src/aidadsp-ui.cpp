@@ -196,13 +196,13 @@ public:
                     bufferSizeComboBox = new BlendishComboBox(blendishParent);
                     bufferSizeComboBox->setCallback(this);
                     bufferSizeComboBox->setDefaultLabel("Buffer Size: " + String(getBufferSize()));
+                    bufferSizeComboBox->addMenuItem("64");
                     bufferSizeComboBox->addMenuItem("128");
                     bufferSizeComboBox->addMenuItem("256");
                     bufferSizeComboBox->addMenuItem("512");
                     bufferSizeComboBox->addMenuItem("1024");
                     bufferSizeComboBox->addMenuItem("2048");
                     bufferSizeComboBox->addMenuItem("4096");
-                    bufferSizeComboBox->addMenuItem("8192");
 
                     // todo advanced settings page
                     bufferSizeComboBox->hide();
@@ -672,6 +672,8 @@ protected:
 
         if (requestBufferSizeChange(std::atoi(label)))
             bufferSizeComboBox->setDefaultLabel("Buffer Size: " + label);
+
+        blendishParent->repaint();
     }
 
     void blendishToolButtonClicked(BlendishToolButton* const widget, int button) override
