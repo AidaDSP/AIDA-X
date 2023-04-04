@@ -22,6 +22,12 @@ export WINDOWS_ICON_ID = 401
 export CXXFLAGS += -DPUGL_WASM_NO_KEYBOARD_INPUT -DPUGL_WASM_NO_MOUSEWHEEL_INPUT
 include ../../modules/dpf/Makefile.base.mk
 
+ifeq ($(NOSIMD),true)
+ifneq (,$(findstring -msse,$(CXXFLAGS)))
+$(error NOSIMD build requested but -msse compiler flag is present in CXXFLAGS)
+endif
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Files to build
 
@@ -97,19 +103,19 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for generating needed files
 
-$(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.cpp
+$(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.hpp
 
-$(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.cpp
+$(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.hpp
 
-$(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.cpp
+$(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.hpp
 
-$(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.cpp
+$(BUILD_DIR)/aidadsp-ui.cpp.o: $(BUILD_DIR)/Graphics.hpp
 
-$(BUILD_DIR)/Files.cpp: $(wildcard ../../files/*.*)
+$(BUILD_DIR)/Files.hpp: $(wildcard ../../files/*.*)
 	-@mkdir -p $(BUILD_DIR)
 	$(DPF_PATH)/utils/res2c.py Files ../../files $(BUILD_DIR)
 
-$(BUILD_DIR)/Graphics.cpp: $(wildcard ../../graphics/png/*.*)
+$(BUILD_DIR)/Graphics.hpp: $(wildcard ../../graphics/png/*.*)
 	-@mkdir -p $(BUILD_DIR)
 	$(DPF_PATH)/utils/res2c.py Graphics ../../graphics/png $(BUILD_DIR)
 
