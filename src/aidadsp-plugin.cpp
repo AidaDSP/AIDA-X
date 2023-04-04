@@ -528,8 +528,8 @@ protected:
         using namespace Files;
 
         try {
-            std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(US_Double_Nrm_ModelData)),
-                                       US_Double_Nrm_ModelDataSize);
+            std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(deerinkstudios_tw40_ac_cleanData)),
+                                       deerinkstudios_tw40_ac_cleanDataSize);
             loadModelFromStream(jsonStream);
         }
         catch (const std::exception& e) {
