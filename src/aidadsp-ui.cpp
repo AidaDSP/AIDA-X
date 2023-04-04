@@ -238,15 +238,17 @@ public:
         if (scaleFactor != 1.0)
             setSize(DISTRHO_UI_DEFAULT_WIDTH*scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT*scaleFactor);
 
-      #ifndef MOD_BUILD
+     #ifndef MOD_BUILD
         aboutLabel = "AIDA-X ";
+       #ifndef DISTRHO_OS_WASM
         aboutLabel += getPluginFormatName();
         aboutLabel += " ";
+       #endif
         aboutLabel += kVersionString;
        #ifdef NOSIMD
         aboutLabel += " (no simd)";
        #endif
-      #endif
+     #endif
     }
 
 protected:
