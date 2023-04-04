@@ -58,7 +58,7 @@ struct AidaToneControl {
     Biquad bass { bq_type_lowshelf, 0.5f, COMMON_Q, 0.0f };
     Biquad mid { bq_type_peak, 0.5f, COMMON_Q, 0.0f };
     Biquad treble { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
-    Biquad depth { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
+    Biquad depth { bq_type_peak, 0.5f, COMMON_Q, 0.0f };
     Biquad presence { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
     ExpSmoother pregain;
     ExpSmoother mastergain;
@@ -90,7 +90,7 @@ struct AidaToneControl {
         treble.setBiquad(bq_type_highshelf,
                          parameters[kParameterTREBLEFREQ] / sampleRate, COMMON_Q, parameters[kParameterTREBLEGAIN]);
 
-        depth.setBiquad(bq_type_highshelf,
+        depth.setBiquad(bq_type_peak,
                         DEPTH_FREQ / sampleRate, COMMON_Q, parameters[kParameterDEPTH]);
 
         presence.setBiquad(bq_type_highshelf,
