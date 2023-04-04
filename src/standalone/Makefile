@@ -57,6 +57,7 @@ endif
 
 ifeq ($(WASM),true)
 APP_EXT = .js
+EXTRA_DEPENDENCIES = ../../resources/.stamp_downloaded
 endif
 
 DPF_PATH = ../../modules/dpf
@@ -150,6 +151,11 @@ WASM_RESOURCES = $(TARGET_DIR)/AIDA-X.html
 $(TARGET_DIR)/AIDA-X.html: ../../utils/ax.html
 	-@mkdir -p $(shell dirname $@)
 	cp $< $@
+
+../../resources/.stamp_downloaded:
+	wget aida.kx.studio/resources.tar.xz -O ../../resources/resources.tar.xz && \
+	tar -xvf ../../resources/resources.tar.xz -C ../../resources/ && \
+	rm ../../resources/resources.tar.xz
 
 endif
 
