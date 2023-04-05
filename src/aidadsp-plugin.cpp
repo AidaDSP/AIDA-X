@@ -902,13 +902,7 @@ protected:
         if (bypassGain.peek() < 0.001f)
         {
             bypassGain.clearToTarget();
-            parameters[kParameterMeterIn] = meterIn;
-            parameters[kParameterMeterOut] = 0.f;
-            std::memset(outputs[0], 0, sizeof(float)*numSamples);
-           #if DISTRHO_PLUGIN_VARIANT_STANDALONE
-            std::memset(outputs[1], 0, sizeof(float)*numSamples);
-           #endif
-            return;
+            goto the_end;
         }
        #endif
 
@@ -968,6 +962,7 @@ protected:
             meterOut = std::max(meterOut, std::abs(out[i]));
         }
 
+the_end:
         if (tmpMeterFrames >= meterMaxFrameCount)
         {
             parameters[kParameterMeterIn] = tmpMeterIn = meterIn;
