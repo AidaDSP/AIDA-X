@@ -71,13 +71,9 @@ Bandpass/Peak switch changes the MID control to Bandpass so that BASS and TREBLE
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot-params-3.png">
 
-Extra EQ related controls.
-
-Depth is a Peaking or Parametric EQ to boost the low end
-
-Presence is an High Shelf EQ to boost the high end
-
-Note: These will eventually be used for dynamic Amp Models, where the 2 parameters directly map into the operation of Model (the so-called "conditioned models").  
+Extra EQ related controls.  
+Depth is a Peaking or Parametric EQ to boost the low end.  
+Presence is an High Shelf EQ to boost the high end.
 
 4. **Master Gain**
 
