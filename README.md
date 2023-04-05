@@ -81,6 +81,17 @@ Presence is an High Shelf EQ to boost the high end.
 
 For a final gain compensation, does not apply to the bypassed signal.
 
+#### Using the Standalone ####
+
+When first run the AIDA-X standalone will not make any sound, requiring you to click "Enable Input" (which can trigger OS-level permission requests).  
+This is to avoid unintended audio feedback loops when someone simply wants to check out the GUI or AIDA-X was started by accident.
+
+After enabling audio input, an option for setting the audio buffer-size will be shown.  
+Reducing buffer-size will reduce latency but at cost of more CPU.  
+The optimal value depends on the running system, slower machines cannot do small buffer-sizes without audio crackles.
+
+NOTE: The AIDA-X standalone will connect to your system-defined default audio device, for now there is no option to change to another input/output audio device.
+
 ### Technical Details ###
 
 Behind the scenes AIDA-X uses [RTNeural](https://github.com/jatinchowdhury18/RTNeural), which does the heavy lifting for us.
