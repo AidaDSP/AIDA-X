@@ -57,7 +57,7 @@ From left to right:
 On/Off bypass switch, lets the audio pass-through when off.  
 Integrates with the host provided bypass controls where possible.
 
-Pre-Gain attenuates / emphasize the input signal before sending it to the Amp Model.
+Pre-Gain attenuates / emphasizes the input signal before sending it to the Amp Model.
 
 2. **EQ tone controls (part 1)**
 
