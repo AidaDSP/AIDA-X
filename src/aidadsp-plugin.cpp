@@ -962,7 +962,9 @@ protected:
             meterOut = std::max(meterOut, std::abs(out[i]));
         }
 
+#ifdef MOD_BUILD
 the_end:
+#endif
         if (tmpMeterFrames >= meterMaxFrameCount)
         {
             parameters[kParameterMeterIn] = tmpMeterIn = meterIn;
