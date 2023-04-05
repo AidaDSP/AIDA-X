@@ -233,7 +233,9 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
-    std::atomic<bool> resetMeters { false };
+    std::atomic<bool> resetMeters { true };
+    float tmpMeterIn, tmpMeterOut;
+    uint32_t tmpMeterFrames, meterMaxFrameCount;
    #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
     AudioFile* audiofile = nullptr;
     std::atomic<bool> activeAudiofile { false };
@@ -882,12 +884,14 @@ protected:
 
         if (resetMeters.exchange(false))
         {
-            meterIn = meterOut = DB_CO(kMinimumMeterDb);
+            meterIn = meterOut = tmpMeterIn = tmpMeterOut = DB_CO(kMinimumMeterDb);
+            tmpMeterFrames = 0;
         }
         else
         {
-            meterIn = parameters[kParameterMeterIn];
-            meterOut = parameters[kParameterMeterOut];
+            meterIn = tmpMeterIn;
+            meterOut = tmpMeterOut;
+            tmpMeterFrames += numSamples;
         }
 
         for (uint32_t i = 0; i < numSamples; ++i)
@@ -964,8 +968,17 @@ protected:
             meterOut = std::max(meterOut, std::abs(out[i]));
         }
 
-        parameters[kParameterMeterIn] = meterIn;
-        parameters[kParameterMeterOut] = meterOut;
+        if (tmpMeterFrames >= meterMaxFrameCount)
+        {
+            parameters[kParameterMeterIn] = tmpMeterIn = meterIn;
+            parameters[kParameterMeterOut] = tmpMeterOut = meterOut;
+            tmpMeterFrames -= meterMaxFrameCount;
+        }
+        else
+        {
+            tmpMeterIn = meterIn;
+            tmpMeterOut = meterOut;
+        }
 
        #if DISTRHO_PLUGIN_VARIANT_STANDALONE
         std::memcpy(outputs[1], out, sizeof(float)*numSamples);
@@ -990,6 +1003,8 @@ protected:
 
         bypassGain.setSampleRate(newSampleRate);
         cabsimGain.setSampleRate(newSampleRate);
+
+        meterMaxFrameCount = newSampleRate * 0.0333333; // max 30fps
 
         // reload cabsim file
         if (char* const filename = cabsimFilename.getAndReleaseBuffer())

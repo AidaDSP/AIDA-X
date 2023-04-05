@@ -237,8 +237,12 @@ class AidaMeter : public NanoSubWidget
     Application& app;
     const String label;
 
+    bool clipping = false;
+    bool nearClipping = false;
+
     float value = 0.f;
     float valueDb = kMinimumMeterDb;
+    float valueDb2 = kMinimumMeterDb; // average filter
 
 public:
     static constexpr const uint kMeterWidth = 150;
@@ -277,6 +281,8 @@ protected:
         const double meterPadding = kSubWidgetsPadding * scaleFactor;
         const double wfontSize = kSubWidgetsFontSize * scaleFactor;
 
+        const float filteredDb = valueDb2 = (valueDb + valueDb2) / 2.f;
+
         fontSize(wfontSize);
 
         beginPath();
@@ -286,13 +292,31 @@ protected:
 
         char valuestr[32] = {};
 
-        if (valueDb > kMinimumMeterDb)
+        if (filteredDb > kMinimumMeterDb)
             std::snprintf(valuestr, sizeof(valuestr)-1, "%.1f dB", valueDb);
         else
             std::strncpy(valuestr, "-inf dB", sizeof(valuestr)-1);
 
+        Color activeColor;
+
+        if (valueDb > 0.f || (filteredDb > (clipping ? -3.f : 0.f)))
+        {
+            clipping = nearClipping = true;
+            activeColor = Color(0xf4,0x4d,0x50); // #F44D50
+        }
+        else if (filteredDb > (nearClipping ? -6.f : -3.f))
+        {
+            nearClipping = true;
+            activeColor = Color(0xf4,0xf1,0x4d); // #F4F14D
+        }
+        else
+        {
+            clipping = nearClipping = false;
+            activeColor = Color(0xa4,0xf4,0x4d); // #A4F44D
+        }
+
         // draw text using active color
-        fillColor(Color(0xa4,0xf4,0x4d));
+        fillColor(activeColor);
 
         textAlign(ALIGN_LEFT|ALIGN_MIDDLE);
         text(meterPadding, height/2, label, nullptr);
@@ -302,7 +326,7 @@ protected:
 
         if (valueDb > kMinimumMeterDb)
         {
-            const float vnormal = normalizedLevelMeterValue(valueDb);
+            const float vnormal = normalizedLevelMeterValue(filteredDb);
 
             // draw active background
             beginPath();
