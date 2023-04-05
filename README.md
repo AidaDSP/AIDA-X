@@ -45,7 +45,7 @@ Check out the [MOD Forum's Neural Modelling section](https://forum.mod.audio/c/n
 #### Meters ####
 
 The AIDA-X UI contains input and output meters, for ease of monitoring the sound.  
-These are peak meters calculated at a maximum of 30 FPS.
+These are peak meters calculated at a maximum of 60 FPS.
 
 Both meters will change colors to indicate when sound is clipping.  
 When -3dB is reached the meters turn yellow, and on 0dB they turn red.  

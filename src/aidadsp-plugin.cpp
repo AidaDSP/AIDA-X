@@ -1004,7 +1004,7 @@ protected:
         bypassGain.setSampleRate(newSampleRate);
         cabsimGain.setSampleRate(newSampleRate);
 
-        meterMaxFrameCount = newSampleRate * 0.0333333; // max 30fps
+        meterMaxFrameCount = newSampleRate * 0.016666; // max 60fps
 
         // reload cabsim file
         if (char* const filename = cabsimFilename.getAndReleaseBuffer())
