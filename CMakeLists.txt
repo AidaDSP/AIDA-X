@@ -155,10 +155,10 @@ add_custom_command(
   POST_BUILD
   COMMAND utils/windows-installer.sh "${CMAKE_BINARY_DIR}" "${CMAKE_PROJECT_VERSION}"
   DEPENDS AIDA-X-clap AIDA-X-lv2 AIDA-X-lv2-ui AIDA-X-vst2 AIDA-X-vst3 AIDA-X-Standalone-jack
-  OUTPUT "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-win64-${CMAKE_PROJECT_VERSION}-installer.exe"
+  OUTPUT "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-${CMAKE_PROJECT_VERSION}-win64-installer.exe"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 add_custom_target(AIDA-X-Installer ALL
-  DEPENDS "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-win64-${CMAKE_PROJECT_VERSION}-installer.exe"
+  DEPENDS "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-${CMAKE_PROJECT_VERSION}-win64-installer.exe"
 )
 endif()
