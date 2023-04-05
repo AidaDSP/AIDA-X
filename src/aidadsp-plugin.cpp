@@ -646,8 +646,8 @@ protected:
         uint channels;
         uint sampleRate;
         drwav_uint64 numFrames;
-        float* const ir = drwav_open_memory_and_read_pcm_frames_f32(US_Double_Nrm_CabData,
-                                                                    US_Double_Nrm_CabDataSize,
+        float* const ir = drwav_open_memory_and_read_pcm_frames_f32(Twin_Rev_Nrm_N6_Cab_IRData,
+                                                                    Twin_Rev_Nrm_N6_Cab_IRDataSize,
                                                                     &channels,
                                                                     &sampleRate,
                                                                     &numFrames,

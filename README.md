@@ -34,7 +34,8 @@ This online version is otherwise fully functional and identical to the desktop v
 
 AIDA-X comes built-in with a single Amp Model and Cabinet IR.  
 Click on the related filename to open a file browser and load a different file.  
-The little icon on the left side allows to turn on/off the Amp Model and Cabinet IR.
+The little icon on the left side allows to turn on/off the Amp Model and Cabinet IR.  
+Both wav and flac audio formats are supported for IR files.
 
 <img height="91" alt="image" src="https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot-files.png">
 

@@ -104,9 +104,13 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for generating needed files
 
-$(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.hpp
+$(BUILD_DIR)/Files.cpp.o: $(BUILD_DIR)/Files.cpp
 
-$(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.hpp
+$(BUILD_DIR)/Files.cpp: $(BUILD_DIR)/Files.hpp
+
+$(BUILD_DIR)/Graphics.cpp.o: $(BUILD_DIR)/Graphics.cpp
+
+$(BUILD_DIR)/Graphics.cpp: $(BUILD_DIR)/Graphics.hpp
 
 $(BUILD_DIR)/aidadsp-plugin.cpp.o: $(BUILD_DIR)/Files.hpp
 
