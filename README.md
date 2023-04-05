@@ -42,6 +42,15 @@ A quick model pack can be downloaded from [our Google Drive folder](https://driv
 
 Check out the [MOD Forum's Neural Modelling section](https://forum.mod.audio/c/neural/62) for an online place for discussion, sharing and all things related to Amp Models.
 
+#### Meters ####
+
+The AIDA-X UI contains input and output meters, for ease of monitoring the sound.  
+These are peak meters calculated at a maximum of 30 FPS.
+
+Both meters will change colors to indicate when sound is clipping.  
+When -3dB is reached the meters turn yellow, and on 0dB they turn red.  
+The meters will change back to the previous color once the audio signal falls below -3dB of their tripping point (so -6dB for yellow, -3dB for red).
+
 #### Controls ####
 
 In AIDA-X knobs will move slowly when holding down the Ctrl key.  
