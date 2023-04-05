@@ -157,6 +157,7 @@ $(TARGET_DIR)/AIDA-X.html: ../../utils/ax.html
 	cp $< $@
 
 ../../resources/.stamp_downloaded:
+	mkdir -p ../../resources && \
 	wget aida.kx.studio/resources.tar.xz -O ../../resources/resources.tar.xz && \
 	tar -xvf ../../resources/resources.tar.xz -C ../../resources/ && \
 	rm ../../resources/resources.tar.xz
