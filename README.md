@@ -57,7 +57,7 @@ From left to right:
 On/Off bypass switch, lets the audio pass-through when off.  
 Integrates with the host provided bypass controls where possible.
 
-Pre-Gain attenuates the input signal before sending it to the Amp Model.
+Pre-Gain attenuates / emphasize the input signal before sending it to the Amp Model.
 
 2. **EQ tone controls (part 1)**
 
@@ -65,11 +65,18 @@ Pre-Gain attenuates the input signal before sending it to the Amp Model.
 
 Pre/Post switch changes the position of the tone controls, either running before or after the Amp Model.
 
+Bandpass/Peak switch changes the MID control to Bandpass so that BASS and TREBLE will be excluded. Default setting for MID control is Peaking or Parametric EQ with adjustable Frequency and Q.
+
 3. **EQ tone controls (part 2)**
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot-params-3.png">
 
-Extra EQ related controls.  
+Extra EQ related controls.
+
+Depth is a Peaking or Parametric EQ to boost the low end
+
+Presence is an High Shelf EQ to boost the high end
+
 Note: These will eventually be used for dynamic Amp Models, where the 2 parameters directly map into the operation of Model (the so-called "conditioned models").  
 
 4. **Master Gain**
