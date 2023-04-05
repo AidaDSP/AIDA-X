@@ -43,7 +43,7 @@ static constexpr const uint kPedalMarginTop = 0;
 #define DISTRHO_UI_DEFAULT_HEIGHT (kPedalHeight + kPedalMargin + kPedalMarginTop)
 
 static constexpr const char* const kDefaultModelName = "deerinkstudios-tw40-ac-clean.json";
-static constexpr const char* const kDefaultCabinetName = "US-Double-Nrm-Cab.wav";
+static constexpr const char* const kDefaultCabinetName = "Twin Rev Nrm N6 Cab IR.wav";
 
 static constexpr const float kMinimumMeterDb = -60.f;
 
