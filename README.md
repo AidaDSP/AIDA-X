@@ -1,5 +1,7 @@
 # AIDA-X
 
+![screenshot](docs/Screenshot.png "Screenshot")
+
 AIDA-X is an Amp Model Player, allowing it to load models of AI trained music gear, which you can then play through! 🎸
 
 Its main intended use is to provide high fidelity simulations of amplifiers.  
@@ -10,8 +12,6 @@ This repository contains the source code for the [DPF-based](https://github.com/
 For ease of use, this plugin also contains a cabinet simulator via impulse response files, which runs after the Amp Model.
 
 CLAP, LV2, VST2 and VST3 plugin formats are supported, plus a standalone.
-
-![screenshot](docs/Screenshot.png "Screenshot")
 
 ### Installation ###
 
