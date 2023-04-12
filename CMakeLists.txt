@@ -67,6 +67,7 @@ dpf_add_plugin(AIDA-X-Standalone
     src/aidadsp-ui.cpp)
 
 target_compile_definitions(dgl-opengl PUBLIC
+  DGL_NAMESPACE=AidaDGL
   DGL_WINDOWS_ICON_ID=401
   NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
 )

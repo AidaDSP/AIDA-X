@@ -59,12 +59,10 @@ target_include_directories(AIDA-X
         ../plugin
         ../../modules/dpf/distrho)
 
-# DISTRHO_NAMESPACE=AidaDISTRHO
-# DGL_NAMESPACE=AidaDGL
-
 target_compile_definitions(AIDA-X
     PUBLIC
-        JucePlugin_PreferredChannelConfigurations=2,2
+        DGL_NAMESPACE=AidaDGL
+        JucePlugin_PreferredChannelConfigurations=1,1
         JUCE_CHECK_MEMORY_LEAKS=0
         JUCE_DISABLE_NATIVE_FILECHOOSERS=1
         JUCE_DISPLAY_SPLASH_SCREEN=0

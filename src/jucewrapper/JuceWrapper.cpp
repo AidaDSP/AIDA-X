@@ -19,7 +19,7 @@
 
 #ifdef __APPLE__
  #include <AvailabilityMacros.h>
- #if MAC_OS_X_VERSION_MAX_ALLOWED != 101200
+ #if MAC_OS_X_VERSION_MAX_ALLOWED != 101500
   #error unwanted macOS version
  #endif
 #endif

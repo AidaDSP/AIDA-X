@@ -16,6 +16,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Do some magic (part 1)
 
+export DGL_NAMESPACE = AidaDGL
 export NVG_FONT_TEXTURE_FLAGS = NVG_IMAGE_NEAREST
 export WASM_EXCEPTIONS = true
 export WINDOWS_ICON_ID = 401
