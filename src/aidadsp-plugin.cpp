@@ -9,6 +9,7 @@
 
 #include "Biquad.h"
 #include "ExpSmoother.hpp"
+#include "LinearSmoother.hpp"
 #include "Files.hpp"
 
 #include "model_variant.hpp"
@@ -130,8 +131,11 @@ struct AudioFile {
 struct DynamicModel {
     ModelVariantType variant;
     bool input_skip; /* Means the model has been trained with first input element skipped to the output */
+    bool first_run;
     float input_gain;
     float output_gain;
+    LinearSmoother param1;
+    LinearSmoother param2;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -185,9 +189,11 @@ void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
     const bool input_skip = model->input_skip;
     const float input_gain = model->input_gain;
     const float output_gain = model->output_gain;
+    LinearSmoother& param1 = model->param1;
+    LinearSmoother& param2 = model->param2;
 
     std::visit(
-        [&input_skip, &out, numSamples, input_gain, output_gain] (auto&& custom_model)
+        [&out, numSamples, input_skip, input_gain, output_gain, &param1, &param2] (auto&& custom_model)
         {
             using ModelType = std::decay_t<decltype (custom_model)>;
             if constexpr (ModelType::input_size == 1)
@@ -209,9 +215,55 @@ void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
                     }
                 }
             }
-            else
+            else if constexpr (ModelType::input_size == 2)
             {
-                // TODO
+                float inArray1 alignas(RTNEURAL_DEFAULT_ALIGNMENT)[2];
+                if (input_skip)
+                {
+                    for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
+                        inArray1[0] = out[i];
+                        inArray1[1] = param1.next();
+                        out[i] += custom_model.forward(inArray1) * output_gain;
+                    }
+                }
+                else
+                {
+                    for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
+                        inArray1[0] = out[i];
+                        inArray1[1] = param1.next();
+                        out[i] = custom_model.forward (inArray1) * output_gain;
+                    }
+                }
+            }
+            else if constexpr (ModelType::input_size == 3)
+            {
+                float inArray2 alignas(RTNEURAL_DEFAULT_ALIGNMENT)[3];
+                if (input_skip)
+                {
+                    for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
+                        inArray2[0] = out[i];
+                        inArray2[1] = param1.next();
+                        inArray2[2] = param2.next();
+                        out[i] += custom_model.forward(inArray2) * output_gain;
+                    }
+                }
+                else
+                {
+                    for (uint32_t i=0; i<numSamples; ++i)
+                    {
+                        out[i] *= input_gain;
+                        inArray2[0] = out[i];
+                        inArray2[1] = param1.next();
+                        inArray2[2] = param2.next();
+                        out[i] = custom_model.forward(inArray2) * output_gain;
+                    }
+                }
             }
         },
         model->variant
@@ -370,6 +422,7 @@ protected:
                     { 1, "BYPASSED" }
                 };
                 parameter.enumValues.values = values;
+                parameter.enumValues.deleteLater = false;
             }
         }
     }
@@ -620,6 +673,16 @@ protected:
         newmodel->input_skip = input_skip != 0;
         newmodel->input_gain = input_gain;
         newmodel->output_gain = output_gain;
+        newmodel->first_run = true;
+
+        const double sampleRate = getSampleRate();
+
+        newmodel->param1.setSampleRate(sampleRate);
+        newmodel->param1.setTimeConstant(0.1f);
+        newmodel->param1.setTarget(0.f);
+        newmodel->param2.setSampleRate(sampleRate);
+        newmodel->param2.setTimeConstant(0.1f);
+        newmodel->param2.setTarget(0.f);
 
         // Pre-buffer to avoid "clicks" during initialization
         float out[2048] = {};
@@ -823,6 +886,8 @@ protected:
 
             applyModel(model, out, ARRAY_SIZE(out));
 
+            model->first_run = true;
+
             activeModel.store(false);
         }
     }
@@ -919,6 +984,14 @@ protected:
         if (!aida.net_bypass && model != nullptr)
         {
             activeModel.store(true);
+
+            if (model->first_run)
+            {
+                model->first_run = false;
+                model->param1.clearToTarget();
+                model->param2.clearToTarget();
+            }
+
             applyModel(model, out, numSamples);
             activeModel.store(false);
         }
@@ -1000,6 +1073,13 @@ the_end:
 
         bypassGain.setSampleRate(newSampleRate);
         cabsimGain.setSampleRate(newSampleRate);
+
+        if (model != nullptr)
+        {
+            model->first_run = true;
+            model->param1.setSampleRate(newSampleRate);
+            model->param2.setSampleRate(newSampleRate);
+        }
 
         meterMaxFrameCount = newSampleRate * 0.016666; // max 60fps
 

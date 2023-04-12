@@ -435,6 +435,8 @@ protected:
         plugin.setTimePosition(timePosition);
        #endif
 
+        DISTRHO_SAFE_ASSERT_RETURN(buffer.getNumChannels() == std::max(DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS),);
+
         const float* audioBufferIn[18] = {};
         float* audioBufferOut[18] = {};
 
@@ -461,12 +463,12 @@ protected:
 
     bool acceptsMidi() const override
     {
-        return true;
+        return DISTRHO_PLUGIN_WANT_MIDI_INPUT != 0;
     }
 
     bool producesMidi() const override
     {
-        return true;
+        return DISTRHO_PLUGIN_WANT_MIDI_OUTPUT != 0;
     }
 
     juce::AudioProcessorParameter* getBypassParameter() const override
