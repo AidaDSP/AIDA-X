@@ -742,11 +742,10 @@ protected:
 
     void loadCabinet(const uint channels, const uint sampleRate, drwav_uint64 numFrames, float* const ir)
     {
-        if (channels != 1)
+        if (channels > 1)
         {
-            for (drwav_uint64 i = 0, j = 0; i < numFrames; ++i, j += channels)
-                ir[j] = ir[i];
-
+            for (drwav_uint64 i=0, j=0; j<numFrames; ++i, j+=channels)
+                ir[i] = ir[j];
             numFrames /= channels;
         }
 
@@ -808,9 +807,9 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
 
         // use left channel if not mono
-        if (channels != 1)
+        if (channels > 1)
         {
-            for (drwav_uint64 i=0, j=0; i<numFrames; ++i, j+=channels)
+            for (drwav_uint64 i=0, j=0; j<numFrames; ++i, j+=channels)
                 data[i] = data[j];
             numFrames /= channels;
         }
