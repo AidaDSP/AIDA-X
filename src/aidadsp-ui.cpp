@@ -319,6 +319,8 @@ protected:
         case kParameterMIDFREQ:
         case kParameterMIDQ:
         case kParameterTREBLEFREQ:
+        case kParameterPARAM1:
+        case kParameterPARAM2:
         case kParameterCount:
             break;
         }

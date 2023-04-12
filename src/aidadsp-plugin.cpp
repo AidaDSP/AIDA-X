@@ -131,11 +131,8 @@ struct AudioFile {
 struct DynamicModel {
     ModelVariantType variant;
     bool input_skip; /* Means the model has been trained with first input element skipped to the output */
-    bool first_run;
     float input_gain;
     float output_gain;
-    LinearSmoother param1;
-    LinearSmoother param2;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -184,13 +181,11 @@ static void applyToneControls(AidaToneControl& aida, float* const out, uint32_t 
 // --------------------------------------------------------------------------------------------------------------------
 // This function carries model calculations for snapshot models
 
-void applyModel(DynamicModel* model, float* const out, uint32_t numSamples)
+void applyModel(DynamicModel* model, float* const out, uint32_t numSamples, LinearSmoother& param1, LinearSmoother& param2)
 {
     const bool input_skip = model->input_skip;
     const float input_gain = model->input_gain;
     const float output_gain = model->output_gain;
-    LinearSmoother& param1 = model->param1;
-    LinearSmoother& param2 = model->param2;
 
     std::visit(
         [&out, numSamples, input_skip, input_gain, output_gain, &param1, &param2] (auto&& custom_model)
@@ -285,6 +280,9 @@ class AidaDSPLoaderPlugin : public Plugin
     ExpSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
+    LinearSmoother param1;
+    LinearSmoother param2;
+    bool paramFirstRun;
     std::atomic<bool> resetMeters { true };
     float tmpMeterIn, tmpMeterOut;
     uint32_t tmpMeterFrames, meterMaxFrameCount;
@@ -306,6 +304,12 @@ public:
 
         cabsimGain.setTimeConstant(0.1f);
         cabsimGain.setTarget(kCabinetMaxGain);
+
+        param1.setTimeConstant(0.1f);
+        param1.setTarget(parameters[kParameterPARAM1]);
+
+        param2.setTimeConstant(0.1f);
+        param2.setTarget(parameters[kParameterPARAM2]);
 
         // initialize
         bufferSizeChanged(getBufferSize());
@@ -417,7 +421,7 @@ protected:
         {
             parameter.designation = kParameterDesignationBypass;
             {
-                static const ParameterEnumerationValue values[2] = {
+                static ParameterEnumerationValue values[2] = {
                     { 0, "PROCESSING" },
                     { 1, "BYPASSED" }
                 };
@@ -548,6 +552,12 @@ protected:
         case kParameterGLOBALBYPASS:
             bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
             break;
+        case kParameterPARAM1:
+            param1.setTarget(value);
+            break;
+        case kParameterPARAM2:
+            param2.setTarget(value);
+            break;
         case kParameterMeterIn:
         case kParameterMeterOut:
         case kParameterCount:
@@ -669,24 +679,18 @@ protected:
             return;
         }
 
+        param1.clearToTarget();
+        param2.clearToTarget();
+        paramFirstRun = true;
+
         // save extra info
         newmodel->input_skip = input_skip != 0;
         newmodel->input_gain = input_gain;
         newmodel->output_gain = output_gain;
-        newmodel->first_run = true;
-
-        const double sampleRate = getSampleRate();
-
-        newmodel->param1.setSampleRate(sampleRate);
-        newmodel->param1.setTimeConstant(0.1f);
-        newmodel->param1.setTarget(0.f);
-        newmodel->param2.setSampleRate(sampleRate);
-        newmodel->param2.setTimeConstant(0.1f);
-        newmodel->param2.setTarget(0.f);
 
         // Pre-buffer to avoid "clicks" during initialization
         float out[2048] = {};
-        applyModel(newmodel.get(), out, ARRAY_SIZE(out));
+        applyModel(newmodel.get(), out, ARRAY_SIZE(out), param1, param2);
 
         // swap active model
         DynamicModel* const oldmodel = model;
@@ -883,9 +887,11 @@ protected:
                 },
                 model->variant);
 
-            applyModel(model, out, ARRAY_SIZE(out));
+            param1.clearToTarget();
+            param2.clearToTarget();
+            paramFirstRun = true;
 
-            model->first_run = true;
+            applyModel(model, out, ARRAY_SIZE(out), param1, param2);
 
             activeModel.store(false);
         }
@@ -984,14 +990,14 @@ protected:
         {
             activeModel.store(true);
 
-            if (model->first_run)
+            if (paramFirstRun)
             {
-                model->first_run = false;
-                model->param1.clearToTarget();
-                model->param2.clearToTarget();
+                paramFirstRun = false;
+                param1.clearToTarget();
+                param2.clearToTarget();
             }
 
-            applyModel(model, out, numSamples);
+            applyModel(model, out, numSamples, param1, param2);
             activeModel.store(false);
         }
 
@@ -1072,13 +1078,9 @@ the_end:
 
         bypassGain.setSampleRate(newSampleRate);
         cabsimGain.setSampleRate(newSampleRate);
-
-        if (model != nullptr)
-        {
-            model->first_run = true;
-            model->param1.setSampleRate(newSampleRate);
-            model->param2.setSampleRate(newSampleRate);
-        }
+        param1.setSampleRate(newSampleRate);
+        param2.setSampleRate(newSampleRate);
+        paramFirstRun = true;
 
         meterMaxFrameCount = newSampleRate * 0.016666; // max 60fps
 

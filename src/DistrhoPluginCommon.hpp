@@ -66,6 +66,8 @@ enum Parameters {
     kParameterMASTER,
     kParameterCABSIMBYPASS,
     kParameterGLOBALBYPASS,
+    kParameterPARAM1,
+    kParameterPARAM2,
     kParameterMeterIn,
     kParameterMeterOut,
     kParameterCount
@@ -90,17 +92,17 @@ enum MidEqType {
     kMidEqBandpass
 };
 
-static const ParameterEnumerationValue kEQPOS[2] = {
+static ParameterEnumerationValue kEQPOS[2] = {
     { kEqPost, "POST" },
     { kEqPre, "PRE" }
 };
 
-static const ParameterEnumerationValue kMTYPE[2] = {
+static ParameterEnumerationValue kMTYPE[2] = {
     { kMidEqPeak, "PEAK" },
     { kMidEqBandpass, "BANDPASS" }
 };
 
-static const ParameterEnumerationValue kBYPASS[2] = {
+static ParameterEnumerationValue kBYPASS[2] = {
     { 0.f, "ON" },
     { 1.f, "OFF" }
 };
@@ -124,6 +126,8 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "MASTER", "MASTER", "dB", 0.f, -15.f, 15.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CABSIMBYPASS", "CABSIMBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
+    { kParameterIsAutomatable, "PARAM1", "PARAM1", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable, "PARAM2", "PARAM2", "", 0.f, 0.f, 1.f, },
     { kParameterIsOutput, "MeterIn", "MeterIn", "dB", 0.f, 0.f, 2.f, },
     { kParameterIsOutput, "MeterOut", "MeterOut", "dB", 0.f, 0.f, 2.f, },
 };
