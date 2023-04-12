@@ -624,8 +624,8 @@ protected:
             jsonStream >> model_json;
 
             /* Understand which model type to load */
-            if(model_json["in_shape"].back().get<int>() > 1) {
-                throw std::invalid_argument("Values for input_size > 1 are not supported");
+            if(model_json["in_shape"].back().get<int>() > MAX_INPUT_SIZE) {
+                throw std::invalid_argument("Value for input_size not supported");
             }
 
             if (model_json["in_skip"].is_number()) {
