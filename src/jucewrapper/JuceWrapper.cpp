@@ -17,9 +17,11 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
-#include <AvailabilityMacros.h>
-#if MAC_OS_X_VERSION_MAX_ALLOWED != 101500
- #error unwanted macOS version
+#ifdef __APPLE__
+ #include <AvailabilityMacros.h>
+ #if MAC_OS_X_VERSION_MAX_ALLOWED != 101200
+  #error unwanted macOS version
+ #endif
 #endif
 
 #define createPlugin createStaticPlugin
@@ -240,16 +242,16 @@ protected:
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// unused in aida
+// unused in juce
 static constexpr const requestParameterValueChangeFunc nullRequestParameterValueChangeFunc = nullptr;
 
 // only needed for headless builds, which this wrapper never builds for
 static constexpr const updateStateValueFunc nullUpdateStateValueFunc = nullptr;
 
 // DSP/processor implementation
-class AidaWrapperProcessor : public juce::AudioProcessor
+class JuceWrapperProcessor : public juce::AudioProcessor
 {
-    friend class AidaWrapperEditor;
+    friend class JuceWrapperEditor;
 
     PluginExporter plugin;
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -263,9 +265,11 @@ class AidaWrapperProcessor : public juce::AudioProcessor
 
     juce::AudioProcessorParameter* bypassParameter;
     bool* updatedParameters;
+    bool* outputParameters;
+    float* outputValues;
 
 public:
-    AidaWrapperProcessor()
+    JuceWrapperProcessor()
         : plugin(this,
                  nullptr, // writeMidiFunc,
                  nullRequestParameterValueChangeFunc, nullUpdateStateValueFunc),
@@ -287,7 +291,11 @@ public:
         if (parameterCount != 0)
         {
             updatedParameters = new bool[parameterCount];
+            outputParameters = new bool[parameterCount];
+            outputValues = new float[parameterCount];
             std::memset(updatedParameters, 0, sizeof(bool)*parameterCount);
+            std::memset(outputParameters, 0, sizeof(bool)*parameterCount);
+            std::memset(outputValues, 0, sizeof(float)*parameterCount);
 
             for (uint i=0; i<parameterCount; ++i)
             {
@@ -296,11 +304,17 @@ public:
 
                 if (plugin.getParameterDesignation(i) == kParameterDesignationBypass)
                     bypassParameter = param;
+
+                if (plugin.isParameterOutput(i))
+                {
+                    outputParameters[i] = true;
+                    outputValues[i] = plugin.getParameterRanges(i).def;
+                }
             }
         }
     }
 
-    ~AidaWrapperProcessor() override
+    ~JuceWrapperProcessor() override
     {
         delete[] updatedParameters;
     }
@@ -421,8 +435,6 @@ protected:
         plugin.setTimePosition(timePosition);
        #endif
 
-        DISTRHO_SAFE_ASSERT_RETURN(buffer.getNumChannels() == 1 && buffer.getNumChannels() == 2,);
-
         const float* audioBufferIn[18] = {};
         float* audioBufferOut[18] = {};
 
@@ -436,10 +448,7 @@ protected:
         plugin.run(audioBufferIn, audioBufferOut, static_cast<uint32_t>(numSamples), midiEvents, midiEventCount);
        #else
         plugin.run(audioBufferIn, audioBufferOut, static_cast<uint32_t>(numSamples));
-        std::memcpy(audioBufferOut[1], audioBufferOut[0], sizeof(float)*numSamples);
        #endif
-
-       // TODO set parameterChanges of outputs for UI
     }
 
     // fix compiler warning
@@ -497,7 +506,7 @@ protected:
 
     void getStateInformation(juce::MemoryBlock& destData) override
     {
-        juce::XmlElement xmlState("AidaState");
+        juce::XmlElement xmlState("JuceState");
 
         for (uint32_t i=0; i<parameterCount; ++i)
             xmlState.setAttribute(plugin.getParameterSymbol(i).buffer(), plugin.getParameterValue(i));
@@ -541,7 +550,7 @@ private:
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static bool writeMidiFunc(void* const ptr, const MidiEvent& midiEvent)
     {
-        AidaWrapperProcessor* const processor = static_cast<AidaWrapperProcessor*>(ptr);
+        JuceWrapperProcessor* const processor = static_cast<JuceWrapperProcessor*>(ptr);
         DISTRHO_SAFE_ASSERT_RETURN(processor != nullptr, false);
 
         juce::MidiBuffer* const currentMidiMessages = processor->currentMidiMessages;
@@ -557,27 +566,27 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 
-// unused in aida
+// unused in juce
 static constexpr const sendNoteFunc nullSendNoteFunc = nullptr;
 
 // unwanted, juce file dialogs are ugly
 static constexpr const fileRequestFunc nullFileRequestFunc = nullptr;
 
 // UI/editor implementation
-class AidaWrapperEditor : public juce::AudioProcessorEditor,
+class JuceWrapperEditor : public juce::AudioProcessorEditor,
                           private juce::Timer
 {
-    AidaWrapperProcessor& aidaProcessor;
+    JuceWrapperProcessor& juceProcessor;
 
     UIExporter* ui;
     void* const dspPtr;
 
 public:
-    AidaWrapperEditor(AidaWrapperProcessor& aidaProc)
-        : juce::AudioProcessorEditor(aidaProc),
-          aidaProcessor(aidaProc),
+    JuceWrapperEditor(JuceWrapperProcessor& juceProc)
+        : juce::AudioProcessorEditor(juceProc),
+          juceProcessor(juceProc),
           ui(nullptr),
-          dspPtr(aidaProc.plugin.getInstancePointer())
+          dspPtr(juceProc.plugin.getInstancePointer())
     {
         setOpaque(true);
         setResizable(false, false);
@@ -586,7 +595,7 @@ public:
         startTimer(1000.0 / 60.0);
     }
 
-    ~AidaWrapperEditor() override
+    ~JuceWrapperEditor() override
     {
         stopTimer();
         delete ui;
@@ -598,12 +607,22 @@ protected:
         if (ui == nullptr)
             return;
 
-        for (uint32_t i=0; i<aidaProcessor.parameterCount; ++i)
+        for (uint32_t i=0; i<juceProcessor.parameterCount; ++i)
         {
-            if (aidaProcessor.updatedParameters[i])
+            if (juceProcessor.updatedParameters[i])
             {
-                aidaProcessor.updatedParameters[i] = false;
-                ui->parameterChanged(i, aidaProcessor.plugin.getParameterValue(i));
+                juceProcessor.updatedParameters[i] = false;
+                ui->parameterChanged(i, juceProcessor.plugin.getParameterValue(i));
+            }
+            else if (juceProcessor.outputParameters[i])
+            {
+                const float value = juceProcessor.plugin.getParameterValue(i);
+
+                if (d_isNotEqual(juceProcessor.outputValues[i], value))
+                {
+                    juceProcessor.outputValues[i] = value;
+                    ui->parameterChanged(i, value);
+                }
             }
         }
 
@@ -622,7 +641,7 @@ protected:
 
             ui = new UIExporter(this,
                 (uintptr_t)nativeHandle,
-                aidaProcessor.getSampleRate(),
+                juceProcessor.getSampleRate(),
                 editParamFunc,
                 setParamFunc,
                 setStateFunc,
@@ -634,10 +653,16 @@ protected:
                 0.0 // scaleFactor
             );
 
-            if (aidaProcessor.wrapperType == juce::AudioProcessor::wrapperType_Standalone)
+            if (juceProcessor.wrapperType == juce::AudioProcessor::wrapperType_Standalone)
             {
                 const double scaleFactor = ui->getScaleFactor();
                 ui->setWindowOffset(4 * scaleFactor, 30 * scaleFactor);
+            }
+
+            for (uint32_t i=0; i<juceProcessor.parameterCount; ++i)
+            {
+                juceProcessor.updatedParameters[i] = false;
+                ui->parameterChanged(i, juceProcessor.plugin.getParameterValue(i));
             }
         }
 
@@ -647,40 +672,40 @@ protected:
 private:
     static void editParamFunc(void* const ptr, const uint32_t index, const bool started)
     {
-        AidaWrapperEditor* const editor = static_cast<AidaWrapperEditor*>(ptr);
+        JuceWrapperEditor* const editor = static_cast<JuceWrapperEditor*>(ptr);
         DISTRHO_SAFE_ASSERT_RETURN(editor != nullptr,);
 
-        AidaWrapperProcessor& aidaProcessor(editor->aidaProcessor);
+        JuceWrapperProcessor& juceProcessor(editor->juceProcessor);
 
         if (started)
-            aidaProcessor.getParameters().getUnchecked(static_cast<int>(index))->beginChangeGesture();
+            juceProcessor.getParameters().getUnchecked(static_cast<int>(index))->beginChangeGesture();
         else
-            aidaProcessor.getParameters().getUnchecked(static_cast<int>(index))->endChangeGesture();
+            juceProcessor.getParameters().getUnchecked(static_cast<int>(index))->endChangeGesture();
     }
 
     static void setParamFunc(void* const ptr, const uint32_t index, const float value)
     {
-        AidaWrapperEditor* const editor = static_cast<AidaWrapperEditor*>(ptr);
+        JuceWrapperEditor* const editor = static_cast<JuceWrapperEditor*>(ptr);
         DISTRHO_SAFE_ASSERT_RETURN(editor != nullptr,);
 
-        AidaWrapperProcessor& aidaProcessor(editor->aidaProcessor);
-        const juce::Array<juce::AudioProcessorParameter*>& parameters(aidaProcessor.getParameters());
+        JuceWrapperProcessor& juceProcessor(editor->juceProcessor);
+        const juce::Array<juce::AudioProcessorParameter*>& parameters(juceProcessor.getParameters());
         juce::AudioProcessorParameter* const parameter = parameters.getUnchecked(static_cast<int>(index));
         static_cast<ParameterFromDPF*>(parameter)->setValueNotifyingHostFromDPF(value);
     }
 
     static void setStateFunc(void* const ptr, const char* const key, const char* const value)
     {
-        AidaWrapperEditor* const editor = static_cast<AidaWrapperEditor*>(ptr);
+        JuceWrapperEditor* const editor = static_cast<JuceWrapperEditor*>(ptr);
         DISTRHO_SAFE_ASSERT_RETURN(editor != nullptr,);
 
-        AidaWrapperProcessor& aidaProcessor(editor->aidaProcessor);
-        aidaProcessor.plugin.setState(key, value);
+        JuceWrapperProcessor& juceProcessor(editor->juceProcessor);
+        juceProcessor.plugin.setState(key, value);
     }
 
     static void setSizeFunc(void* const ptr, uint width, uint height)
     {
-        AidaWrapperEditor* const editor = static_cast<AidaWrapperEditor*>(ptr);
+        JuceWrapperEditor* const editor = static_cast<JuceWrapperEditor*>(ptr);
         DISTRHO_SAFE_ASSERT_RETURN(editor != nullptr,);
 
        #ifdef DISTRHO_OS_MAC
@@ -696,9 +721,9 @@ private:
     }
 };
 
-juce::AudioProcessorEditor* AidaWrapperProcessor::createEditor()
+juce::AudioProcessorEditor* JuceWrapperProcessor::createEditor()
 {
-    return new AidaWrapperEditor(*this);
+    return new JuceWrapperEditor(*this);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -712,7 +737,7 @@ juce::AudioProcessor* createPluginFilter()
     // set valid but dummy values
     d_nextBufferSize = 512;
     d_nextSampleRate = 48000.0;
-    return new DISTRHO_NAMESPACE::AidaWrapperProcessor;
+    return new DISTRHO_NAMESPACE::JuceWrapperProcessor;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
