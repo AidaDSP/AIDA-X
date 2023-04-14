@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(AIDA-X VERSION 0.1.0)
+project(AIDA-X VERSION 0.2.0)
 
 add_subdirectory(JUCE)
 
