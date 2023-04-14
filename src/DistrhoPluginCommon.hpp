@@ -129,7 +129,7 @@ static ParameterEnumerationValue kModelInSize[4] = {
 
 static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "ANTIALIASING", "ANTIALIASING", "%", 66.216f, 0.f, 100.f, },
-    { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", 0.f, -12.f, 3.f, },
+    { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", 0.f, -12.f, 12.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsInteger, "EQPOS", "EQPOS", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kEQPOS), kEQPOS },
