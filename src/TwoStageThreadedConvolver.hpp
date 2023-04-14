@@ -53,7 +53,7 @@ public:
 
     bool init(const fftconvolver::Sample* const ir, const size_t irLen)
     {
-        if (irLen > kTailBlockSize)
+        if (irLen > kTailBlockSize * 2)
         {
             if (! fftconvolver::TwoStageFFTConvolver::init(kHeadBlockSize, kTailBlockSize, ir, irLen))
                 return false;

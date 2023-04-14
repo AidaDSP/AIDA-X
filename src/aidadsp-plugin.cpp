@@ -777,6 +777,9 @@ protected:
             const int numResampledFrames = resampler.getMaxOutLen(0);
             DISTRHO_SAFE_ASSERT_RETURN(numResampledFrames > 0,);
 
+            d_stdout("Resampling to %f Hz sample rate and %d frames",
+                     hostSampleRate, numResampledFrames);
+
             float* const irBufResampled = new float[numResampledFrames];
             resampler.oneshot(ir, numFrames, irBufResampled, numResampledFrames);
             irBuf = irBufResampled;
