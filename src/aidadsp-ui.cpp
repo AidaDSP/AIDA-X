@@ -575,7 +575,7 @@ protected:
        #endif
     }
 
-    void buttonClicked(SubWidget* const widget, int button) override
+    void buttonClicked(SubWidget* const widget, int) override
     {
         const uint id = widget->getId();
 

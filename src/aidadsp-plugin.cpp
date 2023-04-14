@@ -123,7 +123,7 @@ struct AudioFile {
         if (resampled)
             delete[] buffer;
         else
-            free(buffer);
+            drwav_free(buffer, nullptr);
     }
 };
 #endif
@@ -179,7 +179,7 @@ static void applyToneControls(AidaToneControl& aida, float* const out, uint32_t 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// This function carries model calculations for snapshot models
+// This function carries model calculations
 
 void applyModel(DynamicModel* model, float* const out, uint32_t numSamples,
                 LinearValueSmoother& param1, LinearValueSmoother& param2)
@@ -192,74 +192,79 @@ void applyModel(DynamicModel* model, float* const out, uint32_t numSamples,
         [&out, numSamples, input_skip, input_gain, output_gain, &param1, &param2] (auto&& custom_model)
         {
             using ModelType = std::decay_t<decltype (custom_model)>;
+
+            if (d_isNotEqual(input_gain, 1.f))
+            {
+                for (uint32_t i=0; i<numSamples; ++i)
+                    out[i] *= input_gain;
+            }
+
             if constexpr (ModelType::input_size == 1)
             {
                 if (input_skip)
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
-                    {
-                        out[i] *= input_gain;
-                        out[i] += custom_model.forward(out + i) * output_gain;
-                    }
+                        out[i] += custom_model.forward(out + i);
                 }
                 else
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
-                    {
-                        out[i] *= input_gain;
                         out[i] = custom_model.forward(out + i) * output_gain;
-                    }
                 }
             }
             else if constexpr (ModelType::input_size == 2)
             {
                 float inArray1 alignas(RTNEURAL_DEFAULT_ALIGNMENT)[2];
+
                 if (input_skip)
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
                     {
-                        out[i] *= input_gain;
                         inArray1[0] = out[i];
                         inArray1[1] = param1.next();
-                        out[i] += custom_model.forward(inArray1) * output_gain;
+                        out[i] += custom_model.forward(inArray1);
                     }
                 }
                 else
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
                     {
-                        out[i] *= input_gain;
                         inArray1[0] = out[i];
                         inArray1[1] = param1.next();
-                        out[i] = custom_model.forward (inArray1) * output_gain;
+                        out[i] = custom_model.forward(inArray1) * output_gain;
                     }
                 }
             }
             else if constexpr (ModelType::input_size == 3)
             {
                 float inArray2 alignas(RTNEURAL_DEFAULT_ALIGNMENT)[3];
+
                 if (input_skip)
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
                     {
-                        out[i] *= input_gain;
                         inArray2[0] = out[i];
                         inArray2[1] = param1.next();
                         inArray2[2] = param2.next();
-                        out[i] += custom_model.forward(inArray2) * output_gain;
+                        out[i] += custom_model.forward(inArray2);
                     }
                 }
                 else
                 {
                     for (uint32_t i=0; i<numSamples; ++i)
                     {
-                        out[i] *= input_gain;
                         inArray2[0] = out[i];
                         inArray2[1] = param1.next();
                         inArray2[2] = param2.next();
                         out[i] = custom_model.forward(inArray2) * output_gain;
                     }
                 }
+            }
+
+            if (input_skip && d_isNotEqual(output_gain, 1.f))
+            {
+                for (uint32_t i=0; i<numSamples; ++i)
+                    out[i] *= output_gain;
             }
         },
         model->variant
