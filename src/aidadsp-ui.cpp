@@ -307,6 +307,9 @@ protected:
         case kParameterGLOBALBYPASS:
             switches.bypass->setChecked(value < 0.5f, false);
             break;
+        case kParameterModelInputSize:
+            // TODO
+            break;
         case kParameterMeterIn:
             meters.in->setValue(value);
             meters.resetOnNextIdle = true;

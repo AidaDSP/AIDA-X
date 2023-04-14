@@ -68,6 +68,7 @@ enum Parameters {
     kParameterGLOBALBYPASS,
     kParameterPARAM1,
     kParameterPARAM2,
+    kParameterModelInputSize,
     kParameterMeterIn,
     kParameterMeterOut,
     kParameterCount
@@ -107,9 +108,16 @@ static ParameterEnumerationValue kBYPASS[2] = {
     { 1.f, "OFF" }
 };
 
+static ParameterEnumerationValue kModelInSize[4] = {
+    { 0.f, "ERROR" },
+    { 1.f, "SNAPSHOT" },
+    { 2.f, "WITH 1 PARAM" },
+    { 3.f, "WITH 2 PARAMS" }
+};
+
 static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "ANTIALIASING", "ANTIALIASING", "%", 66.216f, 0.f, 100.f, },
-    { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", -6.f, -12.f, 0.f, },
+    { kParameterIsAutomatable, "PREGAIN", "PREGAIN", "dB", 0.f, -12.f, 3.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsInteger, "EQPOS", "EQPOS", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kEQPOS), kEQPOS },
@@ -128,8 +136,9 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
     { kParameterIsAutomatable, "PARAM1", "PARAM1", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable, "PARAM2", "PARAM2", "", 0.f, 0.f, 1.f, },
-    { kParameterIsOutput, "MeterIn", "MeterIn", "dB", 0.f, 0.f, 2.f, },
-    { kParameterIsOutput, "MeterOut", "MeterOut", "dB", 0.f, 0.f, 2.f, },
+    { kParameterIsOutput, "Model Input Size", "ModelInSize", "", 0.f, 0.f, 3.f, ARRAY_SIZE(kModelInSize), kModelInSize },
+    { kParameterIsOutput, "Meter In", "MeterIn", "dB", 0.f, 0.f, 2.f, },
+    { kParameterIsOutput, "Meter Out", "MeterOut", "dB", 0.f, 0.f, 2.f, },
 };
 
 static constexpr const uint kNumParameters = ARRAY_SIZE(kParameters);

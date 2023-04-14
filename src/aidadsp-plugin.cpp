@@ -558,6 +558,7 @@ protected:
         case kParameterPARAM2:
             param2.setTargetValue(value);
             break;
+        case kParameterModelInputSize:
         case kParameterMeterIn:
         case kParameterMeterOut:
         case kParameterCount:
@@ -615,6 +616,7 @@ protected:
 
     void loadModelFromStream(std::istream& jsonStream)
     {
+        int input_size;
         int input_skip;
         float input_gain;
         float output_gain;
@@ -624,7 +626,8 @@ protected:
             jsonStream >> model_json;
 
             /* Understand which model type to load */
-            if(model_json["in_shape"].back().get<int>() > MAX_INPUT_SIZE) {
+            input_size = model_json["in_shape"].back().get<int>();
+            if (input_size > MAX_INPUT_SIZE) {
                 throw std::invalid_argument("Value for input_size not supported");
             }
 
@@ -699,6 +702,9 @@ protected:
         // if processing, wait for process cycle to complete
         while (oldmodel != nullptr && activeModel.load())
             d_msleep(1);
+
+        // report model in dim
+        parameters[kParameterModelInputSize] = input_size;
 
         delete oldmodel;
     }
