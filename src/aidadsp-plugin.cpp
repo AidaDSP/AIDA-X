@@ -8,13 +8,12 @@
 #include "DistrhoPlugin.hpp"
 
 #include "Biquad.h"
-#include "ExpSmoother.hpp"
-#include "LinearSmoother.hpp"
 #include "Files.hpp"
 
 #include "model_variant.hpp"
 #include "extra/ScopedDenormalDisable.hpp"
 #include "extra/Sleep.hpp"
+#include "extra/ValueSmoother.hpp"
 
 #include <atomic>
 #include <strstream>
@@ -61,8 +60,8 @@ struct AidaToneControl {
     Biquad treble { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
     Biquad depth { bq_type_peak, 0.5f, COMMON_Q, 0.0f };
     Biquad presence { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
-    ExpSmoother pregain;
-    ExpSmoother mastergain;
+    ExponentialValueSmoother pregain;
+    ExponentialValueSmoother mastergain;
     bool net_bypass = false;
     bool eq_bypass = false;
     EqPos eq_pos = kEqPost;
@@ -98,10 +97,10 @@ struct AidaToneControl {
                            PRESENCE_FREQ / sampleRate, COMMON_Q, parameters[kParameterPRESENCE]);
 
         pregain.setSampleRate(sampleRate);
-        pregain.setTarget(DB_CO(parameters[kParameterPREGAIN]));
+        pregain.setTargetValue(DB_CO(parameters[kParameterPREGAIN]));
 
         mastergain.setSampleRate(sampleRate);
-        mastergain.setTarget(DB_CO(parameters[kParameterMASTER]));
+        mastergain.setTargetValue(DB_CO(parameters[kParameterMASTER]));
     }
 };
 
@@ -138,7 +137,7 @@ struct DynamicModel {
 // --------------------------------------------------------------------------------------------------------------------
 // Apply a gain ramp to a buffer
 
-static void applyGainRamp(ExpSmoother& smoother, float* const out, const uint32_t numSamples)
+static void applyGainRamp(ExponentialValueSmoother& smoother, float* const out, const uint32_t numSamples)
 {
     for (uint32_t i=0; i<numSamples; ++i)
         out[i] *= smoother.next();
@@ -181,7 +180,8 @@ static void applyToneControls(AidaToneControl& aida, float* const out, uint32_t 
 // --------------------------------------------------------------------------------------------------------------------
 // This function carries model calculations for snapshot models
 
-void applyModel(DynamicModel* model, float* const out, uint32_t numSamples, LinearSmoother& param1, LinearSmoother& param2)
+void applyModel(DynamicModel* model, float* const out, uint32_t numSamples,
+                LinearValueSmoother& param1, LinearValueSmoother& param2)
 {
     const bool input_skip = model->input_skip;
     const float input_gain = model->input_gain;
@@ -275,13 +275,13 @@ class AidaDSPLoaderPlugin : public Plugin
     std::atomic<bool> activeModel { false };
     std::atomic<bool> activeConvolver { false };
     String cabsimFilename;
-    ExpSmoother cabsimGain;
+    ExponentialValueSmoother cabsimGain;
     float* cabsimInplaceBuffer = nullptr;
-    ExpSmoother bypassGain;
+    ExponentialValueSmoother bypassGain;
     float* bypassInplaceBuffer = nullptr;
     float parameters[kNumParameters];
-    LinearSmoother param1;
-    LinearSmoother param2;
+    LinearValueSmoother param1;
+    LinearValueSmoother param2;
     bool paramFirstRun;
     std::atomic<bool> resetMeters { true };
     float tmpMeterIn, tmpMeterOut;
@@ -300,16 +300,16 @@ public:
             parameters[i] = kParameters[i].ranges.def;
 
         bypassGain.setTimeConstant(0.25f);
-        bypassGain.setTarget(1.f);
+        bypassGain.setTargetValue(1.f);
 
         cabsimGain.setTimeConstant(0.1f);
-        cabsimGain.setTarget(kCabinetMaxGain);
+        cabsimGain.setTargetValue(kCabinetMaxGain);
 
         param1.setTimeConstant(0.1f);
-        param1.setTarget(parameters[kParameterPARAM1]);
+        param1.setTargetValue(parameters[kParameterPARAM1]);
 
         param2.setTimeConstant(0.1f);
-        param2.setTarget(parameters[kParameterPARAM2]);
+        param2.setTargetValue(parameters[kParameterPARAM2]);
 
         // initialize
         bufferSizeChanged(getBufferSize());
@@ -502,7 +502,7 @@ protected:
             aida.in_lpf.setFc(MAP(value, 0.0f, 100.0f, INLPF_MAX_CO, INLPF_MIN_CO));
             break;
         case kParameterPREGAIN:
-            aida.pregain.setTarget(DB_CO(value));
+            aida.pregain.setTargetValue(DB_CO(value));
             break;
         case kParameterNETBYPASS:
             aida.net_bypass = value > 0.5f;
@@ -544,19 +544,19 @@ protected:
             aida.presence.setPeakGain(value);
             break;
         case kParameterMASTER:
-            aida.mastergain.setTarget(DB_CO(value));
+            aida.mastergain.setTargetValue(DB_CO(value));
             break;
         case kParameterCABSIMBYPASS:
-            cabsimGain.setTarget(value > 0.5f ? 0.f : kCabinetMaxGain);
+            cabsimGain.setTargetValue(value > 0.5f ? 0.f : kCabinetMaxGain);
             break;
         case kParameterGLOBALBYPASS:
-            bypassGain.setTarget(value > 0.5f ? 0.f : 1.f);
+            bypassGain.setTargetValue(value > 0.5f ? 0.f : 1.f);
             break;
         case kParameterPARAM1:
-            param1.setTarget(value);
+            param1.setTargetValue(value);
             break;
         case kParameterPARAM2:
-            param2.setTarget(value);
+            param2.setTargetValue(value);
             break;
         case kParameterMeterIn:
         case kParameterMeterOut:
@@ -679,8 +679,8 @@ protected:
             return;
         }
 
-        param1.clearToTarget();
-        param2.clearToTarget();
+        param1.clearToTargetValue();
+        param2.clearToTargetValue();
         paramFirstRun = true;
 
         // save extra info
@@ -863,10 +863,10 @@ protected:
     */
     void activate() override
     {
-        aida.pregain.clearToTarget();
-        aida.mastergain.clearToTarget();
-        bypassGain.clearToTarget();
-        cabsimGain.clearToTarget();
+        aida.pregain.clearToTargetValue();
+        aida.mastergain.clearToTargetValue();
+        bypassGain.clearToTargetValue();
+        cabsimGain.clearToTargetValue();
         resetMeters.store(true);
 
         if (model != nullptr)
@@ -887,8 +887,8 @@ protected:
                 },
                 model->variant);
 
-            param1.clearToTarget();
-            param2.clearToTarget();
+            param1.clearToTargetValue();
+            param2.clearToTargetValue();
             paramFirstRun = true;
 
             applyModel(model, out, ARRAY_SIZE(out), param1, param2);
@@ -971,7 +971,7 @@ protected:
         // Special handling for MOD web version: stop further audio processing on bypass
         if (bypassGain.peek() < 0.001f)
         {
-            bypassGain.clearToTarget();
+            bypassGain.clearToTargetValue();
             goto the_end;
         }
        #endif
@@ -993,8 +993,8 @@ protected:
             if (paramFirstRun)
             {
                 paramFirstRun = false;
-                param1.clearToTarget();
-                param2.clearToTarget();
+                param1.clearToTargetValue();
+                param2.clearToTargetValue();
             }
 
             applyModel(model, out, numSamples, param1, param2);
