@@ -13,7 +13,7 @@
 #include "Layout.hpp"
 #include "Widgets.hpp"
 
-#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+#if AIDAX_WITH_STANDALONE_CONTROLS
 # include "Blendish.hpp"
 #endif
 
@@ -24,7 +24,7 @@ START_NAMESPACE_DISTRHO
 enum ButtonIds {
     kButtonLoadModel = 1001,
     kButtonLoadCabinet,
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+   #if AIDAX_WITH_STANDALONE_CONTROLS
     kButtonEnableMicInput,
    #endif
 };
@@ -39,7 +39,7 @@ enum EnableInputState {
 class AidaDSPLoaderUI : public UI,
                         public ButtonEventHandler::Callback,
                         public KnobEventHandler::Callback
-                     #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+                     #if AIDAX_WITH_STANDALONE_CONTROLS
                       , public BlendishComboBox::Callback
                       , public BlendishToolButton::Callback
                      #endif
@@ -92,7 +92,7 @@ class AidaDSPLoaderUI : public UI,
         bool resetOnNextIdle = false;
     } meters;
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+   #if AIDAX_WITH_STANDALONE_CONTROLS
     EnableInputState enableInputState = kEnableInputUnsupported;
     ScopedPointer<BlendishSubWidgetSharedContext> blendishParent;
     ScopedPointer<BlendishToolButton> enableInputButton;
@@ -126,11 +126,11 @@ public:
         using namespace Graphics;
         images.aida = createImageFromMemory(aidaData, aidaDataSize, IMAGE_GENERATE_MIPMAPS);
         images.ax = createImageFromMemory(axData, axDataSize, IMAGE_GENERATE_MIPMAPS);
-#ifdef DGL_USE_GLES
+       #ifdef DGL_USE_GLES
         images.background = createImageFromMemory(background_p2Data, background_p2DataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
-#else
+       #else
         images.background = createImageFromMemory(backgroundData, backgroundDataSize, IMAGE_REPEAT_X|IMAGE_REPEAT_Y);
-#endif
+       #endif
         images.knob = createImageFromMemory(knobData, knobDataSize, IMAGE_GENERATE_MIPMAPS);
         images.scale = createImageFromMemory(scaleData, scaleDataSize, IMAGE_GENERATE_MIPMAPS);
 
@@ -168,7 +168,7 @@ public:
         meters.in = new AidaMeter(this, "INPUT");
         meters.out = new AidaMeter(this, "OUTPUT");
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         if (isUsingNativeAudio())
         {
             if (supportsAudioInput())
@@ -488,7 +488,7 @@ protected:
         text(marginHorizontal + widthPedal - 10 * scaleFactor, marginVertical/2, aboutLabel, nullptr);
        #endif
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
 
         const double micx = getWidth() / 2;
@@ -515,7 +515,7 @@ protected:
     {
         UI::onResize(event);
         repositionWidgets();
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         if (blendishParent != nullptr)
             blendishParent->setSize(event.size);
        #endif
@@ -564,7 +564,7 @@ protected:
         meters.out->setAbsolutePos(metersX, metersY + meters.in->getHeight() + margin / 4);
        #endif
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         if (blendishParent != nullptr)
         {
             enableInputButton->setAbsolutePos(getWidth() / 2 - enableInputButton->getWidth()/2,
@@ -602,7 +602,7 @@ protected:
             fileLoaderMode = kFileLoaderImpulse;
             requestStateFile("cabinet", lastDirCabinet, "Open Cabinet Simulator IR");
             break;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         case kButtonEnableMicInput:
             if (supportsAudioInput() && !isAudioInputEnabled())
                 requestAudioInput();
@@ -651,7 +651,7 @@ protected:
         static_cast<AidaKnob*>(widget)->setValue(kParameters[widget->getId()].ranges.def, true);
     }
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+   #if AIDAX_WITH_STANDALONE_CONTROLS
     void blendishComboBoxIndexChanged(BlendishComboBox* const comboBox, int) override
     {
         const String label(comboBox->getCurrentLabel());
@@ -682,7 +682,7 @@ protected:
             setState("reset-meters", "");
         }
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if AIDAX_WITH_STANDALONE_CONTROLS
         if (enableInputButton != nullptr)
         {
             const EnableInputState newInputState = isAudioInputEnabled() ? kEnableInputEnabled : kEnableInputSupported;

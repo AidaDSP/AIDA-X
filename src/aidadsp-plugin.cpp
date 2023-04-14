@@ -23,6 +23,7 @@
 // -Wunused-variable
 #include "CDSPResampler.h"
 
+// must be last
 #include "TwoStageThreadedConvolver.hpp"
 
 START_NAMESPACE_DISTRHO
@@ -104,7 +105,7 @@ struct AidaToneControl {
     }
 };
 
-#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+#if AIDAX_WITH_AUDIOFILE
 struct AudioFile {
     float* buffer;
     drwav_uint64 currentFrame;
@@ -286,7 +287,7 @@ class AidaDSPLoaderPlugin : public Plugin
     std::atomic<bool> resetMeters { true };
     float tmpMeterIn, tmpMeterOut;
     uint32_t tmpMeterFrames, meterMaxFrameCount;
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+   #if AIDAX_WITH_AUDIOFILE
     AudioFile* audiofile = nullptr;
     std::atomic<bool> activeAudiofile { false };
    #endif
@@ -323,7 +324,7 @@ public:
     {
         delete model;
         delete cabsim;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+       #if AIDAX_WITH_AUDIOFILE
         delete audiofile;
        #endif
         delete[] bypassInplaceBuffer;
@@ -459,7 +460,7 @@ protected:
             state.fileTypes = "cabsim";
            #endif
             break;
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+       #if AIDAX_WITH_AUDIOFILE
         case kStateAudioFile:
             state.hints = kStateIsFilenamePath;
             state.key = "audiofile";
@@ -580,7 +581,7 @@ protected:
             return isDefault ? loadDefaultModel() : loadModelFromFile(value);
         if (std::strcmp(key, "cabinet") == 0)
             return isDefault ? loadDefaultCabinet() : loadCabinetFromFile(value);
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+       #if AIDAX_WITH_AUDIOFILE
         if (std::strcmp(key, "audiofile") == 0)
             return loadAudioFile(value);
        #endif
@@ -797,7 +798,7 @@ protected:
         delete oldcabsim;
     }
 
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+   #if AIDAX_WITH_AUDIOFILE
    /* -----------------------------------------------------------------------------------------------------------------
     * Audio file loader */
 
@@ -925,7 +926,7 @@ protected:
                 __builtin_unreachable();
         }
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+       #if AIDAX_WITH_AUDIOFILE
         if (audiofile != nullptr)
         {
             activeAudiofile.store(true);
@@ -1061,7 +1062,7 @@ the_end:
             tmpMeterOut = meterOut;
         }
 
-       #if DISTRHO_PLUGIN_VARIANT_STANDALONE
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS == 2
         std::memcpy(outputs[1], out, sizeof(float)*numSamples);
        #endif
     }

@@ -28,6 +28,18 @@ static constexpr const uint32_t kVersionNumber = d_version(0, 1, 0);
 #define DISTRHO_PLUGIN_LV2_CATEGORY    "lv2:SimulatorPlugin"
 #define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Dynamics|Mono"
 
+#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+# define AIDAX_WITH_AUDIOFILE 1
+#else
+# define AIDAX_WITH_AUDIOFILE 0
+#endif
+
+#if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS != 0
+# define AIDAX_WITH_STANDALONE_CONTROLS 1
+#else
+# define AIDAX_WITH_STANDALONE_CONTROLS 0
+#endif
+
 // known and defined in advance
 static constexpr const uint kPedalWidth = 900;
 static constexpr const uint kPedalHeight = 318;
@@ -77,7 +89,7 @@ enum Parameters {
 enum States {
     kStateModelFile,
     kStateImpulseFile,
-   #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
+   #if AIDAX_WITH_AUDIOFILE
     kStateAudioFile,
    #endif
     kStateCount
