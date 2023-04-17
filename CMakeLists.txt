@@ -27,8 +27,15 @@ add_subdirectory(modules/rtneural)
 find_package(Threads REQUIRED)
 set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
+set(TARGETS clap lv2 vst2 vst3)
+
+# hacky hack part1
+if(APPLE)
+set(TARGETS ${TARGETS} static)
+endif()
+
 dpf_add_plugin(AIDA-X
-  TARGETS clap lv2 vst2 vst3
+  TARGETS ${TARGETS}
   #NO_SHARED_RESOURCES
   UI_TYPE opengl
   FILES_DSP
@@ -71,6 +78,20 @@ target_compile_definitions(dgl-opengl PUBLIC
   DGL_WINDOWS_ICON_ID=401
   NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
 )
+
+# hacky hack part 2
+if(APPLE)
+include(FetchContent)
+FetchContent_Declare(JUCE
+  GIT_REPOSITORY https://github.com/DISTRHO/JUCE.git
+  GIT_TAG v6.1.6
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(JUCE)
+add_subdirectory(src/jucewrapper)
+add_dependencies(AIDA-X-JUCE_AU AIDA-X-static dgl-opengl)
+target_compile_definitions(AIDA-X PUBLIC DISTRHO_PLUGIN_TARGET_STATIC_NAME="AudioUnit")
+endif()
 
 target_include_directories(AIDA-X PUBLIC
   src

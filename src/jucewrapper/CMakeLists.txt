@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 3.15)
-project(AIDA-X VERSION 0.2.0)
-
-add_subdirectory(JUCE)
 
 # Config
 
@@ -11,10 +7,10 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 # Define static libs
 
 add_library(dgl STATIC IMPORTED)
-set_property(TARGET dgl PROPERTY IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/../../modules/dpf/build/libdgl-opengl.a")
+set_property(TARGET dgl PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libdgl-opengl.a")
 
 add_library(sAidaX STATIC IMPORTED)
-set_property(TARGET sAidaX PROPERTY IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/../../build/bin/AIDA-X.a")
+set_property(TARGET sAidaX PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bin/AIDA-X.a")
 
 # dependencies
 
@@ -33,7 +29,7 @@ set(STATIC_LIBS_END "-Wl,--no-whole-archive")
 set(PLUGIN_FORMATS Standalone VST3)
 endif (APPLE)
 
-juce_add_plugin(AIDA-X
+juce_add_plugin(AIDA-X-JUCE
     AU_MAIN_TYPE kAudioUnitType_Effect
     COMPANY_COPYRIGHT "GPL-3.0-or-later"
     COMPANY_NAME "AIDA DSP"
@@ -49,20 +45,28 @@ juce_add_plugin(AIDA-X
     PLUGIN_MANUFACTURER_CODE Aida
     PRODUCT_NAME "AIDA-X")
 
-target_sources(AIDA-X
+set_target_properties(AIDA-X-JUCE_AU
+    PROPERTIES
+        OUTPUT_NAME "AIDA-X"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+)
+
+target_sources(AIDA-X-JUCE
     PRIVATE
         JuceWrapper.cpp)
 
-target_include_directories(AIDA-X
+target_include_directories(AIDA-X-JUCE
     PRIVATE
         ..
         ../plugin
         ../../modules/dpf/distrho)
 
-target_compile_definitions(AIDA-X
+target_compile_definitions(AIDA-X-JUCE
     PUBLIC
+        DISTRHO_NAMESPACE=AidaDISTRHO
         DGL_NAMESPACE=AidaDGL
-        JucePlugin_PreferredChannelConfigurations=1,1
+        JucePlugin_ForcedStereo=1
+        JucePlugin_PreferredChannelConfigurations=2,2
         JUCE_CHECK_MEMORY_LEAKS=0
         JUCE_DISABLE_NATIVE_FILECHOOSERS=1
         JUCE_DISPLAY_SPLASH_SCREEN=0
@@ -78,7 +82,7 @@ target_compile_definitions(AIDA-X
         JUCE_WASAPI=0
         JUCE_WEB_BROWSER=0)
 
-target_link_libraries(AIDA-X
+target_link_libraries(AIDA-X-JUCE
     PRIVATE
         juce::juce_audio_utils
         ${STATIC_LIBS_START}
@@ -93,5 +97,5 @@ target_link_libraries(AIDA-X
         ${XRANDR_LIBRARIES}
     PUBLIC
         juce::juce_recommended_config_flags
-        juce::juce_recommended_lto_flags
+        # juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags)

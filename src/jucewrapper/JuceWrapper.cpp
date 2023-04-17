@@ -435,7 +435,9 @@ protected:
         plugin.setTimePosition(timePosition);
        #endif
 
+       #if ! JucePlugin_ForcedStereo
         DISTRHO_SAFE_ASSERT_RETURN(buffer.getNumChannels() == std::max(DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS),);
+       #endif
 
         const float* audioBufferIn[18] = {};
         float* audioBufferOut[18] = {};
@@ -450,6 +452,10 @@ protected:
         plugin.run(audioBufferIn, audioBufferOut, static_cast<uint32_t>(numSamples), midiEvents, midiEventCount);
        #else
         plugin.run(audioBufferIn, audioBufferOut, static_cast<uint32_t>(numSamples));
+       #endif
+
+       #if JucePlugin_ForcedStereo && DISTRHO_PLUGIN_NUM_OUTPUTS == 1
+        std::memcpy(audioBufferOut[1], audioBufferOut[0], sizeof(float)*numSamples);
        #endif
     }
 
