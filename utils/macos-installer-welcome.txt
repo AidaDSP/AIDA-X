@@ -3,4 +3,4 @@ AIDA-X is an Amp Model Player, allowing it to load models of AI trained music ge
 Its main intended use is to provide high fidelity simulations of amplifiers.  
 However, it is also possible to run entire signal chains consisting of any combination of amp, cab, dist, drive, fuzz, boost and eq.
 
-This installer contains the CLAP, LV2, VST2 and VST3 plugin formats.
+This installer contains the AudioUnit, CLAP, LV2, VST2 and VST3 plugin formats.
