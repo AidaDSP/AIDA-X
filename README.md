@@ -112,9 +112,10 @@ Impulse Response handling is done with the help of a custom fork of [FFTConvolve
 
 #### Generate json models ####
 
-This implies neural network training. Please follow __*Automated_GuitarAmpModelling.ipynb*__ script available on
+This implies neural network training. Please follow:
 
-- [Automated-GuitarAmpModelling](https://github.com/MaxPayne86/Automated-GuitarAmpModelling/tree/aidadsp_devel)
+- [AIDA-X Model Trainer.ipynb](https://colab.research.google.com/drive/1n3EOnroDSGoj_8PVRP6UEwUXUzPewv8p)
+- [Automated_GuitarAmpModelling.ipynb](https://github.com/AidaDSP/Automated-GuitarAmpModelling/tree/aidadsp_devel)
 
 ### Building ###
 
