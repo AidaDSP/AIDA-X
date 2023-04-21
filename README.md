@@ -60,14 +60,14 @@ Please note not all hosts and formats support sending these modifier keys to plu
 
 From left to right:
 
-1. **Bypass and Pre-Gain**
+1. **Bypass and Input Level**
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot-params-1.png">
 
 On/Off bypass switch, lets the audio pass-through when off.  
 Integrates with the host provided bypass controls where possible.
 
-Pre-Gain attenuates / emphasizes the input signal before sending it to the Amp Model.
+Input Level attenuates / emphasizes the input signal before sending it to the Amp Model.
 
 2. **EQ tone controls (part 1)**
 
@@ -85,7 +85,7 @@ Extra EQ related controls.
 Depth is a Peaking or Parametric EQ to boost the low end.  
 Presence is an High Shelf EQ to boost the high end.
 
-4. **Master Gain**
+4. **Output Level**
 
 <img height="112" alt="image" src="https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot-params-4.png">
 
