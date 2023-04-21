@@ -61,8 +61,8 @@ struct AidaToneControl {
     Biquad treble { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
     Biquad depth { bq_type_peak, 0.5f, COMMON_Q, 0.0f };
     Biquad presence { bq_type_highshelf, 0.5f, COMMON_Q, 0.0f };
-    ExponentialValueSmoother pregain;
-    ExponentialValueSmoother mastergain;
+    ExponentialValueSmoother inlevel;
+    ExponentialValueSmoother outlevel;
     bool net_bypass = false;
     bool eq_bypass = false;
     EqPos eq_pos = kEqPost;
@@ -70,8 +70,8 @@ struct AidaToneControl {
 
     AidaToneControl()
     {
-        pregain.setTimeConstant(1);
-        mastergain.setTimeConstant(1);
+        inlevel.setTimeConstant(1);
+        outlevel.setTimeConstant(1);
     }
 
     void setSampleRate(const float parameters[kNumParameters], const double sampleRate)
@@ -97,11 +97,11 @@ struct AidaToneControl {
         presence.setBiquad(bq_type_highshelf,
                            PRESENCE_FREQ / sampleRate, COMMON_Q, parameters[kParameterPRESENCE]);
 
-        pregain.setSampleRate(sampleRate);
-        pregain.setTargetValue(DB_CO(parameters[kParameterPREGAIN]));
+        inlevel.setSampleRate(sampleRate);
+        inlevel.setTargetValue(DB_CO(parameters[kParameterINLEVEL]));
 
-        mastergain.setSampleRate(sampleRate);
-        mastergain.setTargetValue(DB_CO(parameters[kParameterMASTER]));
+        outlevel.setSampleRate(sampleRate);
+        outlevel.setTargetValue(DB_CO(parameters[kParameterOUTLEVEL]));
     }
 };
 
@@ -507,8 +507,8 @@ protected:
         case kParameterINLPF:
             aida.in_lpf.setFc(MAP(value, 0.0f, 100.0f, INLPF_MAX_CO, INLPF_MIN_CO));
             break;
-        case kParameterPREGAIN:
-            aida.pregain.setTargetValue(DB_CO(value));
+        case kParameterINLEVEL:
+            aida.inlevel.setTargetValue(DB_CO(value));
             break;
         case kParameterNETBYPASS:
             aida.net_bypass = value > 0.5f;
@@ -549,8 +549,8 @@ protected:
         case kParameterPRESENCE:
             aida.presence.setPeakGain(value);
             break;
-        case kParameterMASTER:
-            aida.mastergain.setTargetValue(DB_CO(value));
+        case kParameterOUTLEVEL:
+            aida.outlevel.setTargetValue(DB_CO(value));
             break;
         case kParameterCABSIMBYPASS:
             cabsimGain.setTargetValue(value > 0.5f ? 0.f : kCabinetMaxGain);
@@ -878,8 +878,8 @@ protected:
     */
     void activate() override
     {
-        aida.pregain.clearToTargetValue();
-        aida.mastergain.clearToTargetValue();
+        aida.inlevel.clearToTargetValue();
+        aida.outlevel.clearToTargetValue();
         bypassGain.clearToTargetValue();
         cabsimGain.clearToTargetValue();
         resetMeters.store(true);
@@ -995,7 +995,7 @@ protected:
         applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
 
         // Pre-gain
-        applyGainRamp(aida.pregain, out, numSamples);
+        applyGainRamp(aida.inlevel, out, numSamples);
 
         // Equalizer section
         if (!aida.eq_bypass && aida.eq_pos == kEqPre)
@@ -1040,8 +1040,8 @@ protected:
         if (!aida.eq_bypass && aida.eq_pos == kEqPost)
             applyToneControls(aida, out, numSamples);
 
-        // Master volume
-        applyGainRamp(aida.mastergain, out, numSamples);
+        // Output volume
+        applyGainRamp(aida.outlevel, out, numSamples);
 
         // Bypass and output meter
         for (uint32_t i = 0; i < numSamples; ++i)

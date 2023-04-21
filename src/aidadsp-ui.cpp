@@ -62,13 +62,13 @@ class AidaDSPLoaderUI : public UI,
     } icons;
 
     struct {
-        ScopedPointer<AidaKnob> pregain;
+        ScopedPointer<AidaKnob> inlevel;
         ScopedPointer<AidaKnob> bass;
         ScopedPointer<AidaKnob> middle;
         ScopedPointer<AidaKnob> treble;
         ScopedPointer<AidaKnob> depth;
         ScopedPointer<AidaKnob> presence;
-        ScopedPointer<AidaKnob> master;
+        ScopedPointer<AidaKnob> outlevel;
     } knobs;
 
     struct {
@@ -143,13 +143,13 @@ public:
         loadSharedResources();
 
         // Create subwidgets
-        knobs.pregain = new AidaKnob(this, this, images.knob, images.scale, kParameterPREGAIN);
+        knobs.inlevel = new AidaKnob(this, this, images.knob, images.scale, kParameterINLEVEL);
         knobs.bass = new AidaKnob(this, this, images.knob, images.scale, kParameterBASSGAIN);
         knobs.middle = new AidaKnob(this, this, images.knob, images.scale, kParameterMIDGAIN);
         knobs.treble = new AidaKnob(this, this, images.knob, images.scale, kParameterTREBLEGAIN);
         knobs.depth = new AidaKnob(this, this, images.knob, images.scale, kParameterDEPTH);
         knobs.presence = new AidaKnob(this, this, images.knob, images.scale, kParameterPRESENCE);
-        knobs.master = new AidaKnob(this, this, images.knob, images.scale, kParameterMASTER);
+        knobs.outlevel = new AidaKnob(this, this, images.knob, images.scale, kParameterOUTLEVEL);
 
         switches.bypass = new AidaPluginSwitch(this, this, kParameterGLOBALBYPASS);
         switches.eqpos = new AidaPluginSwitch(this, this, kParameterEQPOS);
@@ -206,7 +206,7 @@ public:
 
         // Setup subwidgets layout
         subwidgetsLayout.widgets.push_back({ switches.bypass, Fixed });
-        subwidgetsLayout.widgets.push_back({ knobs.pregain, Fixed });
+        subwidgetsLayout.widgets.push_back({ knobs.inlevel, Fixed });
         subwidgetsLayout.widgets.push_back({ splitters.s1, Fixed });
         subwidgetsLayout.widgets.push_back({ switches.eqpos, Fixed });
         subwidgetsLayout.widgets.push_back({ switches.midtype, Fixed });
@@ -217,18 +217,18 @@ public:
         subwidgetsLayout.widgets.push_back({ knobs.depth, Fixed });
         subwidgetsLayout.widgets.push_back({ knobs.presence, Fixed });
         subwidgetsLayout.widgets.push_back({ splitters.s3, Fixed });
-        subwidgetsLayout.widgets.push_back({ knobs.master, Fixed });
+        subwidgetsLayout.widgets.push_back({ knobs.outlevel, Fixed });
 
         repositionWidgets();
 
         // give event priority to knob dragging
-        knobs.pregain->toFront();
+        knobs.inlevel->toFront();
         knobs.bass->toFront();
         knobs.middle->toFront();
         knobs.treble->toFront();
         knobs.depth->toFront();
         knobs.presence->toFront();
-        knobs.master->toFront();
+        knobs.outlevel->toFront();
 
         // adjust size
         const double scaleFactor = getScaleFactor();
@@ -268,8 +268,8 @@ protected:
         case kParameterINLPF:
             // TODO
             break;
-        case kParameterPREGAIN:
-            knobs.pregain->setValue(value, false);
+        case kParameterINLEVEL:
+            knobs.inlevel->setValue(value, false);
             break;
         case kParameterNETBYPASS:
             loaders.model->setChecked(value < 0.5f);
@@ -298,8 +298,8 @@ protected:
         case kParameterPRESENCE:
             knobs.presence->setValue(value, false);
             break;
-        case kParameterMASTER:
-            knobs.master->setValue(value, false);
+        case kParameterOUTLEVEL:
+            knobs.outlevel->setValue(value, false);
             break;
         case kParameterCABSIMBYPASS:
             loaders.cabsim->setChecked(value < 0.5f);
