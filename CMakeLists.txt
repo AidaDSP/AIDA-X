@@ -17,11 +17,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDISTRHO_NAMESPACE=AidaDISTRHO -DDGL_NA
 # else()
 set(PREFER_RTNEURAL_XSIMD FALSE)
 # endif()
-
-set(JUCE_EXTRA APPLE CACHE BOOL "Use JUCE for extra plugin formats")
-
 set(RTNEURAL_XSIMD ${PREFER_RTNEURAL_XSIMD} CACHE BOOL "Use RTNeural with this backend")
 message("RTNEURAL_XSIMD in ${CMAKE_PROJECT_NAME} = ${RTNEURAL_XSIMD}, using processor type ${CMAKE_SYSTEM_PROCESSOR} and system name ${CMAKE_SYSTEM_NAME}")
+
+if(APPLE)
+set(PREFER_JUCE_EXTRA TRUE)
+else()
+set(PREFER_JUCE_EXTRA FALSE)
+endif()
+set(JUCE_EXTRA ${PREFER_JUCE_EXTRA} CACHE BOOL "Use JUCE for extra plugin formats")
 
 add_subdirectory(modules/dpf)
 add_subdirectory(modules/rtneural)
