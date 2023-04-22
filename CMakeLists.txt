@@ -18,6 +18,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDISTRHO_NAMESPACE=AidaDISTRHO -DDGL_NA
 set(PREFER_RTNEURAL_XSIMD FALSE)
 # endif()
 
+set(JUCE_EXTRA APPLE CACHE BOOL "Use JUCE for extra plugin formats")
+
 set(RTNEURAL_XSIMD ${PREFER_RTNEURAL_XSIMD} CACHE BOOL "Use RTNeural with this backend")
 message("RTNEURAL_XSIMD in ${CMAKE_PROJECT_NAME} = ${RTNEURAL_XSIMD}, using processor type ${CMAKE_SYSTEM_PROCESSOR} and system name ${CMAKE_SYSTEM_NAME}")
 
@@ -30,7 +32,7 @@ set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 set(TARGETS clap lv2 vst2 vst3)
 
 # hacky hack part1
-if(APPLE)
+if(JUCE_EXTRA)
 set(TARGETS ${TARGETS} static)
 endif()
 
@@ -80,7 +82,7 @@ target_compile_definitions(dgl-opengl PUBLIC
 )
 
 # hacky hack part 2
-if(APPLE)
+if(JUCE_EXTRA)
 include(FetchContent)
 FetchContent_Declare(JUCE
   GIT_REPOSITORY https://github.com/DISTRHO/JUCE.git
@@ -89,8 +91,13 @@ FetchContent_Declare(JUCE
 )
 FetchContent_MakeAvailable(JUCE)
 add_subdirectory(src/jucewrapper)
+if (APPLE)
 add_dependencies(AIDA-X-JUCE_AU AIDA-X-static dgl-opengl)
 target_compile_definitions(AIDA-X PUBLIC DISTRHO_PLUGIN_TARGET_STATIC_NAME="AudioUnit")
+else()
+add_dependencies(AIDA-X-JUCE_Standalone AIDA-X-static dgl-opengl)
+target_compile_definitions(AIDA-X PUBLIC DISTRHO_PLUGIN_TARGET_STATIC_NAME="Standalone")
+endif()
 endif()
 
 target_include_directories(AIDA-X PUBLIC

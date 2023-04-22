@@ -588,6 +588,7 @@ class JuceWrapperEditor : public juce::AudioProcessorEditor,
 
     UIExporter* ui;
     void* const dspPtr;
+    bool firstIdle = true;
 
 public:
     JuceWrapperEditor(JuceWrapperProcessor& juceProc)
@@ -634,6 +635,12 @@ protected:
             }
         }
 
+        if (firstIdle)
+        {
+            firstIdle = false;
+            ui->repaint();
+        }
+
         repaint();
     }
 
@@ -657,15 +664,8 @@ protected:
                 setSizeFunc,
                 nullFileRequestFunc,
                 nullptr, // bundlePath
-                dspPtr,
-                0.0 // scaleFactor
+                dspPtr
             );
-
-            if (juceProcessor.wrapperType == juce::AudioProcessor::wrapperType_Standalone)
-            {
-                const double scaleFactor = ui->getScaleFactor();
-                ui->setWindowOffset(4 * scaleFactor, 30 * scaleFactor);
-            }
 
             for (uint32_t i=0; i<juceProcessor.parameterCount; ++i)
             {

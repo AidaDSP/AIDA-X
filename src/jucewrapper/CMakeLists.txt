@@ -7,17 +7,18 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 # Define static libs
 
 add_library(dgl STATIC IMPORTED)
-set_property(TARGET dgl PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libdgl-opengl.a")
+set_property(TARGET dgl PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/libdgl-opengl.a")
 
 add_library(sAidaX STATIC IMPORTED)
-set_property(TARGET sAidaX PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/bin/AIDA-X.a")
+set_property(TARGET sAidaX PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/bin/AIDA-X.a")
 
 # dependencies
 
 if (APPLE)
 set(GL_LIBRARIES "-framework OpenGL")
-set(PLUGIN_FORMATS AU)
+set(JUCE_PLUGIN_FORMATS AU)
 else (APPLE)
+find_package(PkgConfig)
 pkg_check_modules(DBUS REQUIRED dbus-1)
 pkg_check_modules(GL REQUIRED gl)
 pkg_check_modules(X11 REQUIRED x11)
@@ -26,7 +27,7 @@ pkg_check_modules(XEXT REQUIRED xext)
 pkg_check_modules(XRANDR REQUIRED xrandr)
 set(STATIC_LIBS_START "-Wl,--whole-archive")
 set(STATIC_LIBS_END "-Wl,--no-whole-archive")
-set(PLUGIN_FORMATS Standalone VST3)
+set(JUCE_PLUGIN_FORMATS Standalone)
 endif (APPLE)
 
 juce_add_plugin(AIDA-X-JUCE
@@ -36,7 +37,7 @@ juce_add_plugin(AIDA-X-JUCE
     COMPANY_WEBSITE "https://github.com/AidaDSP/AIDA-X"
     DESCRIPTION "AI Crafted Tone"
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    FORMATS ${PLUGIN_FORMATS}
+    FORMATS ${JUCE_PLUGIN_FORMATS}
     IS_MIDI_EFFECT FALSE
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
@@ -45,10 +46,10 @@ juce_add_plugin(AIDA-X-JUCE
     PLUGIN_MANUFACTURER_CODE Aida
     PRODUCT_NAME "AIDA-X")
 
-set_target_properties(AIDA-X-JUCE_AU
+set_target_properties(AIDA-X-JUCE_${JUCE_PLUGIN_FORMATS}
     PROPERTIES
         OUTPUT_NAME "AIDA-X"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
 target_sources(AIDA-X-JUCE
