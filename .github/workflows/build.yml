@@ -89,6 +89,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yqq brotli
+          mkdir bin
           [ -d ~/emsdk ] || git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
           cd ~/emsdk && ./emsdk install ${{ env.EMSCRIPTEN_VERSION }} && ./emsdk activate ${{ env.EMSCRIPTEN_VERSION }}
       - name: Build simd-optimized
@@ -107,7 +108,9 @@ jobs:
           source ~/emsdk/emsdk_env.sh
           make -C src/standalone features
           make -C src/standalone NOOPT=true MOD_BUILD=${{ matrix.target == 'mod' }} -j $(nproc)
-          mv build/bin bin
+          mv build/bin/*.* bin/
+      - name: Cleanup
+        run: |
           rm -rf build modules/dpf/build
       - name: Build non-optimized
         env:
@@ -147,3 +150,14 @@ jobs:
         with:
           dpf_path: ./modules/dpf
           target: pluginval
+
+  source:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: distrho/dpf-cmake-action@v1
+        with:
+          dpf_path: ./modules/dpf
+          target: source
