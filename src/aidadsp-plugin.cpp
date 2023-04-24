@@ -600,8 +600,8 @@ protected:
         using namespace Files;
 
         try {
-            std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(deerinkstudios_tw40_ac_cleanData)),
-                                       deerinkstudios_tw40_ac_cleanDataSize);
+            std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(tw40_california_clean_deerinkstudiosData)),
+                                       tw40_california_clean_deerinkstudiosDataSize);
             loadModelFromStream(jsonStream);
         }
         catch (const std::exception& e) {
@@ -725,8 +725,8 @@ protected:
         uint channels;
         uint sampleRate;
         drwav_uint64 numFrames;
-        float* const ir = drwav_open_memory_and_read_pcm_frames_f32(Twin_Rev_Nrm_N6_Cab_IRData,
-                                                                    Twin_Rev_Nrm_N6_Cab_IRDataSize,
+        float* const ir = drwav_open_memory_and_read_pcm_frames_f32(V30_P2_audix_i5_deerinkstudiosData,
+                                                                    V30_P2_audix_i5_deerinkstudiosDataSize,
                                                                     &channels,
                                                                     &sampleRate,
                                                                     &numFrames,
