@@ -178,8 +178,9 @@
         spinnerElement.style.display = 'none';
       } else {
         var canvasWrapper = document.getElementById('canvas_wrapper');
-
+        var simdSupported = WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11]));
         var Module = {
+          locateFile: function(p,_) { return simdSupported ? p : p.replace("AIDA-X.","AIDA-X-NOSIMD."); },
           preRun: [],
           postRun: function() {
             ready = true;
@@ -243,10 +244,10 @@
         };
 
         var jsModuleName;
-        if (!WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11]))) {
-          jsModuleName = "AIDA-X-NOSIMD.js";
-        } else {
+        if (simdSupported) {
           jsModuleName = "AIDA-X.js";
+        } else {
+          jsModuleName = "AIDA-X-NOSIMD.js";
         }
         var jsModuleScript = document.createElement('script');
         jsModuleScript.setAttribute('async', true);
