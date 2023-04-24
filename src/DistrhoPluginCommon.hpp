@@ -129,7 +129,7 @@ static ParameterEnumerationValue kModelInSize[4] = {
 
 static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "ANTIALIASING", "ANTIALIASING", "%", 66.216f, 0.f, 100.f, },
-    { kParameterIsAutomatable, "INLEVEL", "PREGAIN", "dB", 0.f, -12.f, 12.f, },
+    { kParameterIsAutomatable, "INPUT", "PREGAIN", "dB", 0.f, -12.f, 12.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "NETBYPASS", "NETBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "EQBYPASS", "EQBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsInteger, "EQPOS", "EQPOS", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kEQPOS), kEQPOS },
@@ -143,7 +143,7 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable, "TFREQ", "TFREQ", "Hz", 2000.f, 1000.f, 4000.f, },
     { kParameterIsAutomatable, "DEPTH", "DEPTH", "dB", 0.f, -8.f, 8.f, },
     { kParameterIsAutomatable, "PRESENCE", "PRESENCE", "dB", 0.f, -8.f, 8.f, },
-    { kParameterIsAutomatable, "OUTLEVEL", "MASTER", "dB", 0.f, -15.f, 15.f, },
+    { kParameterIsAutomatable, "OUTPUT", "MASTER", "dB", 0.f, -15.f, 15.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "CABSIMBYPASS", "CABSIMBYPASS", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
     { kParameterIsAutomatable, "PARAM1", "PARAM1", "", 0.f, 0.f, 1.f, },
