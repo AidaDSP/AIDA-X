@@ -33,7 +33,7 @@ public:
     TwoStageThreadedConvolver()
         : fftconvolver::TwoStageFFTConvolver(),
           Thread("TwoStageThreadedConvolver"),
-          semBgProcStart(1),
+          semBgProcStart(0),
           semBgProcFinished(0)
     {
     }
@@ -63,7 +63,7 @@ public:
         }
 
         nonThreadedConvolver = new fftconvolver::FFTConvolver();
-        return true;
+        return nonThreadedConvolver->init(kHeadBlockSize, ir, irLen);
     }
 
     void process(const fftconvolver::Sample* const input, fftconvolver::Sample* const output, const size_t len)
