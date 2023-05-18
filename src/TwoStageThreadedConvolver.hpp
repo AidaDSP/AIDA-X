@@ -33,7 +33,7 @@ public:
     TwoStageThreadedConvolver()
         : fftconvolver::TwoStageFFTConvolver(),
           Thread("TwoStageThreadedConvolver"),
-          semBgProcStart(0),
+          semBgProcStart(1),
           semBgProcFinished(0)
     {
     }

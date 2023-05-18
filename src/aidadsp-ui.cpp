@@ -410,8 +410,6 @@ protected:
                                  Color(42, 34, 15)));
         fill();
 
-        beginPath();
-        roundedRect(marginHorizontal, marginVertical, widthPedal, heightPedal, cornerRadius);
         fillPaint(linearGradient(marginHorizontal + widthPedal * 0.50f, 0,
                                  marginHorizontal + widthPedal, 0,
                                  Color(42, 34, 15),
