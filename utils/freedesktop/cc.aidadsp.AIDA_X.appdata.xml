@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+
+  <id>cc.aidadsp.AIDA_X</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>AIDA-X</name>
+  <summary>AIDA-X, an Amp Model Player leveraging AI.</summary>
+  <content_rating type="oars-1.0" />
+
+  <description>
+    <p>
+      AIDA-X is an Amp Model Player, allowing it to load models of AI trained music gear,
+      which you can then play through!
+      Its main intended use is to provide high fidelity simulations of amplifiers.  
+      However, it is also possible to run entire signal chains consisting
+      of any combination of amp, cab, dist, drive, fuzz, boost and eq.
+    </p>
+  </description>
+
+  <screenshots>
+    <screenshot>
+      <caption>The main window.</caption>
+       <image type="source" width="1880" height="756">https://raw.githubusercontent.com/AidaDSP/AIDA-X/main/docs/Screenshot.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/AidaDSP/AIDA-X</url>
+  <url type="bugtracker">https://github.com/AidaDSP/AIDA-X/issues</url>
+  <url type="help">https://forum.mod.audio/c/neural/62</url>
+
+  <launchable type="desktop-id">cc.aidadsp.AIDA_X.desktop</launchable>
+  <provides>
+    <binary>AIDA-X</binary>
+  </provides>
+
+</component>

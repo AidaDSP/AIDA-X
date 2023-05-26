@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AIDA-X
+Comment=An Amp Model Player leveraging AI.
+Exec=AIDA-X
+Icon=AIDA-X
+Categories=AudioVideo;Audio;
+Terminal=false
