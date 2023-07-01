@@ -114,8 +114,7 @@ Impulse Response handling is done with the help of a custom fork of [FFTConvolve
 
 This implies neural network training. Please follow:
 
-- [AIDA-X Model Trainer.ipynb](https://colab.research.google.com/drive/1n3EOnroDSGoj_8PVRP6UEwUXUzPewv8p)
-- [Automated_GuitarAmpModelling.ipynb](https://github.com/AidaDSP/Automated-GuitarAmpModelling/tree/aidadsp_devel)
+- [AIDA-X Model Trainer.ipynb](https://colab.research.google.com/github/AidaDSP/Automated-GuitarAmpModelling/blob/aidadsp_devel/AIDA_X_Model_Trainer.ipynb)
 
 ### Building ###
 
