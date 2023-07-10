@@ -53,17 +53,21 @@ public:
 
     bool init(const fftconvolver::Sample* const ir, const size_t irLen)
     {
-        if (irLen > kTailBlockSize * 2)
+        if (fftconvolver::TwoStageFFTConvolver::init(kHeadBlockSize, kTailBlockSize, ir, irLen))
         {
-            if (! fftconvolver::TwoStageFFTConvolver::init(kHeadBlockSize, kTailBlockSize, ir, irLen))
-                return false;
-
             startThread(true);
             return true;
         }
 
-        nonThreadedConvolver = new fftconvolver::FFTConvolver();
-        return nonThreadedConvolver->init(kHeadBlockSize, ir, irLen);
+        ScopedPointer<fftconvolver::FFTConvolver> conv(new fftconvolver::FFTConvolver);
+
+        if (conv->init(kHeadBlockSize, ir, irLen))
+        {
+            nonThreadedConvolver = conv.release();
+            return true;
+        }
+
+        return false;
     }
 
     void process(const fftconvolver::Sample* const input, fftconvolver::Sample* const output, const size_t len)
