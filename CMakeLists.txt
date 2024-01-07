@@ -91,7 +91,7 @@ if(JUCE_EXTRA)
 include(FetchContent)
 FetchContent_Declare(JUCE
   GIT_REPOSITORY https://github.com/DISTRHO/JUCE.git
-  GIT_TAG v6.1.6
+  GIT_TAG v6.1.6-distrho
   GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(JUCE)

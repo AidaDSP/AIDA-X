@@ -60,7 +60,8 @@ target_include_directories(AIDA-X-JUCE
     PRIVATE
         ..
         ../plugin
-        ../../modules/dpf/distrho)
+        ../../modules/dpf/distrho
+        ../../modules/dpf/dgl/src/pugl-upstream/include)
 
 target_compile_definitions(AIDA-X-JUCE
     PUBLIC
