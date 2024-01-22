@@ -12,6 +12,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN TRUE)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDISTRHO_NAMESPACE=AidaDISTRHO -DDGL_NAMESPACE=AidaDGL")
+if (WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+endif()
 
 # if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(amd64|AMD64|i.86|x64|X64|x86|x86_64|X86)$")
 #   set(PREFER_RTNEURAL_XSIMD TRUE)
@@ -32,7 +35,9 @@ add_subdirectory(modules/dpf)
 add_subdirectory(modules/rtneural)
 
 find_package(Threads REQUIRED)
-set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+if(NOT WIN32)
+  set_property(GLOBAL PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
 
 set(TARGETS clap lv2 vst2 vst3)
 
@@ -54,6 +59,7 @@ dpf_add_plugin(AIDA-X
     modules/r8brain/pffft.cpp
     modules/r8brain/r8bbase.cpp
     src/aidadsp-plugin.cpp
+    src/model-activate.cpp
     src/Biquad.cpp
     src/3rd-party.cpp
   FILES_UI
@@ -73,6 +79,7 @@ dpf_add_plugin(AIDA-X-Standalone
     modules/r8brain/pffft.cpp
     modules/r8brain/r8bbase.cpp
     src/aidadsp-plugin.cpp
+    src/model-activate.cpp
     src/Biquad.cpp
     src/3rd-party.cpp
   FILES_UI
@@ -81,7 +88,6 @@ dpf_add_plugin(AIDA-X-Standalone
     src/aidadsp-ui.cpp)
 
 target_compile_definitions(dgl-opengl PUBLIC
-  DGL_NAMESPACE=AidaDGL
   DGL_WINDOWS_ICON_ID=401
   NVG_FONT_TEXTURE_FLAGS=NVG_IMAGE_NEAREST
 )
