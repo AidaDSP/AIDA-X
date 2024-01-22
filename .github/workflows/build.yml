@@ -49,7 +49,7 @@ jobs:
       - uses: distrho/dpf-cmake-action@v1
         with:
           dpf_path: ./modules/dpf
-          lto: true
+          lto: false
           pawpaw: true
           target: ${{ matrix.target }}
       - uses: actions/upload-artifact@v3
