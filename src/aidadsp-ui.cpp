@@ -324,6 +324,7 @@ protected:
         case kParameterTREBLEFREQ:
         case kParameterPARAM1:
         case kParameterPARAM2:
+        case kParameterDCBLOCKER:
         case kParameterCount:
             break;
         }
