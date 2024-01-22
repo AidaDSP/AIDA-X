@@ -34,6 +34,7 @@ endif
 
 FILES_DSP = \
 	aidadsp-plugin.cpp \
+	model-activate.cpp \
 	3rd-party.cpp \
 	AudioFFT.cpp \
 	Biquad.cpp \
