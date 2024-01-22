@@ -1,7 +1,7 @@
 /*
  * AIDA-X DPF plugin
  * Copyright (C) 2022-2023 Massimo Pennazio <maxipenna@libero.it>
- * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2023-2024 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -134,6 +134,12 @@ struct DynamicModel {
     float input_gain;
     float output_gain;
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+// defined in separate files for helping the compiler deal with big objects
+
+void modelActivate(ModelVariantType& model);
+void modelLoad(ModelVariantType& model, nlohmann::json& model_json);
 
 // --------------------------------------------------------------------------------------------------------------------
 // Apply a gain ramp to a buffer
@@ -671,17 +677,7 @@ protected:
             if (! custom_model_creator (model_json, newmodel->variant))
                 throw std::runtime_error ("Unable to identify a known model architecture!");
 
-            std::visit (
-                [&model_json] (auto&& custom_model)
-                {
-                    using ModelType = std::decay_t<decltype (custom_model)>;
-                    if constexpr (! std::is_same_v<ModelType, NullModel>)
-                    {
-                        custom_model.parseJson (model_json, true);
-                        custom_model.reset();
-                    }
-                },
-                newmodel->variant);
+            modelLoad(newmodel->variant, model_json);
         }
         catch (const std::exception& e) {
             d_stderr2("Error loading model: %s", e.what());
@@ -891,16 +887,7 @@ protected:
 
             activeModel.store(true);
 
-            std::visit (
-                [] (auto&& custom_model)
-                {
-                    using ModelType = std::decay_t<decltype (custom_model)>;
-                    if constexpr (! std::is_same_v<ModelType, NullModel>)
-                    {
-                        custom_model.reset();
-                    }
-                },
-                model->variant);
+            modelActivate(model->variant);
 
             param1.clearToTargetValue();
             param2.clearToTargetValue();
