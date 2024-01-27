@@ -1,7 +1,7 @@
 /*
  * AIDA-X DPF plugin
  * Copyright (C) 2022-2023 Massimo Pennazio <maxipenna@libero.it>
- * Copyright (C) 2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2023-2024 Filipe Coelho <falktx@falktx.com>
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -9,8 +9,8 @@
 
 #include "DistrhoDetails.hpp"
 
-static constexpr const char* const kVersionString = "v1.0.0";
-static constexpr const uint32_t kVersionNumber = d_version(1, 0, 0);
+static constexpr const char* const kVersionString = "v1.1.0";
+static constexpr const uint32_t kVersionNumber = d_version(1, 1, 0);
 
 #define DISTRHO_PLUGIN_BRAND   "AIDA DSP"
 #define DISTRHO_PLUGIN_NAME    "AIDA-X"
@@ -80,6 +80,7 @@ enum Parameters {
     kParameterGLOBALBYPASS,
     kParameterPARAM1,
     kParameterPARAM2,
+    kParameterDCBLOCKER,
     kParameterModelInputSize,
     kParameterMeterIn,
     kParameterMeterOut,
@@ -148,6 +149,7 @@ static const Parameter kParameters[] = {
     { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "Bypass", "dpf_bypass", "", 0.f, 0.f, 1.f, ARRAY_SIZE(kBYPASS), kBYPASS },
     { kParameterIsAutomatable, "PARAM1", "PARAM1", "", 0.f, 0.f, 1.f, },
     { kParameterIsAutomatable, "PARAM2", "PARAM2", "", 0.f, 0.f, 1.f, },
+    { kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger, "DCBLOCKER", "DCBLOCKER", "", 1.f, 0.f, 1.f, },
     { kParameterIsOutput, "Model Input Size", "ModelInSize", "", 0.f, 0.f, 3.f, ARRAY_SIZE(kModelInSize), kModelInSize },
     { kParameterIsOutput, "Meter In", "MeterIn", "dB", 0.f, 0.f, 2.f, },
     { kParameterIsOutput, "Meter Out", "MeterOut", "dB", 0.f, 0.f, 2.f, },

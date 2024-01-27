@@ -288,7 +288,9 @@ class AidaDSPLoaderPlugin : public Plugin
     float parameters[kNumParameters];
     LinearValueSmoother param1;
     LinearValueSmoother param2;
-    bool paramFirstRun;
+    bool enabledLPF = true;
+    bool enabledDC = true;
+    bool paramFirstRun = true;
     std::atomic<bool> resetMeters { true };
     float tmpMeterIn, tmpMeterOut;
     uint32_t tmpMeterFrames, meterMaxFrameCount;
@@ -423,8 +425,18 @@ protected:
     {
         parameter = kParameters[index];
 
-        if (index == kParameterGLOBALBYPASS)
+        switch (index)
         {
+        case kParameterINLPF:
+            {
+                static ParameterEnumerationValue values[1] = {
+                    { 0.f, "Off" }
+                };
+                parameter.enumValues.values = values;
+                parameter.enumValues.deleteLater = false;
+            }
+            break;
+        case kParameterGLOBALBYPASS:
             parameter.designation = kParameterDesignationBypass;
             {
                 static ParameterEnumerationValue values[2] = {
@@ -434,6 +446,7 @@ protected:
                 parameter.enumValues.values = values;
                 parameter.enumValues.deleteLater = false;
             }
+            break;
         }
     }
 
@@ -506,6 +519,7 @@ protected:
         {
         case kParameterINLPF:
             aida.in_lpf.setFc(MAP(value, 0.0f, 100.0f, INLPF_MAX_CO, INLPF_MIN_CO));
+            enabledLPF = d_isNotZero(value);
             break;
         case kParameterINLEVEL:
             aida.inlevel.setTargetValue(DB_CO(value));
@@ -563,6 +577,9 @@ protected:
             break;
         case kParameterPARAM2:
             param2.setTargetValue(value);
+            break;
+        case kParameterDCBLOCKER:
+            enabledDC = value > 0.5f;
             break;
         case kParameterModelInputSize:
         case kParameterMeterIn:
@@ -992,7 +1009,10 @@ protected:
        #endif
 
         // High frequencies roll-off (lowpass)
-        applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
+        if (enabledLPF)
+            applyBiquadFilter(aida.in_lpf, out, bypassInplaceBuffer, numSamples);
+        else
+            std::memcpy(out, bypassInplaceBuffer, sizeof(float)*numSamples);
 
         // Pre-gain
         applyGainRamp(aida.inlevel, out, numSamples);
@@ -1017,7 +1037,8 @@ protected:
         }
 
         // DC blocker filter (highpass)
-        applyBiquadFilter(aida.dc_blocker, out, numSamples);
+        if (enabledDC)
+            applyBiquadFilter(aida.dc_blocker, out, numSamples);
 
         // Cabinet convolution
         if (cabsim != nullptr)
