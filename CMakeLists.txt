@@ -196,3 +196,41 @@ add_custom_target(AIDA-X-Installer ALL
   DEPENDS "${CMAKE_SOURCE_DIR}/utils/inno/AIDA-X-${CMAKE_PROJECT_VERSION}-win64-installer.exe"
 )
 endif()
+
+if(UNIX AND NOT APPLE)
+  include(GNUInstallDirs)
+
+  install(TARGETS ${CMAKE_PROJECT_NAME}-Standalone-jack
+    DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    COMPONENT "Runtime"
+  )
+  install(TARGETS ${CMAKE_PROJECT_NAME}-clap
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/clap"
+    COMPONENT "clap"
+  )
+  install(TARGETS ${CMAKE_PROJECT_NAME}-vst2
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/vst"
+    COMPONENT "vst2"
+  )
+  install(
+    DIRECTORY "${CMAKE_BINARY_DIR}/bin/${CMAKE_PROJECT_NAME}.lv2"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/lv2"
+    COMPONENT "lv2"
+    USE_SOURCE_PERMISSIONS
+  )
+  install(
+    DIRECTORY "${CMAKE_BINARY_DIR}/bin/${CMAKE_PROJECT_NAME}.vst3"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/vst3"
+    COMPONENT "vst3"
+    USE_SOURCE_PERMISSIONS
+  )
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/utils/freedesktop/${CMAKE_PROJECT_NAME}.png"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/pixmaps"
+  )
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/utils/freedesktop/cc.aidadsp.AIDA_X.appdata.xml"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/metainfo"
+  )
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/utils/freedesktop/cc.aidadsp.AIDA_X.desktop"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/applications"
+  )
+endif()
