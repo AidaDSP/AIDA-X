@@ -4,14 +4,6 @@
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-# Define static libs
-
-add_library(dgl STATIC IMPORTED)
-set_property(TARGET dgl PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/libdgl-opengl.a")
-
-add_library(sAidaX STATIC IMPORTED)
-set_property(TARGET sAidaX PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/bin/AIDA-X.a")
-
 # dependencies
 
 if (APPLE)
@@ -89,8 +81,8 @@ target_link_libraries(AIDA-X-JUCE
     PRIVATE
         juce::juce_audio_utils
         ${STATIC_LIBS_START}
-        sAidaX
-        dgl
+        $<TARGET_FILE:AIDA-X-static>
+        $<TARGET_FILE:dgl-opengl>
         ${STATIC_LIBS_END}
         ${GL_LIBRARIES}
         ${DBUS_LIBRARIES}
