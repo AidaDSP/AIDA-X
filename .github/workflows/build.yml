@@ -9,7 +9,7 @@ jobs:
         target: [linux-arm64, linux-armhf, linux-riscv64, linux-x86_64]
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -27,7 +27,7 @@ jobs:
         target: [macos-universal-10.15]
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -43,16 +43,15 @@ jobs:
         target: [win64]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
           dpf_path: ./modules/dpf
-          lto: true
           pawpaw: true
           target: ${{ matrix.target }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_BASENAME }}-installer
           path: |
@@ -75,12 +74,12 @@ jobs:
     env:
       EMSCRIPTEN_VERSION: 3.1.27
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Set up cache
         id: cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/emsdk
@@ -134,7 +133,7 @@ jobs:
           cd bin
           brotli -k -q 11 *.*
           zip -r -9 ../${{ github.event.repository.name }}-wasm-${{ matrix.target }}.zip $(ls *.*)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-wasm-${{ matrix.target }}
           path: |
@@ -143,7 +142,7 @@ jobs:
   pluginval:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -154,7 +153,7 @@ jobs:
   source:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1

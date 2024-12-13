@@ -290,6 +290,7 @@ class AidaDSPLoaderPlugin : public Plugin
     LinearValueSmoother param2;
     bool enabledLPF = true;
     bool enabledDC = true;
+    bool isStereoAU = false;
     bool paramFirstRun = true;
     std::atomic<bool> resetMeters { true };
     float tmpMeterIn, tmpMeterOut;
@@ -390,15 +391,6 @@ protected:
     uint32_t getVersion() const override
     {
         return kVersionNumber;
-    }
-
-   /**
-      Get the plugin unique Id.
-      This value is used by LADSPA, DSSI and VST plugin formats.
-    */
-    int64_t getUniqueId() const override
-    {
-        return d_cconst('a', 'i', 'd', 'a');
     }
 
    /* -----------------------------------------------------------------------------------------------------------------
@@ -1091,9 +1083,8 @@ the_end:
             tmpMeterOut = meterOut;
         }
 
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS == 2
-        std::memcpy(outputs[1], out, sizeof(float)*numSamples);
-       #endif
+        if (isStereoAU || DISTRHO_PLUGIN_NUM_OUTPUTS == 2)
+            std::memcpy(outputs[1], out, sizeof(float)*numSamples);
     }
 
     void bufferSizeChanged(const uint newBufferSize) override
@@ -1130,6 +1121,11 @@ the_end:
         {
             loadDefaultCabinet();
         }
+    }
+
+    void ioChanged(const uint16_t numInputs, const uint16_t numOutputs) override
+    {
+        isStereoAU = numInputs == 2 && numOutputs == 2;
     }
 
     // ----------------------------------------------------------------------------------------------------------------

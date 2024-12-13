@@ -24,9 +24,17 @@ static constexpr const uint32_t kVersionNumber = d_version(1, 1, 0);
 #define DISTRHO_UI_FILE_BROWSER        1
 #define DISTRHO_UI_USE_NANOVG          1
 
+#define DISTRHO_PLUGIN_EXTRA_IO        { 2, 2 },
+
 #define DISTRHO_PLUGIN_CLAP_FEATURES   "audio-effect", "multi-effects", "mono"
 #define DISTRHO_PLUGIN_LV2_CATEGORY    "lv2:SimulatorPlugin"
 #define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Dynamics|Mono"
+
+#define DISTRHO_PLUGIN_BRAND_ID Aida
+#define DISTRHO_PLUGIN_UNIQUE_ID aida
+
+// needed because AIDA-X predates DPF support for VST3 brand uid
+#define DPF_VST3_DONT_USE_BRAND_ID 1
 
 #if DISTRHO_PLUGIN_VARIANT_STANDALONE && DISTRHO_PLUGIN_NUM_INPUTS == 0
 # define AIDAX_WITH_AUDIOFILE 1
