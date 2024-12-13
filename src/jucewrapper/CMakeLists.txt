@@ -67,6 +67,7 @@ target_compile_definitions(AIDA-X-JUCE
     PUBLIC
         DISTRHO_NAMESPACE=AidaDISTRHO
         DGL_NAMESPACE=AidaDGL
+        DGL_USE_FILE_BROWSER=1
         JucePlugin_ForcedStereo=1
         JucePlugin_PreferredChannelConfigurations=2,2
         JUCE_CHECK_MEMORY_LEAKS=0

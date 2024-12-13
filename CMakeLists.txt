@@ -64,8 +64,8 @@ dpf_add_plugin(AIDA-X
 dpf_add_plugin(AIDA-X-Standalone
   TARGETS jack
   #NO_SHARED_RESOURCES
-  USE_FILE_BROWSER
   UI_TYPE opengl
+  USE_FILE_BROWSER
   FILES_DSP
     Files.cpp
     modules/FFTConvolver/AudioFFT.cpp
